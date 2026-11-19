@@ -549,3 +549,61 @@ are paid. ⚠️ **Where the figure DOES come from is still unknown** — all fi
 formula. So `wageMultiplierTiers` is doing double duty: legacy `contractValue` generation on the
 backend, and the staff/player ratio inside the turnover model on the device. One table, two
 models, and the device reports `wage model: turnover`.
+
+---
+
+# Why SC t4's `slots` is not dynamic — it is deliberate, and the gap is elsewhere
+
+**Owner, 2026-11-19:** *"'Fix the SC tier 4 slots to 12' why is this not happening
+dynamically?"*
+
+**It IS dynamic when `slots` is blank.** SC tiers 1-3 carry no `slots` and resolve correctly
+from actual clubs — that is the `0 means derive` idiom, and the device CHECKS show those three
+rows agreeing. Only t4 has an authored value, and it is stale.
+
+## Why the field exists at all
+
+`LeagueSizeResolver`'s own docblock (`src/Service/Economy/LeagueSizeResolver.php:20-52`) gives
+three reasons, measured on dev 2026-11-12:
+
+1. **A `club`-row count is meaningless server-side.** Player clubs live in the save, not on the
+   server. Counting them would give England tier 8 a divisor of **148**.
+2. **The NPC-rows+1 rule is right for 9 of 15 bootstrapped countries and wrong for 6**, because
+   NPC counts are an artefact of how a country was bootstrapped
+   (`BootstrapCountryCommand --clubs-per-tier` defaults to 8), not a declared size.
+3. 🔴 **The fatal one:** *"a derived divisor moves whenever somebody clicks Generate.
+   `League::$tvDeal` is a key shipped builds read, and deriving it from a live NPC count means
+   adding two clubs to a tier silently re-prices that tier's TV money for every existing build…
+   a backwards-compatibility break with no author."*
+
+⚠️ **That third reason is in direct tension with the owner's own standing ruling** — *"there
+should be no wiring around the amount of clubs, the finances should be dynamic"* (2026-11-19).
+Both positions are defensible and **this is the owner's to settle, not something to quietly
+resolve by blanking the field.**
+
+## The actual gap: nothing revalidates `slots` when a ladder is rebuilt
+
+Only **two** writers set it, and neither is a rebuild:
+
+| writer | what it is |
+|---|---|
+| `LeagueAdminController.php:63` | the admin league form — blank/empty stores 0 |
+| `LeagueImportExportService.php:260` | CSV / league import |
+
+**So SC t4's 14 was typed or imported when that tier genuinely held 14 clubs, under the 8-tier
+ladder.** Rebuilding Scotland to 4 tiers with 12 clubs changed the clubs and left the authored
+number untouched, because **no rebuild path reads or clears `slots`.**
+
+🔴 **This is not a Scotland problem and a one-off edit does not end it.** Any country whose
+ladder is re-shaped keeps whatever `slots` it was last given, and the only thing that notices is
+the device CHECKS screen after a save is built — i.e. after the wrong TV money has already been
+paid.
+
+## The three options, for the owner
+
+1. **Blank SC t4 now** (one admin edit) and accept that it will recur on the next re-shape.
+2. **Warn at the source** — have the rebuild / Generate path flag a `slots` that disagrees with
+   the clubs it just created. Keeps reason 3 intact; makes the staleness loud instead of
+   silent. **Smallest change that actually ends the class.**
+3. **Retire `slots`** and derive everywhere, per the owner's ruling — which accepts reason 3's
+   consequence: TV money moves under shipped builds when an operator adds clubs.
