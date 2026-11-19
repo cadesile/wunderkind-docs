@@ -4230,6 +4230,78 @@ too** and the remaining candidate is the device's own config cache on the init p
 ⚠️ **The second option is probably right and is a smaller change than the first.** Worth
 establishing which before briefing.
 
+## 🔴 THE STARTER PACK ASKS FOR TIER 8 ON A FOUR-TIER COUNTRY, AND FALLS THROUGH TO A HARDCODED BAND
+
+**From the Starter Pack Check, Scotland, after the rebuild to 4 tiers:**
+
+```
+A FULL STARTER PACK CAN BE BUILT FOR SCOTLAND.
+20 of 20 players available for Scotland (SC) at tier 8.      ← Scotland has FOUR tiers
+Ability band        10-25
+Band comes from     WorldInitializationService::ABILITY_RANGES
+```
+
+### A third ability table, hardcoded, eight rows deep
+
+`WorldInitializationService.php:203`:
+
+```php
+public const ABILITY_RANGES = [
+    1 => [75, 95],  2 => [65, 85],  3 => [55, 75],  4 => [45, 65],
+    5 => [35, 55],  6 => [25, 45],  7 => [15, 35],  8 => [10, 25],
+];
+```
+
+and at `:498` — *"for this country/tier if set, **else the hardcoded ABILITY_RANGES fallback**"*:
+
+```php
+: (self::ABILITY_RANGES[$tier] ?? ['min' => 5, 'max' => 35]);
+```
+
+⚠️ **`Version20261113160000` consolidated "two ability tables with nearly the same name."** This is a
+**third**, and it is the one the starter pack actually used.
+
+### The chain, and every link is on screen
+
+1. Scotland is rebuilt to **4 tiers**.
+2. The starter pack path still asks for **tier 8** — a stale reference; it should ask for the
+   country's own deepest tier.
+3. `starter_config.league_ability_ranges[SC][8]` **no longer exists** (only 1–4 do).
+4. So it falls through to the hardcoded `ABILITY_RANGES[8]` = **10–25**.
+5. The squad is drawn at **10–25**.
+
+🟢 **And the two measured players sit exactly there: Gallacher 22, Leitch 10.** ⚠️ **Tier 4's
+authored band is 15–35, so Leitch at ability 10 could not have come from it.** The fallback is not a
+theory; it is visible in the squad.
+
+### 🔴 What this means for the experiment
+
+**The starter squad is not drawn from the tier it plays in.** It was built for a tier that no longer
+exists, from a table nobody authored. **Every wage, ability and budget reading taken from the
+player's own club today is measuring that fallback**, not the economy.
+
+**The NPC clubs are unaffected** — they resolve their band per (country, tier) properly, which is
+why they measured correctly at 0.91×.
+
+### ⚠️ What is still NOT explained — stated plainly
+
+**This explains the ABILITIES. It does not yet explain the WAGES.** Ability 22 at tier 4's live
+scale is £2,102; the contract reads £10,000. A wrong ability band does not by itself produce a 4.8×
+wage at a correct ability.
+
+**The remaining candidates**, in order: the squad is priced server-side at generation against the
+tier it was *built for* (8) under the old 8-tier ladder; or the device prices it at a tier other
+than the club's. ⚠️ **I am not going to guess between them tonight** — the ability finding is
+verified and the wage one is not.
+
+### The fix, and it is two things
+
+1. 🔴 **The starter pack must ask for the country's own deepest tier**, via
+   `EconomyScaleResolver::tierCountFor()`, which already exists and is already used elsewhere.
+2. 🔴 **Retire `ABILITY_RANGES`, or make falling through to it an explicit failure.** A silent
+   hardcoded fallback behind an authored table is the exact defect this workstream exists to end —
+   and it stayed invisible because it only fires when a country's depth changes.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
