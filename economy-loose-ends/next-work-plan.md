@@ -3132,6 +3132,57 @@ the same 700,000 fans as one in a city of nearly nine million. The ladder is wha
 - **60–70% looks well-judged on this evidence**, not generous — it was 100% that needed arguing
   against, and only because of a statistic I misread.
 
+## 🔴 THE LADDER'S STEEPNESS — catchment already supplies a 19:1 gradient
+
+**Owner confirmed tier 1 at 60–70%, same config shape as today (per-tier `{min,max}` ranges).**
+Before the rest of the ladder is authored, one measured fact changes what the lower rungs should be.
+
+```
+catchment already falls   19:1 across the pyramid   (797,612 → 42,070 mean)
+today's fan ladder falls  73:1
+```
+
+**So a steep share ladder applies the tier effect TWICE** — once through the catchments that
+generation already assigns by tier, and again through the share.
+
+| ladder | resulting spread | t1 mean | t8 mean | vs today |
+|---|---|---|---|---|
+| flat **65%** | **19:1** | 518,448 | 27,345 | t1 ×0.47, t8 ×1.82 |
+| **60–70% → 15–20%** | **70:1** | 518,448 | 7,362 | t1 ×0.47, **t8 ×0.49** |
+| **60–70% → 5–10%** (first proposal) | **164:1** | 518,448 | 3,155 | t1 ×0.47, t8 ×0.21 |
+
+### 🟢 The recommendation: **60–70% at tier 1, 15–20% at tier 8**
+
+**It reproduces today's pyramid shape almost exactly — 70:1 against 73:1** — while catchment
+supplies the within-tier spread that is the point of the change. **Shape preserved, variation
+added.**
+
+⚠️ **5–10% at tier 8 is not wrong, but it is a deliberate steepening to 164:1 — 2.2× today's
+pyramid.** That may be wanted; it should be chosen knowingly rather than inherited from a figure
+picked before the catchment gradient was measured.
+
+### The one thing no ladder fixes, and it is not a defect
+
+**Every option lands at ×0.47 of today's level at tier 1**, because mean catchment × a sub-100%
+share is simply smaller than today's authored band. **A share above 100% is meaningless**, so this
+is the price of making fan bases catchment-plausible at all.
+
+🟢 **It is a clean, uniform offset** — roughly halved across the pyramid on the 15–20% ladder (×0.47
+at tier 1, ×0.49 at tier 8). ⚠️ **The dial for it is shirt price and sponsor value, not the share
+ladder** — and the owner has already said levels get tuned after correctness. **Do not distort the
+ladder to recover the level.**
+
+### Config shape — unchanged, as the owner asked
+
+```
+fanBaseSharePercent: Record<tier, { min: number, max: number }>
+```
+
+Identical in form to `fanBaseRanges`, admin-editable per tier, drawn the same way. ⚠️ **A NEW key,
+never a reinterpretation of the old one** — the app half (`0964fedc`) already falls back to
+`fanBaseRanges` byte-identically when this key is absent, which is what makes the backend half
+safe to land on its own.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
