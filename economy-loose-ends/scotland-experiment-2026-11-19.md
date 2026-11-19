@@ -102,3 +102,72 @@ clean throughout. Worth closing.
 tier 4; NPC Linlithgow in the same league holds **GBP 427.4k**. A 70x gap. If that GBP 30m is
 the funding chosen in the new-game flow then it is not a defect — but it needs saying, because
 every ratio measured from the AMP club is measured against it.
+
+---
+
+# RESOLVED — the 900% is the whole division's sponsor pot, paid to one club
+
+**Confirmed from source, 2026-11-19.** `src/engine/FinancialProjectionService.ts:362`:
+
+```ts
+const totalSeasonEndIncome = Math.max(0, tvDeal + leagueSponsorPot + estimatedPosPrize
+  + shirtNet + seasonTicketIncome - seasonTaxPence);
+```
+
+and `:243`:
+
+```ts
+const leagueSponsorPot = league?.sponsorPot ?? 0;
+```
+
+**`sponsorPot` is a DIVISION-WIDE figure.** `rollLeagueSponsorPot`
+(`src/utils/leagueFinances.ts:57-74`) sums a draw for every sponsor in the league:
+
+```ts
+for (const [size, count] of Object.entries(league.sponsorSizes)) {
+  for (let i = 0; i < count; i++) total += randInt(bandConfig[band.min], bandConfig[band.max]);
+}
+return total;
+```
+
+**So every club's forecast credits itself the entire division's sponsorship.**
+
+## This is the SAME defect the file directly beneath it documents fixing
+
+`:247-265` is a long comment removing the flat champion's prize for precisely this reason:
+
+> *"this expression used to add it for every club unconditionally … a mid-table tier-8 club was
+> forecasting the whole division's pot. `SeasonBudgetService` sizes the season budget from this
+> lump, so the error reached the club's wage share and surplus, not just a screen."*
+
+**`leagueSponsorPot` is that same shape and was left in, two lines above the comment.**
+
+## The arithmetic matches
+
+| | |
+|---|---|
+| AMP (Moffat Vale) modelled season income | GBP 18,638,128 — **900.4%** of authored |
+| NPC (Linlithgow) seasonal, amortised | 7,763,975 p/wk x 46 = GBP 3,573,429 — **172%** |
+| difference | **~GBP 15m**, and 99.7% of the AMP lump is the season-end term |
+
+The NPC path does not carry it: `npcSolvency.ts:109` sets `seasonEndIncome: 0` deliberately
+(seasonal money is amortised into `weeklyIncome`, documented at `:85-96`). **That is why the AMP
+reads 900% and an NPC in the same league reads 172%** — the gap is almost exactly the pot.
+
+## It is not just a screen
+
+The AMP budget pane reads **income (basis) GBP 18,638,128 -> wage share allowed GBP 11,182,877**.
+`SeasonBudgetService` sizes the budget off this lump, so an inflated pot inflates the wage
+share by roughly GBP 9m. **Every wage, transfer and surplus decision the club makes in season 1
+is sized against money it will never receive.**
+
+## What still needs deciding (owner)
+
+The champion's-prize fix chose to credit **nothing** rather than invent a share. The same choice
+is open here: credit nothing, credit `pot / clubCount`, or credit only the club's own signed
+sponsors (which the club already tracks separately — the AMP shows SPONSORS (1), GBP 223/wk, and
+the weekly line reads GBP 0). ⚠️ **Crediting a share would be a new mechanic**, exactly the
+objection recorded against doing it for the prize.
+
+**The 172% residual is a separate, smaller question** and is a backend authoring one: even
+without the pot, the engine pays ~1.7x the authored tier turnover.
