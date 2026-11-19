@@ -465,3 +465,38 @@ on a current ability well below it. **Even at a ratio of 1.0 the staff bill woul
 young squad's**, because the two sides are not the same quantity. That is a design question —
 staff need a maturity curve, or the draw should target expected current ability — and it does
 not depend on anything above.
+
+## The curve SHAPE says rung 4 is not what priced these staff
+
+Before reading the admin, the four device figures already constrain the answer.
+
+`tierStaffWeeklyWagePence` is `playerWage(ability) x bandConstant`. **A multiplier cannot change
+the shape of a curve** — so if that rung fired, the staff wages would have the player curve's
+own exponent (`k = 2.5`, shown on the device's RESOLVED ECONOMY pane) and the staff/player ratio
+would be **piecewise CONSTANT**, stepping only at a band boundary.
+
+Neither holds:
+
+| check | expected if rung 4 fired | observed |
+|---|---|---|
+| implied exponent | 2.5, the player curve | **~2.17-2.37**, flatter |
+| ratio across the 25/26 band boundary | a STEP (default 1.2 -> 1.0, a 17% drop) | smooth drift, 2.70 -> 2.59, ~4% |
+
+Default-band prediction, stated so it can be checked: `staff(24)/staff(27)` would be
+`(p24 x 1.2)/(p27 x 1.0)` = **0.893**. Observed is `7048/9100` = **0.774**.
+
+⚠️ **Four points, and a per-role base RANGE would add draw noise, so the exponent is indicative
+rather than fitted.** The negative result is the robust part: **no step at the boundary, and a
+flatter curve than the player ladder.** A band multiplier can produce neither.
+
+🔴 **So the admin's multipliers probably will NOT explain the 2.7x** — whatever they read, a
+multiplier cannot produce this shape. The likelier source is upstream, with an ability curve of
+its own: `staffWages.ts:9-10` describes the backend's `StaffGenerationService` as *"a per-role
+base range scaled by `wageMultiplierTiers[].staffMultiplier`, resolved on ability"* — a per-role
+RANGE, which is a different shape by construction.
+
+**That path is supposed to be closed** (it writes `staff.weekly_salary`, and
+`buildStaffSnapshot` does not send it), so if it is what priced these staff, the question
+becomes how they reached the device without going through the pack snapshot. **Still worth
+reading the multipliers** — a ratio near 2.7 with no band step would overturn all of the above
+in one look.
