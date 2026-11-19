@@ -2933,6 +2933,81 @@ the player's chart and all three NPC paths call *that*. ⚠️ **Not to point NP
 boundary. ⚠️ **But it is not the answer for the cliff**, and the owner has set the priority
 explicitly: **accuracy of the projection first.** An agent must not propose a dial here.
 
+## 🔴 A14 CLOSED — and it INVALIDATES the baseline this plan reasoned from
+
+**App, `new-game-save`, commit `0964fedc`, not pushed.** `fanCount` is now
+`catchment × share(tier)` behind a new `fanBaseSharePercent` key with a **byte-identical fallback**;
+646 suites / 10,767 green, `tsc` clean, economy gate byte-identical.
+
+### The error, verified by the PM
+
+**Every fan-base figure in the sections above came from `DEFAULT_FAN_BASE_RANGES` — the app's
+pre-sync FALLBACK constant — not from the published config.** The live values are **14–100× larger**:
+
+| tier | **LIVE published** | app fallback (what we used) |
+|---|---|---|
+| 1 | **700,000 – 1,500,000** | 50,000 – 200,000 |
+| 8 | **10,000 – 20,000** | 100 – 500 |
+
+Unchanged since before R2, so not recent drift. **The source was `game-mechanics.md` §8**, which
+quoted the fallback as if it were shipped; the plan and then the brief repeated it. **A14 corrected
+`.context` in place.**
+
+⚠️ **THE RULE TO CARRY: read a published value from an export, never from the fallback constant that
+shares its name.** This is the second time today a figure was taken from the wrong source of the
+same name — the first was "~31 failures", which was the gate's check count.
+
+### 🔴 Three consequences, all material
+
+1. **The owner's ladder is a REDUCTION at every tier, not an uplift.** At each England tier's own
+   median club population it is **×0.04 to ×0.21**. A median tier-1 club: **1,100,000 → 73,954
+   fans**, and season shirt income **£29.7M → £2.0M**. The plan predicted a 4–10× *rise* at tier 8;
+   measured is **×0.21**.
+2. **"60–70% STANDS" was argued against the wrong baseline.** It reasoned that 60–70% of a million
+   yields £16–19M of shirt income and is therefore worth keeping. True — **but the live config
+   already pays £29.7M there**, so the ladder *cuts* top-tier shirt income by about **£27.7M a
+   season**. ⚠️ **The conclusion may still be right; the reason given for it is not.**
+3. 🟢 **The surviving argument, and it is the strongest one — independent of shirt money.** The
+   largest buildable ground is 50,000 seats and an Elite club fills 0.85 of it, so **anything above
+   42,500 fans cannot constrain attendance at any tier, ever.** Live tier 1 is 700,000–1,500,000 —
+   **26–35× that ceiling.** So **the demand ceiling the owner designed is dead code above roughly
+   tier 6 today. The ladder is what switches it on.**
+
+### 🔴 THE DECISION THIS RE-OPENS
+
+The ladder was chosen believing it was roughly neutral. **It is a large reduction.** The question is
+now explicit: **should a tier-1 club have ~74,000 fans against a 50,000-seat ground, or
+~1,100,000?** The first makes the catchment mechanic live and cuts shirt income ~93%; the second
+keeps today's income and leaves the demand ceiling inert.
+
+⚠️ **Nothing is blocked.** The app half is inert until a ladder is published, so the numbers can be
+chosen deliberately before the backend half is written.
+
+### 🔴 §5.2 — something DOES aggregate fan bases, and the plan's precondition was FALSE as written
+
+`PeerBenchmarkService.getTierFanCountAverage(tier)` takes the **mean fan count across same-tier
+clubs**, and it is live: `StaffConversationService.reviewDirectorOfFootball` judges the DOF below
+standard whenever the club trails that mean.
+
+🟢 **The shared-catchment deferral survives** — a *mean* never double-counts a city the way a
+national *total* would, and A14 found **no sum of fan counts anywhere**.
+
+🔴 **But the consequence of this change reaches it.** Today every club in a tier draws from one
+band, so trailing the mean is near a coin flip. With catchment-driven fan bases the mean is set by
+the division's big-town clubs, and **a small-town club trails it permanently — its DOF judged below
+standard at every review, forever.** A review-threshold question (a share of the mean, a percentile,
+or peers of comparable catchment), not a fan-base one. ⚠️ **It will present as "my DOF is always
+angry" on the first device pass after a ladder is published.**
+
+### 🟢 §5.3 — an independent decision already corroborates the tier-8 band
+
+`new-game-setup/economy.ts` caps the setup screen's season-1 attendance at **`population × 0.04`** —
+a flat 4% reach for a brand-new tier-8 club, live today. **An earlier, independent decision put a
+new club's reach at 4% against the owner's 5–10%.** ⚠️ It will disagree with the tick once a ladder
+is published (estimate 4% vs tick 5–10%) — the safe direction on the screen where real credit is
+committed, but still drift on the parity `setupMatchesTick.test.ts` exists to protect. **Fix when
+the backend half lands: the estimate reads the tier's own share.**
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
