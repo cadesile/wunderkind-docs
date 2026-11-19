@@ -3577,6 +3577,70 @@ Dalkeith **£65/week**, Prestwick **£75/week**, one sponsor each. The AMP club 
 sponsor, or the sponsor roll does not reach an AMP club.** **One check settles it; do not assume
 either way.**
 
+## 🔴 THE STRUCTURAL FINDING — half the economy is country-scaled and half is not
+
+**The projection is not missing anything. The authored turnover is.**
+
+```
+prizeMoney / leaguePositionPot / tvPoolPence   IDENTICAL in EN, SC, KR, FR — every country
+  tier 1   £100,000,000 / £100,000,000 / £300,000,000
+  tier 8   £5,000,000   / £2,000,000   / £1,200,000
+
+economyTierBaseline.turnoverPence              COUNTRY-SCALED
+  EN tier 8  £215,000        SC tier 8  £107,500   (×0.5)
+```
+
+**One half of the economy carries a country factor and the other half does not.** That is not a
+typo in one row — it is two authoring systems that were never reconciled.
+
+### Why it has never been caught
+
+**The gate's entire job is `modelled income ÷ authored turnover`, and it has only ever been pointed
+at England.** A6 established that **no Scottish COVERAGE figure has ever existed** — the harness
+refuses a country it has no resolved config for, and all three configs on this machine are
+England's. **So the one instrument that measures this has never measured the country the owner
+tests on.**
+
+### What it does to the wage scale
+
+```
+authored turnover (SC t8)     £107,500
+modelled season income        £1,419,946        COVERAGE 1320.9%
+anchored ÷ authored scale     795%
+```
+
+The wage scale derives from turnover. **Income-anchored wages then scale pay to what the club
+actually earns — so anchoring silently repairs the calibration at runtime.** A10 corrected the
+authored scale this afternoon and **anchoring overrides it for every real club.**
+
+🔴 **The deepest version of this:** the economy has been calibrated against a number that does not
+describe the game, and **income-anchoring has been hiding that for as long as it has been on.** The
+game plays acceptably; the calibration beneath it is meaningless. That is why the wage gap looked
+like a wage problem for months.
+
+### The three layers, in order
+
+1. **The projection is correct.** The club really will earn ~£1.42M. Nothing on that screen is wrong.
+2. **The authored turnover is wrong** — by 13× in Scotland, and by an unmeasured amount in England.
+3. **The cause is structural** — payouts uncountry-scaled, turnover country-scaled — **not a bad row.**
+
+### What follows, and what does not
+
+⚠️ **Do not re-author anything yet.** This is a calibration finding and the owner's standing rule is
+correctness first. But it reframes two queued items:
+
+- **The turnover review** is no longer "are the numbers right" but **"should payouts carry the
+  country factor, or should turnover drop it?"** — a design question with one correct answer per
+  country, not a table of tuned figures.
+- **Capturing a Scottish game-config** (A6's §7d, already flagged) stops being a convenience and
+  becomes **the prerequisite for measuring any of this.** Until the gate can read Scotland, the
+  country the owner tests on is unmeasured.
+
+⚠️ **And it raises a question about England that nobody has asked:** England's COVERAGE reads ~97%
+after R2, with a £5,000,000 tier-8 prize against £215,000 of authored turnover. **Either the gate's
+modelled income does not count prize money the way the device does, or the two disagree there
+too.** **That is checkable and should be checked before any re-authoring.**
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
