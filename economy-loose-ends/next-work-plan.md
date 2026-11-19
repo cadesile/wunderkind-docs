@@ -3641,6 +3641,85 @@ after R2, with a £5,000,000 tier-8 prize against £215,000 of authored turnover
 modelled income does not count prize money the way the device does, or the two disagree there
 too.** **That is checkable and should be checked before any re-authoring.**
 
+## 🟩 OWNER FRAMING (2026-11-19) — the ladder's DEPTH is a country property, and the economy cannot express it
+
+> *"Scotland is an example of a country that needs a smaller ladder as there are fewer large
+> population cities. This is expected plan for the system. Giving us the potential to have tiers
+> even larger than 10 for countries like USA. But the economy doesn't currently know how to scale
+> the finances for smaller countries."*
+
+**This supersedes "Scotland's turnover is wrong" as the frame.** It is not a bad row; the model has
+no way to say what the owner wants to say.
+
+### 🟢 What already exists — more than expected
+
+**Per-country ladder depth is real.** `EconomyScaleResolver::tierCountFor($country)` reads
+`CountryProfile::getLeagueTierCount()`, and `resolve()` clamps to it:
+
+```php
+$effectiveTier = max(1, min(min($tierCount, self::MAX_TIERS), $tier));
+```
+
+Its own docblock anticipates this exactly — *"Asking a 4-tier country for tier 7 is a caller bug"*
+— and elsewhere refers to *"a shallow country at a low factor"*. **Scotland was in fact generated
+with 4 tiers as recently as 2026-11-15** (world exports read `SC [18,18,18,17,0,0,0,0]`), so the
+shape has been used.
+
+### 🔴 THREE THINGS THAT BLOCK IT
+
+**1. `MAX_TIERS = 8` is a hard cap.** USA at 12 tiers is blocked by one constant — tiers 9–12 would
+all clamp onto row 8 and four divisions would share one set of economics.
+
+**2. Truncation leaves a shallow country's bottom division far too rich.** The ladder is England's
+eight rows scaled by a single factor. A 4-tier Scotland taking rows 1–4:
+
+| | authored turnover |
+|---|---|
+| 4-tier Scotland's **bottom** division (row 4 × 0.5) | **£10,350,000** |
+| today's 8-tier Scotland bottom (row 8 × 0.5) | £107,500 |
+
+**A 4-tier country's lowest division would be authored at 96× what it is now.** The ladder must
+**compress**, not truncate — and nothing today can express that.
+
+**3. 🔴 A single multiplier moves the FLOOR as well as the CEILING, and that is the deeper error.**
+
+```
+England   £331,000,000 → £215,000     1540:1 over 7 rungs
+Scotland  = England × 0.5, every rung
+```
+
+**A semi-professional club in Scotland does not cost half what a semi-professional club in England
+costs.** Pitch upkeep, travel, part-time wages are roughly the same money. What differs is the
+**ceiling** — the Scottish top flight is a fraction of the Premier League — **not the floor.**
+
+**So the country factor should taper: strong at the top, weak or absent at the bottom.** One scalar
+cannot say that, and today's £107,500 bottom tier is the floor having been dragged down with the
+ceiling.
+
+### 🔴 And payouts carry no country factor at all
+
+`prizeMoney`, `leaguePositionPot` and `tvPoolPence` live on **league rows**, authored identically in
+all 25 countries (£5,000,000 at every tier 8). **They are not in `GameConfig` or `StarterConfig` at
+all**, so there is no ladder for them to scale with. That is the 46× mismatch already recorded —
+**and under this framing it is the same defect, not a separate one.**
+
+### What the model needs to express
+
+Three independent country properties, where today there is one scalar and a fixed eight rows:
+
+| | | today |
+|---|---|---|
+| **depth** | how many tiers | ✅ `leagueTierCount`, capped at 8 |
+| **ceiling** | what the top tier is worth | ⚠️ conflated into `countryFactorBp` |
+| **shape** | how value decays to the floor | 🔴 England's decay, truncated |
+
+**And payouts derived from the same three**, rather than authored flat per league.
+
+⚠️ **This is a design task, not a calibration one**, and it is larger than anything currently
+queued. **It belongs after the correctness boundary** — but it reframes the turnover review from
+*"tune these numbers"* to *"give the model the three knobs it needs"*, which is a different and
+better question.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
