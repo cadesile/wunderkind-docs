@@ -3329,6 +3329,27 @@ tier reliably:
 overcome a 4,000,000-person plot at tier 3 would flatten the top of the pyramid to nothing. **The
 noise is in the catchments, not the shares.**
 
+## 🟩 DECIDED (owner, 2026-11-19) — the noisy pyramid is ACCEPTED
+
+**A big-city tier-6 club outdrawing a small-town tier-2 club is accepted as realistic**, and plot
+assignment is **not** being changed to grade reliably by tier.
+
+**Why it holds:** support is now noisy, but **income still grades properly** — TV, prize money and
+sponsor bands are all authored per tier and untouched by this. A well-supported low-tier club is
+rich in *gate and merchandise*, not in *distribution*, which is how real football behaves.
+
+⚠️ **Standing consequence for anyone who meets this later:** a non-monotonic fan-base ladder is
+**the expected state, not a defect.** Do not "fix" it by steepening `fanBaseSharePercent` — a ladder
+steep enough to overcome a 4,000,000-person plot at tier 3 would flatten the top of the pyramid to
+nothing. **The variance is in the catchments by design.**
+
+⚠️ **Two things to watch on the first device pass**, both app-side and both already flagged by A14:
+- **`PeerBenchmarkService`** judges a club against its tier's **mean** fan count. With noisy
+  catchments a small-catchment club trails that mean **permanently**, so its DOF is judged below
+  standard at every review. **This decision makes that certain rather than likely.**
+- **Scotland is demand-constrained almost everywhere** — only 5 clubs in the country clear 42,500.
+  That is the harshest instance of the accepted behaviour and it is the country being tested on.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
