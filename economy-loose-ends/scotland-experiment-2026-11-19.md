@@ -222,3 +222,79 @@ and the largest, and it is the only one with no note against it.**
 `SyncService.php:461` serves `seasonTicketHolderPercent => 60` in its fallback branch while the
 live config serves **70** (device CHECKS). Same fallback branch the GameConfig checklist already
 flags as the easy one to miss. Low impact, one line.
+
+---
+
+# Staff cost 2.7x a player of the same ability, against an authored 1.2x
+
+**Owner, 2026-11-19:** *"Looks like staff wages aren't scaling… Staff v players is massive."*
+Moffat Vale, SC tier 4: **12 coaches + 1 scout = GBP 62,373/wk** against **20 players =
+GBP 17,000/wk**. Staff are **3.7x the squad**.
+
+## The authored multipliers say staff should cost roughly the SAME as a player
+
+`GameConfig.php:2862-2865`, `wageMultiplierTiers`:
+
+| maxAbility | playerMultiplier | staffMultiplier | staff / player |
+|---|---|---|---|
+| 25 | 0.5 | 0.6 | **1.2** |
+| 50 | 1.0 | 1.0 | **1.0** |
+| 75 | 2.5 | 2.0 | **0.8** |
+| null | 5.0 | 4.0 | **0.8** |
+
+`tierStaffWeeklyWagePence` (`src/economy/packWages.ts:191-212`) prices a staff member as
+`weeklyWageRange(ability).expectedPence x (staffMultiplier / playerMultiplier)` — so at every
+ability in the game, a staff member is authored to cost **0.8x to 1.2x** an equal-ability
+player.
+
+## The device shows 2.7x
+
+Read off the staff list against the debug pane's own player ladder, same club, same tier:
+
+| ability | staff, actual | player, authored | ratio |
+|---|---|---|---|
+| 15 | GBP 2,366 | GBP 807 | **2.93** |
+| 19 | GBP 4,143 | GBP 1,457 | **2.84** |
+| 24 | GBP 7,048 | ~GBP 2,610 | **2.70** |
+| 27 | GBP 9,100 | GBP 3,507 | **2.59** |
+
+**Consistently ~2.3x higher than the 1.2 the config authors.**
+
+## What is ruled out, and what is not
+
+🔴 **Not a stale baked salary.** `resolveWorldStaffWagePence` (`src/utils/staffWages.ts:110-114`)
+takes `staff.weeklySalary` at rung 3, AHEAD of the tier rung — but
+`WorldPackSnapshotBuilder::buildStaffSnapshot()` (`:241-260`) carries no `weeklySalary`, and
+`StarterPackService:157` serialises the founder's staff through that same builder. Rung 3 is
+empty on both paths.
+
+🔴 **Not a missing `economy` argument.** Both init sites pass it
+(`useInitFlow.ts:350`, `:381`), so the tier rung is reachable.
+
+⚠️ **NOT PINNED: which rung actually produces GBP 7,048.** At the authored 1.2 ratio an
+ability-24 staff member should cost ~GBP 3,132. The observed figure is 2.25x that, and static
+reading did not settle where it comes from. **A device reading of one staff member's resolved
+salary against `tierStaffWeeklyWagePence` for the same ability would settle it in one step.**
+
+## The structural half, which is separate and does not need the above
+
+`StarterPackService.php:151-152`:
+
+```php
+// Same $abilityRange as the squad above — a founder's staff are at the founder's level.
+$staff = $this->clubGenerator->generateStaff($squadConf, $nationality, $country, $tier, $abilityRange);
+```
+
+**The founder's staff are drawn from the squad's ability band — but that band is the squad's
+POTENTIAL.** A player drawn at potential 24 has a CURRENT ability far below it (the debug pane's
+own note: *"25% of potential at 19, 40-59% at 24, 90% at 31"*), and is priced on current ability.
+**A staff member has no current/potential split** — ability 24 is ability 24, priced at face
+value, from day one.
+
+🔴 **So even at a correct 1.2 ratio the staff bill would still dwarf a young squad's**, because
+the two sides of the comparison are not the same quantity. That is a design question, not a
+bug: either staff need a maturity curve, or the founder's staff should be drawn against the
+squad's EXPECTED CURRENT ability rather than its potential band.
+
+⚠️ **And the headcount compounds both:** 13 staff to 20 players at the bottom tier of the
+smallest ladder in the game.
