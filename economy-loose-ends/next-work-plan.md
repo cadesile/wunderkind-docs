@@ -3432,6 +3432,23 @@ inferring it.
 players). **One sample, a different world, and the player count moved — not evidence of a
 regression.** Worth a second reading before anyone investigates.
 
+## A19 — the division-size check passes on seven of its eight real failures (app)
+
+**Briefed: `a19-checks-false-pass-brief.md`. Queued behind A17.**
+
+Three pieces, all app-side CHECKS work:
+
+1. 🔴 **The false pass.** `slots` unknown is scored as OK, so the check flags 1 of 8 real
+   failures. Needs a third state (UNKNOWN, not scored as a pass) **and** a divisor derived from
+   `pool / tvDeal`, which needs no authored `slots` and answers the question at every tier.
+2. **The FANBASE line** A18 specified and could not add from the backend — today there is no way to
+   tell on device whether `fanCount` came from the catchment or the fallback band.
+3. 🟡 **`REFERENCE_FAN_BASE_SHARE_PERCENT` is the rejected 5-10% variant** and fills any rung the
+   published ladder omits. Latent, since the backend publishes all eight.
+
+⚠️ **Not in scope: Scotland 12-vs-14 itself.** The check exists to make it visible; fixing it is the
+owner's decision.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
