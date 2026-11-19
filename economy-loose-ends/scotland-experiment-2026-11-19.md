@@ -500,3 +500,52 @@ RANGE, which is a different shape by construction.
 becomes how they reached the device without going through the pack snapshot. **Still worth
 reading the multipliers** — a ratio near 2.7 with no band step would overturn all of the above
 in one look.
+
+## 🔴 CONFIRMED — the live multipliers say staff should be CHEAPER than players
+
+Owner read the admin, 2026-11-19. **The live `wageMultiplierTiers` is nothing like the PHP
+defaults** — different boundaries and different values — which is exactly why the earlier
+correction was needed. It makes the case stronger, not weaker.
+
+| Tier | Max Ability (exclusive) | Player x | Staff x | staff/player |
+|---|---|---|---|---|
+| 1 | 15 | 4 | 2 | **0.500** |
+| 2 | 25 | 6 | 4 | **0.667** |
+| 3 | 40 | 15 | 8 | **0.533** |
+| 4 | 60 | 30 | 12 | **0.400** |
+
+`RAND MIN` 2000, `RAND MAX` 2800.
+
+**Every row says a staff member costs LESS than a player of the same ability** — 0.40x to
+0.67x. The device pays **2.6-2.9x**.
+
+| ability | band | cfg ratio | player (authored) | expected | actual | over by |
+|---|---|---|---|---|---|---|
+| 15 | <25 | 0.667 | GBP 807 | GBP 538 | **GBP 2,366** | **4.40x** |
+| 19 | <25 | 0.667 | GBP 1,457 | GBP 971 | **GBP 4,143** | **4.27x** |
+| 24 | <25 | 0.667 | GBP 2,613 | GBP 1,742 | **GBP 7,048** | **4.05x** |
+| 27 | <40 | 0.533 | GBP 3,507 | GBP 1,870 | **GBP 9,100** | **4.87x** |
+
+## The band structure is invisible in the data, which is the proof
+
+The over-factor sits at **4.05-4.40x across the whole `<25` band** and jumps to **4.87x** the
+moment ability crosses into `<40`. That jump is the config's own 20% ratio step
+(0.667 -> 0.533) **failing to appear in the wage** — if the multiplier were being applied, the
+over-factor would be flat across the boundary and the WAGE would step down. It is the other way
+round.
+
+🔴 **So `tierStaffWeeklyWagePence` is not what prices these staff.** This is no longer an
+inference from curve shape (recorded above, and it held): it is visible in the band arithmetic.
+
+## Status
+
+**A confirmed defect, not a tuning value.** Staff are paid roughly **4x what the live
+configuration directs**, and the configuration's own ability bands have no effect on what they
+are paid. ⚠️ **Where the figure DOES come from is still unknown** — all five rungs of
+`resolveWorldStaffWagePence` were accounted for and none produces it.
+
+⚠️ **One more thing the admin screen shows that is worth recording separately:** its formula is
+`contractValue = currentAbility x rand(min,max) x playerMultiplier` — the LEGACY generation
+formula. So `wageMultiplierTiers` is doing double duty: legacy `contractValue` generation on the
+backend, and the staff/player ratio inside the turnover model on the device. One table, two
+models, and the device reports `wage model: turnover`.
