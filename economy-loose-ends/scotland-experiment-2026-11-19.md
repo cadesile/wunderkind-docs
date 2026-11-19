@@ -171,3 +171,54 @@ objection recorded against doing it for the prize.
 
 **The 172% residual is a separate, smaller question** and is a backend authoring one: even
 without the pot, the engine pays ~1.7x the authored tier turnover.
+
+---
+
+# The player picks the starting balance against a hardcoded wage bill
+
+**Owner, 2026-11-19:** *"During the new-game-save process the user can select starting
+balance."* So the GBP 30m is a choice, not a defect — **but the figures that choice is made
+against are not all real.**
+
+## `starterSquadWagesPence` is never published
+
+`src/components/new-game-setup/economy.ts:63`:
+
+```ts
+starterSquadWagesPence: 1_200_000,   // GBP 12,000/wk, flat
+```
+
+`economyOf()` (`:78-83`) lays published `starter-config.economy` keys over the stand-ins — so a
+published value WOULD win. **The backend publishes no such key**: `starterSquadWagesPence`
+appears nowhere in `wunderkind-backend/src/`. Checked against `seasonTicketHolderPercent`,
+which does appear in `GameConfigController:223` and `SyncService:369`, to confirm the search
+was looking in the right places.
+
+**So FUND YOUR CLUB models every starter squad in every country at every tier as
+GBP 12,000/wk.**
+
+## What it costs
+
+`weeklyRows` (`:199`) feeds `playerWages` straight from it, and `fundingFloorWeeks: 13` turns
+those rows into the minimum funding the player is advised to put in.
+
+| | |
+|---|---|
+| modelled, SC tier 4 | GBP 12,000/wk |
+| actual, Moffat Vale | **GBP 17,000/wk** (device, PLAYER WAGES) |
+| actual, SC tier 1 | GBP 14.0m season / 46 = **GBP 304,000/wk** |
+
+**~40% understated at the tier the save actually starts in, and ~25x understated a few rungs
+up** — and a country at a 1.00 factor rather than Scotland's 0.10 is another order again. The
+number cannot be right across 25 countries, because it does not vary.
+
+⚠️ **The screen is already careful about this class of error.** `homeGames` and
+`ticketPricePence` each carry a long comment about a stand-in that mismodelled *"the one screen
+where the player commits real money"* — 53% and 40% respectively. **This is the third instance
+and the largest, and it is the only one with no note against it.**
+
+## Also noticed in passing
+
+`SyncService.php:461` serves `seasonTicketHolderPercent => 60` in its fallback branch while the
+live config serves **70** (device CHECKS). Same fallback branch the GameConfig checklist already
+flags as the easy one to miss. Low impact, one line.
