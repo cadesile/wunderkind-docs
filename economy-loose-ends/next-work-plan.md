@@ -3350,6 +3350,88 @@ nothing. **The variance is in the catchments by design.**
 - **Scotland is demand-constrained almost everywhere** — only 5 clubs in the country clear 42,500.
   That is the harshest instance of the accepted behaviour and it is the country being tested on.
 
+## 🔴 DEVICE PASS 2026-11-19 20:26 — the new check reports OK on 7 of its 8 real failures
+
+Fresh Scottish save, OTA published 19:57, pack version 11, backend migration applied.
+
+### 🔴 THE FINDING — "slots —" is treated as OK, and it means *unknown*
+
+The new DIVISION SIZE check flagged **SC t8 only**:
+
+```
+SC t1  slots — · clubs 12 · home games 11 · TV £21.4m   OK
+...
+SC t8  slots 14 · clubs 12 · home games 11 · TV £86k = pool/14   DISAGREE
+```
+
+**Every one of the eight tiers is dividing by 14 against 12 clubs.** Verified against the authored
+pools:
+
+| tier | shown | pool ÷ 14 | pool ÷ 12 | divisor in use |
+|---|---|---|---|---|
+| 1 | £21,400,000 | £21,428,571 | £25,000,000 | **14** |
+| 4 | £3,600,000 | £3,571,429 | £4,166,667 | **14** |
+| 8 | £86,000 | £85,714 | £100,000 | **14** |
+
+**The full £86,600,000.36 per season is still unpaid, across all eight tiers.** The check catches
+**one of eight** because the app only holds an authored `slots` for the AMP tier; elsewhere it
+reads `—` and the check scores that as agreement.
+
+⚠️ **This is a false PASS in the one instrument built to prevent exactly this defect**, and it is
+more dangerous than having no check: a reader sees seven OKs and concludes seven tiers are sound.
+
+**The fix is a third state, not a tighter comparison.** `slots` unknown is **UNKNOWN**, not OK —
+and it should say which divisor the published `tvDeal` implies, since that is derivable without
+`slots` at all: `pool ÷ tvDeal` gives 14 at every tier here, against 12 clubs, with no authored
+value needed. ⚠️ **Queued as A19.** The same trap applies to any check comparing against a value
+the device may not hold.
+
+### 🟢 A10's wage scale landed, and the coverage check A10 specified is live
+
+```
+Resolved scale (AMP, tier 8): 464,260,823 micropence   (was 116,651,541 — ×3.98)
+Tier 8 mean weekly wage:      8,088 pence              (was 1,899 — ×4.26)
+```
+
+**Coverage against the authored budget, which was the whole point:**
+
+| tier | coverage |
+|---|---|
+| 1–5 | **97.3% – 100.2%** |
+| 6 | 111.2% |
+| 7 | 109.8% |
+| 8 | **132.1%** (WARN) |
+
+**That is 28–35% before this change.** The tier 6–8 overshoot is the band-narrowness effect A10
+predicted (109/114/124% for England) and the owner has already accepted as the R1 ability-band
+question — **not a new defect.**
+
+⚠️ **The PM's estimate of "~£3 for a £1 player, mean ~4,500p" was low** — the real figures are ~£5
+and 8,088p. The estimate came from the ×2.4 in the A10 brief; the measured scale moved ×3.98.
+
+### 🟢 A12 confirmed live, with the path visible
+
+```
+NPC home games (tier 8): participants 12 · counted 11 · derived 11 · using 11 (COUNTED from fixtures)
+```
+
+**Counted and derived agree, and the counted path is the one in use** — exactly what A12 designed
+and what its brief asked to be made visible.
+
+### ⚠️ No FANBASE line — the share path is unverifiable on device
+
+A18 specified one (its §3.3) and could not add it from the backend. **So we cannot tell from this
+report whether `fanCount` is coming from the catchment or from the fallback band.** ⚠️ **It belongs
+with A19** — both are app-side CHECKS work and both are about making a path visible rather than
+inferring it.
+
+### ⚠️ Boot and write costs rose — watch, do not chase
+
+`seeds_done` 1,665ms → **3,091ms**; `players.upsertWithClubs` avg 940ms → **1,175ms** (worst
+1,852ms); `players.upsertWithForeign` **1,274ms** (WARN). Squad counts also rose (2,124 → 2,159
+players). **One sample, a different world, and the player count moved — not evidence of a
+regression.** Worth a second reading before anyone investigates.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
