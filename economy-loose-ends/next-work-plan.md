@@ -3720,6 +3720,70 @@ queued. **It belongs after the correctness boundary** — but it reframes the tu
 *"tune these numbers"* to *"give the model the three knobs it needs"*, which is a different and
 better question.
 
+## 🟩 THE KNOB EXISTS — and checking it splits one problem into two
+
+> *"The big thing that I think might need to scale is merely the pyramid economy %. Scotland isn't
+> 50% the size of England (in terms of size but mainly economy)."*
+
+### 🟢 `CountryProfile::economyFactorBp` is exactly that knob, and it is live
+
+```php
+// EconomyScaleResolver::countryFactorBp()
+$own = $this->countryProfileRepository->findByCode($code)?->getEconomyFactorBp() ?? self::BP;
+return intdiv($own * self::BP, $baseline);          // normalised against the baseline country
+
+// and then
+$turnoverPence = intdiv($baselineTurnover * $countryFactorBp, self::BP);
+```
+
+**One per-country field, applied flat across the whole turnover ladder.** Scotland currently
+resolves to **0.5 of England** — and the owner is right that this is far too generous. Scotland's
+football economy is nearer a tenth of England's than a half. ⚠️ **It is one field, not a model
+change — so this part is cheaper than my previous framing implied.**
+
+### 🔴 BUT IT WILL NOT FIX COVERAGE — and that is the useful finding
+
+**Payouts are 23× turnover in ENGLAND too**, before any country factor is involved:
+
+| | prize ÷ authored turnover, tier 8 |
+|---|---|
+| **England** | **23.3×** |
+| **Scotland** | **46.5×** |
+
+**Scotland is exactly England × 2 — because turnover carries the country factor and payouts do
+not.** So the 46× decomposes cleanly:
+
+```
+46.5×  =  23.3×  (England's own payout-vs-turnover mismatch)
+            × 2  (the country factor applied to one side only)
+```
+
+**And scaling both sides by a new factor preserves the ratio.** At a 10% Scotland:
+turnover £21,500, prize £500,000 — **still 23.3×.**
+
+### So there are TWO independent problems, not one
+
+| | what it is | fix |
+|---|---|---|
+| **1. The country factor is too generous** | Scotland at 0.5 of England | **one field** — `economyFactorBp`. ⚠️ And payouts must carry it too, or lowering it makes the ratio *worse* |
+| **2. Payouts are ~23× turnover even in England** | a within-country authoring mismatch that predates all of this | **the turnover review** — and it is the one that moves COVERAGE |
+
+⚠️ **Doing (1) alone, without putting the factor on payouts, takes Scotland from 46× to 233×.**
+Lowering the factor shrinks turnover while prize money stays at £5,000,000. **That is the trap in
+the obvious fix, and it is worth stating before anyone touches the field.**
+
+### What this does to the earlier three-knob framing
+
+**It is less than I claimed.** Depth, ceiling and decay shape are real design questions for a
+future variable-depth pyramid — **but for the problem in front of us, the ceiling knob already
+exists and the decay shape is not implicated.** ⚠️ **The floor concern I raised may also be
+overstated:** a genuinely amateur Scottish bottom-tier club plausibly does turn over ~£20,000, so a
+flat factor may be acceptable after all. **That is for the owner to judge against real football,
+not for me to assert.**
+
+**The order that follows:** put the country factor on payouts, then set the factor, then review the
+payout-to-turnover ratio itself. **Any other order makes a number worse before it makes it better.**
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
