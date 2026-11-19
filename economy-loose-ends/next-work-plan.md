@@ -3852,6 +3852,86 @@ currently reports OK where `slots` is unknown (A19 fixes that).
 output from 20:26 and the debug screens from 20:34 as the baseline — **they cannot be regenerated
 once the clubs are replaced.**
 
+## ✅ A16 CLOSED — the shared row is restored, and the baseline is back to three
+
+**Backend, `development`, `9918839c`, not pushed.** Both `Economy*` polluters now stash
+`economyBaselineTurnoverPence` in `setUp()` and restore it in `tearDown()` — **proved to survive a
+mid-run failure.** Full run **3,233 tests / 3 failures**, the documented baseline, row clean.
+
+⚠️ **One brief premise was wrong: the "before" run showed THREE failures, not four.** The polluter
+had not fired in that particular ordering, so the defect was real but not reproducing at that
+moment — A16 reproduced it deliberately instead. **The record is corrected in its report.**
+
+---
+
+## ✅ A17 CLOSED — and the defect was not the one briefed. It was a fire sale.
+
+**App, `new-game-save`, `def110a8`, not pushed.** 647 suites / 10,787 tests green against a
+worktree-measured 646 / 10,772 baseline; economy gate byte-identical.
+
+### 🔴 THE REAL FINDING — every top-flight club was dumping players at half price
+
+`runSellPlayerAction` discounts a listed player by **25–50% when runway < 4**, 20–35% under 12.
+The copy it used saw **sponsors only** — no investors, no matchday, no TV, no upkeep.
+
+| | old | new |
+|---|---|---|
+| **EN tier 1, all 16 clubs** | **25–50% off** | 5–15% (normal) |
+| EN tier 6, all 16 | 20–35% off | normal |
+| **SC tier 1, all 14 clubs** | **25–50% off** | normal |
+
+**188 of 238 clubs change discount tier.** A tier-1 club was selling its players at up to half
+price **while the brain that listed them read `healthy`** — on a club receiving **£136,000,000 a
+season in TV** that the discount arithmetic could not see.
+
+🟢 **Nobody was looking for this.** It is the behaviour change the task actually bought, and it is
+large.
+
+### 🔴 THE BRAIN'S VERDICT DOES NOT MOVE — zero changes across 460 club-readings
+
+**Because `min(52, balance/deficit)` was already smooth and `npcSolvency` was already amortising
+seasonal money.** Both of the brief's stated defects — the cliff and the lump-blindness — **were
+false, and I wrote both of them.**
+
+### 🔴 `GameLoop:1520` — the answer is NO, and the decision is unchanged
+
+> *"If a smooth measure makes correcting it safe, that is the single most useful sentence in your
+> report."*
+
+**It does nothing to the 16/16 flip figure.** A12's sweep is **identical under both derivations**,
+so the 0→16 jump was never an arithmetic artefact. **A smooth measure cannot help, because the
+measure was already smooth.**
+
+**What produces the 16/16 is narrowness:** a tier-1 balance worth **one week of turnover** leaves a
+four-percent-of-income window between "52 weeks" and `warn`, and the home-game correction is a 7.3%
+income step that clears it in one move. **The levers are the balance, the cap, or banding on margin
+rather than weeks** — the first is calibration (frozen), the other two are the published-config
+constraint. **So line 1520 sits exactly where A12 left it, with the same figures**, and A12's
+deliberate asymmetry still stands in the same safe direction.
+
+### ⚠️ Four clubs read WORSE, and it is a correction
+
+```
+EN  better 124  same 1  WORSE 2    worst: Ashton-under-Lyne Robins (t8) −8w
+SC  better 109  same 0  WORSE 2    worst: Kilwinning Rovers (t7) −1w
+```
+
+**The old copy subtracted the wage bill only; the brain subtracts facility maintenance too.** A
+deep-tier club whose ground eats its revenue reads 8 weeks shorter — **exactly the case
+`npcSolvency`'s own comment was written about.**
+
+### ⚠️ And a fourth copy the brief missed — the PLAYER's own DOF
+
+`ampWeeksRunway` was the same `balance / netOutflow` expression, lump-blind. **The brief named
+three sites and there were four.** All now reach `runwayWeeks` in `src/economy/projection.ts`.
+
+### The lesson, and it is the day's fourth of this kind
+
+**I asserted a cliff, a pessimism and three call sites. All three were wrong**, and the agent
+established it by measuring rather than complying. ⚠️ **A12's measurement was always right; my
+explanation of it was not** — and I propagated that explanation into the plan, a brief, and advice
+to the owner about bundling two decisions together.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
