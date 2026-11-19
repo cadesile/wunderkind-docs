@@ -3994,6 +3994,76 @@ fundStep/BigStep/MegaStep/UltraStep — UI increments, not economy.
 
 **So one real stand-in remains: `starterSquadWagesPence`.** ⚠️ **Queued as A20.**
 
+## 🔴 THE SCOTLAND EXPERIMENT — the economy is not struggling. The save is half-old.
+
+**Setup: factor 0.50 → 0.10 AND 8 tiers → 4, both at once, clubs rebuilt, fresh save.**
+
+### The decisive measurement — three players, one save
+
+| player | RAW | expected on the LIVE scale | actual | ratio |
+|---|---|---|---|---|
+| **Jan de Boer** — tier 1, **NPC club** | 69 | £50,215 | **£45,800** | **0.91×** ✅ |
+| **Gallacher** — tier 4, **the PLAYER's club** | 22 | £2,102 | **£10,000** | **4.76×** 🔴 |
+| **Leitch** — tier 4, **the PLAYER's club** | 10 | £293 | **£1,500** | **5.12×** 🔴 |
+
+**The NPC squad is priced correctly** — 0.91× is inside the ±8% negotiation band. **The player's own
+squad is priced at almost exactly 5× — the size of the factor change.**
+
+### It is not legacy pricing, and the CHECKS tab's label is wrong
+
+The tab reports *"Squad pricing model: LEGACY … regenerate the world pack."* **It is turnover-priced,
+not legacy.** Legacy is linear in ability; the turnover model is `ability^2.5`:
+
+```
+observed wage ratio between the two tier-4 players    6.67
+linear (22/10)                                        2.20   ← legacy would give this
+(22/10)^2.5                                           7.18   ← the turnover curve gives this
+```
+
+**The curve matches.** ⚠️ **So the check's heuristic mislabels a stale-config squad as a legacy one,
+and sends the reader to regenerate the pack — which is not the fix.** Worth correcting with A19.
+
+### It is not income anchoring either
+
+The club's own debug reads `anchored ÷ authored 1207%` — **but the table beneath it shows the
+bounded premium is only ~1.25×** (ability 23: £2,349 authored, £2,936 anchored). **A 4.8×
+observation cannot come from a 1.25× premium.**
+
+### What it is
+
+**The implied scale is 440–474 million microPence against a live authored 92,573,014 — and the
+pre-change authored scale was exactly 462,865,070.** The player's squad was priced under the **old**
+config (8 tiers, factor 0.50) in a save created **after** the change, while the NPC squads in the
+same save were priced under the **new** one.
+
+🔴 **That is a config-staleness bug on the starter-squad pricing path**, and it will bite **any**
+time a dial moves — not just this experiment. `StarterPackService:103` is explicit that the device
+prices that squad (*"so the device prices this squad from its division's published wage"*), so the
+two paths are reading different configs within one save.
+
+### So the experiment's verdict is an artefact
+
+**Coverage 442–516% is a pre-change squad under a post-change budget.** The wage bill never fell
+because those wages were set before the change; only the budget moved. ⚠️ **Nothing here shows the
+economy failing at a 10% factor — it shows the save was never fully re-priced.**
+
+### What it DOES confirm
+
+🟢 **The prediction held, for the right reason.** I predicted *"the authored scale drops ~5×, actual
+wages barely move."* They did not move **at all** on the player's squad. ⚠️ **But I attributed it to
+income anchoring, and the cause is staleness** — the right observation from the wrong mechanism.
+
+🟢 **And the tier-truncation warning was exact.** Authored tier-4 turnover is now **£2,070,000**
+against £107,500 at the 8-tier bottom — **19× richer**, as predicted, because the ladder truncates.
+The bottom division now has tier-4 ability bands (15–35) and tier-4 fan shares on a fifth of the
+money.
+
+### What to do before judging anything
+
+**Re-run the comparison with one change at a time**, and confirm the player's squad re-prices.
+⚠️ **The single most useful check: does a brand-new save, created now, still price the AMP squad at
+5×?** If yes it is a cached config; if no, it was a one-off of changing the dial mid-session.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
