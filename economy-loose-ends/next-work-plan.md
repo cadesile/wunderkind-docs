@@ -3072,6 +3072,66 @@ tier-1 club goes from £29.7M to roughly £1.1M–£2.0M a season. **That is the
 and it is now a known price rather than a surprise.** The owner has already said levels will be
 tuned afterwards; sponsors, TV and shirt price are the dials for it.
 
+## ⚠️ CORRECTION — "median catchment is flat across tiers" was a STATISTICAL ARTEFACT
+
+**The owner is right: NPC club generation already ties plot size to tier.** My previous section used
+the **median** on a heavily skewed distribution and concluded there was no correlation. There is a
+strong one, visible in the **mean** and in the count of genuine cities:
+
+| tier | n | **mean** | median | max | clubs > 200k |
+|---|---|---|---|---|---|
+| 1 | 16 | **797,612** | 70,500 | 8,982,000 | **5 / 16** |
+| 2 | 16 | **687,948** | 58,600 | 8,982,000 | 2 / 16 |
+| 3 | 16 | 102,477 | 67,750 | 685,000 | 1 / 16 |
+| 4 | 16 | 148,106 | 69,600 | 1,149,000 | 2 / 16 |
+| 5 | 16 | 58,846 | 51,000 | 258,000 | 1 / 16 |
+| 6 | 16 | 47,518 | 41,138 | 164,000 | 0 / 16 |
+| 7 | 16 | 46,427 | 40,486 | 147,373 | 0 / 16 |
+| 8 | 15 | 42,070 | 42,000 | 91,000 | 0 / 15 |
+
+**Mean catchment falls 19× from tier 1 to tier 8, and every club over 200,000 sits in tiers 1–5.**
+The medians are flat because most clubs at every tier are in modest places — **the cities are the
+tail, and the tail is what the top tiers have.**
+
+⚠️ **The lesson, and it is the third source-of-truth error today: a median answers "what is typical",
+not "is there a relationship". On a skewed distribution it will hide exactly the correlation you are
+testing for.**
+
+⚠️ **Also a vocabulary correction from the owner: a plot is not a "town".** Plots are towns *and*
+cities — Manchester is a plot. Calling them towns is what made a 70,500 median look like the whole
+story.
+
+## 🟢 So "we keep today's numbers essentially" is TRUE — for the clubs that justify them
+
+At a **65%** share, per club rather than per tier:
+
+| tier | today (uniform band) | smallest club | mean club | largest club |
+|---|---|---|---|---|
+| 1 | 700k – 1,500k | **11,050** | 518,448 | **5,838,300** |
+| 2 | 500k – 700k | 14,300 | 447,166 | 5,838,300 |
+| 3 | 350k – 600k | 8,125 | 66,610 | 445,250 |
+| 4 | 250k – 400k | 13,650 | 96,269 | 746,850 |
+| 5 | 140k – 200k | 10,140 | 38,250 | 167,700 |
+| 8 | 10k – 20k | 10,140 | 27,345 | 59,150 |
+
+**Tier 1's mean lands at 518,448 against today's 700k–1,500k — the same order of magnitude.** The
+big-city clubs land *near or above* today's band; the small-town ones collapse from 700,000 to
+11,050.
+
+**That is not a side effect. It is the entire point.** Today a tier-1 club in a place of 17,000 has
+the same 700,000 fans as one in a city of nearly nine million. The ladder is what tells them apart.
+
+### What this changes about the decision
+
+- **The level is broadly preserved where it was ever justified.** My earlier claim that top-tier
+  shirt income collapses ~93% was computed from the median and is **wrong for the clubs that earn
+  it** — a mean tier-1 club keeps roughly £14M of the £29.7M, and a big-city one *gains*.
+- **The 42,500 demand ceiling now does real work across the pyramid**: mean tier-5 (38,250) and
+  tier-8 (27,345) clubs sit below it and are genuinely demand-limited, while tier-1 cities are
+  capacity-limited. **That is the pyramid the owner described, falling out of one ladder.**
+- **60–70% looks well-judged on this evidence**, not generous — it was 100% that needed arguing
+  against, and only because of a statistic I misread.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
