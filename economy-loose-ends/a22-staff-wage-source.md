@@ -183,3 +183,46 @@ move this number).
 4. ⚠️ **Flag immediately if the gate also blocks anything the player cannot recover from** — e.g.
    if it prevents re-signing staff while also allowing them to expire, a club could be unable to
    field required staff with no route back.
+
+## ⚠️ OWNER CORRECTION — two different pots, and the gate is blocking on the wrong question
+
+**Owner, 2026-11-19:** *"The staff contract is tied to dof budget so there should be ample
+budget."*
+
+Correct, and it splits the problem in two:
+
+| | pot | amount |
+|---|---|---|
+| **sign-on fee** GBP 15,878 | DOF — *"transfer fees and agent commission, and the signing-on fees for new contracts and renewals"* | **GBP 12,110,733** |
+| recurring salary | the 25% staff share of the wage budget | GBP 60,776/wk |
+
+**The DOF pot is 762x the fee. It is not what refused the renewal.** The block is the recurring
+wage gate, which is a different pot — so the analysis above is about the right check, but the
+owner's point stands that nothing on that screen tells the player which budget stopped them.
+
+## 🔴 AND THE LIKELY REAL DEFECT: a RENEWAL is not "another salary"
+
+**Babacar Sonko is already on the staff.** He is in the staff list at **GBP 7,709/wk, 2YR**,
+ability 25 — one of the 13 already inside the GBP 62,373/wk bill the gate is testing against.
+
+**Renewing him adds nothing.** The wage bill after renewal is the bill before renewal, give or
+take the delta between old and new terms. But the gate reads:
+
+> *"Over the staff wage budget — this club cannot carry another salary."*
+
+🔴 **It is treating a renewal as a new hire** — testing `currentBill + newSalary` against the
+share, when the club is already paying `currentBill` *including this man*. Refusing the renewal
+does not reduce the bill by a penny; it just loses the coach.
+
+⚠️ **If that is what it does, it is a defect independent of everything else in this brief** —
+independent of the 4x wage inflation, of the sponsor-pot interaction, and of the staff share
+being too small. It would fire on a correctly-priced squad too, on any club at or near its
+staff share, and the player has no way to act on it: the only route back under the share is to
+let staff expire.
+
+**This is now the first thing to check**, ahead of the three-way interaction above:
+
+1. Does the gate subtract the incumbent's CURRENT salary before testing a renewal, or not?
+2. If not, is the same mistake made for player contract renewals, or only staff?
+3. What does the gate compare when the delta is NEGATIVE — a renewal on lower terms should
+   always be allowed, and may not be.
