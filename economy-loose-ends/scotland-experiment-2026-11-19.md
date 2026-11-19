@@ -607,3 +607,53 @@ paid.
    silent. **Smallest change that actually ends the class.**
 3. **Retire `slots`** and derive everywhere, per the owner's ruling — which accepts reason 3's
    consequence: TV money moves under shipped builds when an operator adds clubs.
+
+## ⚠️ TWO CORRECTIONS, from the world export (2026-11-19, 200 leagues / 3,175 clubs)
+
+**1. "It IS dynamic when blank — SC tiers 1-3 prove it" was WRONG.**
+**0 of 200 leagues have `slots = 0`.** Every league in the game carries an authored value.
+SC t1-t3 read `slots —` on the device because **the app is only sent `slots` for the AMP's own
+league** (`economyDiagnostics.ts:265-273` says exactly this) — a missing figure on screen, not
+an unset field. Nothing in the live data demonstrates the derive path at all.
+
+**2. "SC t4's 14 was typed when that tier genuinely held 14 clubs" was WRONG.**
+`slots` is **14 at every Scottish tier**, and Scotland has **12 rows at t1-t7 and 11 at t8**. It
+was never right for any tier. Not stale — never correct.
+
+## What retiring `slots` actually does, measured
+
+`sizeOf()`'s derivation is NPC rows, plus one at the country's bottom division (the reserved
+player slot).
+
+| | rows t1-t(n-1) | rows bottom | authored `slots` | derived | change |
+|---|---|---|---|---|---|
+| **EN** | 16 | 15 | 16 | **16** | 🟢 **none** |
+| **SC** | 12 | 11 | 14 | **12** | 🔴 **14 -> 12 at EVERY tier** |
+
+🟢 **England is unaffected.** The derivation reproduces the authored 16 exactly, at all eight
+tiers, including the bottom tier's 15 + 1. The thing `LeagueSizeResolver`'s docblock warns about
+does not bite in England, because England's authored figure already equals its real size.
+
+🔴 **Scotland is wrong at every tier, not just t4.** Every Scottish division pays `pool/14` to
+12 clubs: each club receives **16.7% less** than the pool intends, and **2/14 of every Scottish
+TV pool is paid to nobody**. Retiring `slots` fixes all four live tiers at once.
+
+**So within the owner's England-and-Scotland scope, retiring `slots` changes exactly one thing:
+Scotland starts being paid correctly.** The backwards-compatibility objection has no victim
+here.
+
+⚠️ **It is NOT a no-op outside that scope** — the distribution across all 200 leagues is
+{10, 14, 16, 18, 20}, and other countries have not been checked against their rows. Out of
+scope, but it should not be discovered later as a surprise.
+
+## The prohibition that has to be rewritten, not ignored
+
+`EconomyWageTableCommand.php:408-416` states the opposite instruction in terms:
+
+> *"`league.slots` is authored on purpose … and **it must never be 'fixed' by making `sizeOf()`
+> prefer the row count**."*
+
+**The owner has overridden this deliberately** (ruling 2026-11-19: *"Retire slots"*, following
+*"there should be no wiring around the amount of clubs, the finances should be dynamic"*). The
+comment must be rewritten to record the decision and why, **not** left contradicting the code —
+this file is the one that explains the check to whoever next reads a disagreement.
