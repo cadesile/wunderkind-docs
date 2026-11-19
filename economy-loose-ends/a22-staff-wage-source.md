@@ -118,3 +118,68 @@ The design question of staff being drawn from the squad's POTENTIAL band
 (`StarterPackService.php:151`) while players are priced on current ability; the residual ~172%
 income coverage; SC tier 4's `slots 14` against 12 clubs. All three recorded and owned by the
 PM session.
+
+---
+
+# ADDED TO SCOPE — review the staff affordability gate (owner, 2026-11-19)
+
+Device, Moffat Vale, renewing coach Babacar Sonko (ability 25): sign-on fee GBP 15,878,
+**balance after GBP 42,461,580**, and the gate reads:
+
+> *"Over the staff wage budget — this club cannot carry another salary."*
+
+**RENEW CONTRACT is disabled while the club holds GBP 42m.**
+
+## The gate is arithmetically CORRECT. That is the problem.
+
+| | |
+|---|---|
+| staff share of the wage budget (25% of 60% of income) | GBP 2,795,719/season = **GBP 60,776/wk** |
+| actual staff bill | **GBP 62,373/wk** |
+| over by | GBP 1,596/wk — **1.03x** |
+
+It is an INCOME-share gate, not a balance gate, which is the owner's own "balance the books"
+design — so a GBP 42m balance is deliberately irrelevant to it. **It is firing because the
+staff bill is inflated ~4x by the defect this task exists to find**, and it only just tips
+over: 3%.
+
+## 🔴 Tonight's sponsor-pot fix makes this far worse, and it is already deployed
+
+The income basis the share is taken from (GBP 18,638,128) was itself inflated ~GBP 15m by the
+league-sponsor defect fixed in app `3569326b` and shipped to dev as **OTA run 487**. With that
+money gone:
+
+| | before | after the sponsor fix |
+|---|---|---|
+| income basis | GBP 18,638,128 | **GBP 3,638,128** |
+| staff share | GBP 60,776/wk | **GBP 11,863/wk** |
+| staff bill | GBP 62,373/wk | GBP 62,373/wk |
+| **over by** | **1.03x** | **5.3x** |
+
+⚠️ **So on the next new save the gate will refuse every staff renewal, not just this one.** The
+two defects were cancelling: an inflated income budget was hiding an inflated staff bill. One
+is now fixed and the other is not.
+
+## ⚠️ And fixing the staff wages does NOT clear it either
+
+At a quarter of today's wages — i.e. staff priced as the live multipliers direct — the bill is
+GBP 15,593/wk against an GBP 11,863/wk share: still **1.31x over**.
+
+**So there is a third thing wrong, and it should be identified rather than assumed.** Candidates,
+untested: the 25% staff share of the wage budget is too small; 13 staff (12 coaches + 1 scout)
+is too many for a bottom-tier club and the founder's allocation should scale with tier; or the
+income basis is still wrong (the residual ~172% coverage, which is out of scope here but would
+move this number).
+
+## What the agent should add to the task
+
+1. **Locate the gate** — the copy string *"Over the staff wage budget"* and the check behind it
+   — and state exactly which budget figure it compares against and where that figure is built.
+2. **Confirm or refute the arithmetic above from the code**, including that balance plays no
+   part by design.
+3. **Report the three-way interaction** (staff bill, staff share, income basis) with the numbers,
+   so the owner can decide which to move. **Do not tune any of them** — the owner's standing
+   ruling is correctness before calibration.
+4. ⚠️ **Flag immediately if the gate also blocks anything the player cannot recover from** — e.g.
+   if it prevents re-signing staff while also allowing them to expire, a club could be unable to
+   field required staff with no route back.
