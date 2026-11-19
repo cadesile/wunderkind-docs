@@ -3008,6 +3008,70 @@ is published (estimate 4% vs tick 5–10%) — the safe direction on the screen 
 committed, but still drift on the parity `setupMatchesTick.test.ts` exists to protect. **Fix when
 the backend half lands: the estimate reads the tier's own share.**
 
+## 🔴 MEASURED — "keep today's numbers as percentages" is ARITHMETICALLY IMPOSSIBLE
+
+> *"the bands become percentages of the population of those towns, so we keep today's numbers
+> essentially in a sense… which could create scenarios where a club has a much smaller fan base
+> than another team in the same tier, but that's the design, that's the way football works."*
+
+**The design is right. The level cannot be preserved.** Measured from the 2026-11-19 export and
+`starter-config.LIVE.json` (England):
+
+| tier | median town | live fan range | **share that would preserve it** |
+|---|---|---|---|
+| 1 | 70,500 | 700,000 – 1,500,000 | **993% – 2,128%** |
+| 2 | 58,600 | 500,000 – 700,000 | **853% – 1,195%** |
+| 3 | 67,750 | 350,000 – 600,000 | **517% – 886%** |
+| 4 | 69,600 | 250,000 – 400,000 | **359% – 575%** |
+| 5 | 51,000 | 140,000 – 200,000 | **275% – 392%** |
+| 6 | 41,138 | 60,000 – 100,000 | **146% – 243%** |
+| 7 | 40,486 | 30,000 – 40,000 | 74% – 99% |
+| 8 | 42,000 | 10,000 – 20,000 | 24% – 48% |
+
+**Above tier 7, today's fan base exceeds the club's entire town — by up to 21×.** No percentage
+ladder can reproduce it, because a share over 100% is not a share.
+
+### 🔴 The real finding: median catchment is FLAT across tiers
+
+**40,000 – 70,500 at every tier.** Plot assignment is not correlated with league position, so
+today's steep tier ladder is doing **all** the work and catchment is doing **none**. That is
+precisely the defect — a tier-1 club in a 17,000 town has the same 700,000 fans as one in a city of
+nearly nine million.
+
+### 🟢 Which is why the owner's design delivers exactly what they described
+
+**Within tier 1 alone, catchments span 17,000 to 8,982,000 — a 528× range.** Under a share ladder,
+tier-1 clubs would range from roughly **10,000 to 5,400,000 fans** at a 60% share. *"A club has a
+much smaller fan base than another team in the same tier"* is not a side effect of this change — it
+**is** the change, and nothing else produces it.
+
+**The tier ladder still sets the general level** (because median catchment is flat); **catchment
+sets the spread within a tier.** Both halves do the job they should.
+
+### The ceiling that follows
+
+The largest buildable ground is 50,000 seats and an Elite club fills 0.85 of it, so **42,500 fans is
+the point above which attendance stops being demand-limited.** At a 60% share that is a catchment of
+**~71,000** — so under this ladder, *only clubs in towns above ~71,000 can ever fill a maximum
+stadium*, and the median tier-1 town (70,500) sits almost exactly on that line.
+
+⚠️ **That is a remarkably well-placed threshold, and it is a coincidence, not a calibration.** It
+should be checked deliberately rather than relied on.
+
+### So the decision, restated with real numbers
+
+**Not "74,000 or 1,100,000" — 1,100,000 is unreachable.** The question is the share, knowing:
+
+- a **100%** tier-1 share gives the median club **70,500** fans (and A14 measured 73,954, which is
+  the same answer)
+- the owner's **60–70%** gives the median club **42,300 – 49,350** — straddling the 42,500 ceiling
+- either way, a big-city tier-1 club still reaches millions and a small-town one gets thousands
+
+⚠️ **Whatever is chosen, top-tier shirt income falls hard** — it is linear in fan count, so a median
+tier-1 club goes from £29.7M to roughly £1.1M–£2.0M a season. **That is the price of the mechanic,
+and it is now a known price rather than a surprise.** The owner has already said levels will be
+tuned afterwards; sponsors, TV and shirt price are the dials for it.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
