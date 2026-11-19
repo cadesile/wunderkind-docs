@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** 📋 BRIEFED, NOT STARTED — queued behind A17, which holds the app repo.
+<!-- STATUS --> **STATUS:** 📋 BRIEFED, NOT STARTED. ⚠️ **Re-scope before starting.** The A17 queue note is spent — A17 landed (`def110a8`) and its session is archived. But A19 now collides with **A23 (retire `league.slots`)**: with nothing authored, the division-size check's `authored ≠ clubs` DISAGREE row can never fire, so A19's central case disappears. **Run A23 first, then re-scope A19 around what is left** (the FANBASE line and `REFERENCE_FAN_BASE_SHARE_PERCENT`, which A23 does not touch).
 
 ---
 
