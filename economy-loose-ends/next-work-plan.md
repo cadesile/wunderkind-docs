@@ -3795,6 +3795,63 @@ payout-to-turnover ratio itself. **Any other order makes a number worse before i
 ⚠️ **Any other order makes a number worse before it makes it better**: lowering the factor first,
 while payouts stay flat, takes Scotland from 46× to **233×**.
 
+## 🟨 PLANNED EXPERIMENT (owner, 2026-11-19) — Scotland at 10%, rebuilt clubs, fewer tiers
+
+> *"I'm going to try dropping the ecom setting from 50% to 10% for Scotland once everything has
+> deployed. Rebuild all clubs, change the number of tiers etc etc, and build a new save, to compare
+> numbers."*
+
+**Dev is isolated and this is the right instinct.** Two things make it hard to read as described.
+
+### 🔴 1. The two changes move the bottom tier in OPPOSITE directions, and the tier change wins
+
+The ladder **truncates**: a 4-tier country uses rows **1–4** of the same eight-row table
+(`$effectiveTier = max(1, min(min($tierCount, MAX_TIERS), $tier))`).
+
+| | Scotland's bottom division |
+|---|---|
+| today — 8 tiers, factor 0.50 | **£107,500** |
+| **factor only** — 8 tiers, 0.10 | **£21,500** (÷5) |
+| **tiers only** — 4 tiers, 0.50 | **£10,350,000** (×96) |
+| **both** — 4 tiers, 0.10 | **£2,070,000** (×19) |
+
+**Done together, Scotland's bottom tier ends up 19× RICHER than today — the opposite of the
+intent** — because truncating to four rungs raises the floor far more than a 0.1 factor lowers it.
+
+⚠️ **Change one thing, measure, then the other.** Both at once is uninterpretable, and the obvious
+reading ("I lowered the economy and the bottom got richer") would be exactly backwards about why.
+
+### 🔴 2. A falsifiable prediction for the factor change alone — this is what makes it a test
+
+Dropping 0.50 → 0.10 with payouts unchanged:
+
+- **The authored wage scale drops ~5×** — `S_tier` derives from `playerBudget ∝ turnover`.
+- **Actual wages barely move.** Income-anchoring scales pay to what the club *earns*, and its income
+  is dominated by payouts, which do not carry the factor.
+- **So `anchored ÷ authored` should go from 795% to roughly 4,000%**, and
+  **prize ÷ turnover at tier 8 from 47× to 233×.**
+
+🟢 **If that is what the device shows, the diagnosis is confirmed and the agreed order is
+vindicated** — payouts must carry the factor before the factor is worth setting.
+🔴 **If wages actually fall ~5×, then income-anchoring is not doing what we think**, and that is a
+more important finding than the calibration.
+
+### ⚠️ 3. Rebuilding clubs will move the club counts again
+
+`generateClubs(count, tier, country, deleteExisting: true)` replaces every row at an operator-typed
+count and **never reads `league.slots`** — that is exactly what produced the 12-vs-14 drift. **So
+after the rebuild, `slots` will disagree again unless it is re-authored to match.**
+
+⚠️ **Note the authored `slots` is what TV is divided by**, so a rebuild at a new count silently
+re-prices TV for the whole country. **Check the DIVISION SIZE line after rebuilding** — and note it
+currently reports OK where `slots` is unknown (A19 fixes that).
+
+### What is worth capturing before the rebuild
+
+**Today's save is the only post-A10, pre-experiment reading that exists.** Worth keeping the CHECKS
+output from 20:26 and the debug screens from 20:34 as the baseline — **they cannot be regenerated
+once the clubs are replaced.**
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**

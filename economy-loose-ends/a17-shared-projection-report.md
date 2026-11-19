@@ -350,13 +350,26 @@ $ npx jest --listTests | wc -l
      647
 $ npx jest
 Test Suites: 647 passed, 647 total
-Tests:       3 skipped, 10786 passed, 10789 total
+Tests:       3 skipped, 10787 passed, 10790 total
 ```
 
-**BASELINE-MEASURED-HERE**
+**BASELINE MEASURED, NOT ASSUMED.** Taken from a detached worktree at `c65bfa91` with the same
+`node_modules`, not remembered and not read off `CLAUDE.md`:
 
-The brief's known-environment figure of 646 / 10,772 is `dev`; this is `new-game-save`.
-⚠️ `CLAUDE.md`'s table has no row for this tree at this commit — flagged for the PM in §7.
+```
+$ git worktree add --detach <scratch>/baseline c65bfa91
+$ npx jest --listTests | wc -l
+     646
+$ npx jest
+Test Suites: 646 passed, 646 total
+Tests:       3 skipped, 10772 passed, 10775 total
+```
+
+**646 → 647 suites** (+1: `oneRunwayImplementation.test.ts`) and **10,772 → 10,787 passed**
+(+15, all in the new suite; `projectionHorizon` and `npcRescue` were repointed rather than added
+to). 🟢 The brief's known-environment figure of **646 / 10,772** was given for `dev`; it is the
+same on `new-game-save` at `c65bfa91`. ⚠️ `CLAUDE.md`'s table has no row for this tree at this
+commit — flagged for the PM in §7.
 
 **One pre-existing guard needed repointing, not weakening:** `npcRescue.test.ts` source-reads
 `GameLoop.ts` for `sumNpcSponsorIncome(npcLive) + sumNpcInvestorIncome(npcLive)`, and the term
@@ -419,7 +432,20 @@ c65bfa91  c5941b3008fe9cfa6b881ef22235f48e   ← A15, harness wage derivation: g
 tiers"*). Expected, pre-existing, and not mine — recorded here only because A12's hash is the one
 written down and the next agent to compare will be puzzled.
 
-### 6g. Tick cost
+### 6g. ⚠️ One hole the verification itself found, and it was mine
+
+Writing the lump test exposed a case the first cut of `runwayWeeks` got wrong: when
+`weeksRemainingInSeason` is **0**, `projectBands` pays no `seasonEndIncome` — but its
+`floor((h − remaining) / 52) × perSeasonRecurringLump` term **still steps at week 52**. My segment
+walk only opened a segment when `remaining > 0`, so it would have missed that step. **The player's
+club is in exactly that state in the last week of every season**, when the lump is the TV deal plus
+the sponsor pot plus season tickets — so the chart would have shown a step the runway could not
+see, which is the very thing this task exists to prevent. Fixed (the first jump is `remaining`
+where there is one and a whole season where there is not) and pinned by a test that also asserts
+`projectBands` agrees at weeks 51, 52 and 53. **No measured figure moves**: every NPC path passes
+zero lumps, so this only ever affected the player's own DOF runway, re-measured and identical.
+
+### 6h. Tick cost
 
 **The verdict's own cost is unchanged** — the per-club pass computes exactly what it computed
 before, through one function instead of inline, and `runwayWeeks` adds at most two or three
@@ -431,7 +457,7 @@ computes the brain's full income term (including `computeNpcMatchdayIncome`) ins
 sponsors. That runs **per queued sale**, not per club, so it is bounded by the number of sales in a
 tick. The alternative was keeping a cheaper copy that disagrees, which is the whole defect.
 
-### 6h. Standing note §1 — no CHECKS line added, on purpose
+### 6i. Standing note §1 — no CHECKS line added, on purpose
 
 Nothing in this task needed a figure only a device could give: the measurement is entirely offline,
 from the live config and two world exports. And **the instrument this change improves is itself a
@@ -461,7 +487,8 @@ adding a line to an already-heavy report to say the same thing would not earn it
    opening lines before the ✅ that supersedes it. I left the historical line alone and added
    below it rather than editing a superseded section.
 4. **`CLAUDE.md`'s suite-count table has no `new-game-save` row at `c65bfa91`** — the nearest is
-   640 / 10,704 at `e03dd6da`+A12. **BASELINE-ROW**
+   640 / 10,704 at `e03dd6da`+A12. Measured here in a worktree: **646 / 10,772 at `c65bfa91`**
+   (identical to the `dev` row), **647 / 10,787 after this change**.
 
 ---
 

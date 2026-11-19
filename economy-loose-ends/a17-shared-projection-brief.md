@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** 📋 BRIEFED, NOT STARTED — waiting on A14 to clear the app repo.
+<!-- STATUS --> **STATUS:** ✅ DONE — `a17-shared-projection-report.md`. ⚠️ **§2 and §3's stated mechanism is measurably false** (there was never a break-even cliff, and `weeksRunway` did count seasonal money); the recommended shape was implemented anyway and the report says why.
 
 ---
 
