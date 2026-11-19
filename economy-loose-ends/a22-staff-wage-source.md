@@ -1,4 +1,4 @@
-<!-- STATUS: IN PROGRESS — session a22-staff-wages, started 2026-11-19 -->
+<!-- STATUS: ✅ DIAGNOSIS DONE — cause proved, fix PROPOSED NOT APPLIED. Findings in scotland-experiment-2026-11-19.md. Writer is anchorAmpStaffWages (SeasonBudgetService.ts:481), outside the resolveWorldStaffWagePence chain entirely. ⚠️ Three claims in this brief were REFUTED — see the Corrections section before reusing any of it. -->
 
 # A22 — Find what actually sets staff wages
 

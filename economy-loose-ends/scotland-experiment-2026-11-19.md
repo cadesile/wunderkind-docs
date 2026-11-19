@@ -657,3 +657,239 @@ scope, but it should not be discovered later as a surprise.
 *"there should be no wiring around the amount of clubs, the finances should be dynamic"*). The
 comment must be rewritten to record the decision and why, **not** left contradicting the code —
 this file is the one that explains the check to whoever next reads a disagreement.
+
+---
+
+# A22 — WHAT SETS THE FOUNDER'S STAFF WAGES: FOUND AND PINNED (2026-11-19)
+
+**STATUS: CAUSE PROVED. No source changed in either repo. Fix proposed, not applied.**
+
+## The answer
+
+The writer is **not** any rung of `resolveWorldStaffWagePence` at ingest. It is a **later,
+unconditional overwrite** on the save's first season budget:
+
+```
+src/engine/SeasonBudgetService.ts:455   bootstrapAmpSeasonBudget() -> anchorAmpStaffWages(budget)
+src/engine/SeasonBudgetService.ts:481   anchorAmpStaffWages()
+src/engine/SeasonBudgetService.ts:497     ampStaffWagePence(coach.coachingAbility, economy)
+                                          -> updateCoach(coach.id, { salary: anchored })
+src/engine/ClubWageScaleService.ts:176  ampStaffWagePence()
+src/engine/ClubWageScaleService.ts:146  staffWagePence()
+src/economy/clubBudget.ts:226           clubWageScaleMicroPence()   <- the figure is made here
+```
+
+`worldStaffToCoach` (`useInitFlow.ts:350`) does price staff on rung 4 at ingest, exactly as the
+brief says. **`anchorAmpStaffWages` then throws that figure away.** Its own docblock says so in
+terms — *"Snaps, where the season transition mean-reverts"* — and it runs on a brand-new save,
+because a brand-new save is precisely the club with no budget that the bootstrap exists for.
+
+The forward call-site audit missed it because it searched `resolveWorldStaffWagePence` call
+sites, and this path never calls it. It calls `updateCoach` directly.
+
+## What that function computes, and why it is 4x
+
+`clubWageScaleMicroPence` is a **budget-exhausting solver, not a price**:
+
+```
+scale    = weeklyStaffBudget x UNIT / SIGMA        SIGMA = sum of ability^k over the shape
+wage(a)  = scale x a^k / UNIT  =  weeklyStaffBudget x a^k / SIGMA
+```
+
+So the staff bill **is** the staff wage budget, by construction, distributed across the staff in
+proportion to `ability^2.5`. The authored `wageMultiplierTiers` staff/player ratio
+(0.40x-0.67x) plays **no part at all**. The staff are 4x the authored figure because the club's
+income says they can be, not because anything priced them at 4x.
+
+This is the governing defect of the workstream again, in its exact form: **two sources for one
+quantity** — `tierStaffWeeklyWagePence` (authored relativity, rung 4) and
+`ampStaffWagePence` (income-exhausting solver, rung 2) — with nothing saying which is
+authoritative, and the second silently overwriting the first.
+
+## The demonstration
+
+Live config, `GET /api/game-config?country=SC` + `GET /api/starter-config`, fetched
+2026-11-19: SC tier 4 `wageScaleMicroPence` 92,573,014 · `wageCurveExponentBp` 25000
+(k = 2.5) · `wageScaleUnit` 1,000,000 · `reputationSpreadBp` 0 · `weeksPerSeason` 46 ·
+`wageToTurnoverRatioBp` 6000 · `staffWageShareBp` 2500 · `wageModel` turnover.
+`incomeAnchoredWages` is absent from the payload, so `economyConfig.ts:187` derives it as
+**true** (`baseline.wageModel === 'turnover'`).
+
+Starter counts confirm the path: `starterManagerCount` 1 + `starterCoachCount` 8 +
+`starterDirectorOfFootballCount` 1 + `starterFacilityManagerCount` 1 + `starterChairmanCount` 1
+= **12 non-scout staff**, + `starterScoutCount` **1** = the device's "12 coaches + 1 scout".
+
+The model has exactly **one** free unknown: SIGMA, the sum of the 12 coaches' `ability^2.5`,
+which only the device holds. So solve it from each measured wage independently. If this is the
+writer, all four must give the same SIGMA.
+
+Verbatim, a throwaway jest test run against the app's own `clubWageScaleMicroPence`,
+`tierStaffWeeklyWagePence` and `weeklyWageRange` on `new-game-save` (file deleted after the
+run; `git status` clean):
+
+```
+    reservationPence       = 1118287680
+    staffWageBudget/season = 279571920
+    staffWageBudget/week   = 6077650.434782608 => GBP 60776.50
+    playerWageBudget/week  = 18232951.304347824
+    ability 15: measured 236600p -> implied sigma = 21513.2
+    ability 19: measured 414300p -> implied sigma = 21510.1
+    ability 24: measured 704800p -> implied sigma = 21511.3
+    ability 27: measured 910000p -> implied sigma = 21511.0
+    mean sigma = 21511.4 spread = 3.1
+    ability | measured | rung2 anchored | rung4 authored | player expected | rung5 legacy
+    15 | 236600 | 236619 | 53780 | 80670 | 1500
+    19 | 414300 | 414277 | 97113 | 145669 | 1900
+    24 | 704800 | 704797 | 174149 | 261223 | 2400
+    27 | 910000 | 909986 | 187022 | 350666 | 2700
+```
+
+**Four independent measurements across two multiplier bands agree on SIGMA to 3.1 parts in
+21,511 — 0.014%.** Forward, the solver reproduces every measured wage to within 23 pence,
+including the brief's unexplained **GBP 7,048 at ability 24: 704,797p against 704,800p
+measured, a 3-pence miss.**
+
+Two checks that the config read is right, not just self-consistent:
+
+- **the player ladder falls out of the same config.** `weeklyWageRange` expected = 80,670 /
+  145,669 / 261,223 / 350,666 pence against the screen's authored GBP 807 / 1,457 / ~2,613 /
+  3,507. So the ladder on that screen *is* `turnoverWeeklyPence`, and the config in hand is the
+  config the device used.
+- **SIGMA 21,511 over 12 coaches implies a mean ability of ~20.0**, inside SC tier 4's authored
+  `leagueAbilityRanges` band of 15-35. It is a plausible squad, not a fitted constant.
+
+## Corrections to the brief
+
+**1. The brief's rung-4 band arithmetic reached the right conclusion by the wrong route.**
+"The over-factor would stay flat if the multiplier were applied" is not a valid test — a
+*banded* multiplier applied to a *smooth* curve produces a step, so a step in the over-factor is
+what rung 4 firing would look like. The reason rung 4 is not the writer is simpler and now
+measured: rung 4 gives 174,149p at ability 24 and the device shows 704,800p. **Do not reuse
+the band-arithmetic argument.**
+
+**2. Rungs 1-5 were all correctly eliminated, and that was not enough.** The brief's elimination
+table is sound. The figure comes from a path that does not go through that function.
+
+**3. `HireScreen.tsx:76` is NOT a bug. Refuted.** `resolveWorldStaffWagePence(staff)` with no
+`economy` cannot reach rung 5 there, because `worldStore.ts:585` writes `s.salary` on every
+`WorldStaff` at world ingest, so rung 1 always wins. `generateNpcChairman`
+(`npcManagerGeneration.ts:155-168`) sets `salary` explicitly for the one generator that would
+otherwise fall through, and documents why. The missing argument is dead weight at that call
+site, not a GBP 24/wk wage. **Nothing to fix.**
+
+**4. "After the sponsor fix the bill stays at GBP 62,373, so the gate is 5.3x over" is wrong
+for a NEW save.** The bill is a *function of* the income basis. Cut the income to GBP 3,638,128
+and `anchorAmpStaffWages` writes staff wages about a fifth the size, and the bill lands back on
+the share. The brief's 5.3x figure holds only for the **existing** save, whose salaries are
+already persisted and are never re-anchored (the bootstrap runs once). That save is stuck; the
+next one is not.
+
+## The affordability gate
+
+**The gate does NOT treat a renewal as a new hire. The brief's "likely real defect" is
+refuted by the code.** `SignStaffPanel.tsx:138` passes `weeklySalaryPence: isRenewal ? 0 :
+salary`, and `staffHireBudget.ts:66-68`'s own comment states the intent: *"a `renewal` is exempt
+from the WAGE test — refusing to renew a contract the club is already paying would not reduce
+the bill, it would only lose the person."*
+
+**But the exemption does not work, and the reason is the finding above.** With the salary zeroed,
+`staffHireRefusal` still evaluates
+`after = max(0, currentWeeklyStaffWagePence) + 0 > weekly`, i.e. **it tests the club's whole
+existing bill against the share.** Device: 62,373 > 60,776, so `'wages'`, so RENEW CONTRACT is
+disabled. The exemption removes the delta but leaves the absolute test, which a renewal cannot
+influence by any amount.
+
+**And the bill can never be comfortably under the share, because the same solver writes both.**
+Bill ≡ share, plus or minus two shape distortions in `ampStaffWagePence`:
+
+- **self-double-counting** pushes the bill DOWN: the shape is `[...coachAbilities, ability]`, so
+  a coach already in the store is counted twice in SIGMA when priced.
+- **scouts excluded from the shape** pushes it UP: `ampStaffWagePence` builds SIGMA from
+  `coachStore` only, so every scout's wage is added on top of a denominator that does not
+  contain it.
+
+Measured with the app's own solver over a synthetic 12-coach set (verbatim):
+
+```
+    coach bill WITHOUT self-double-count = 6077651 (= the share exactly, by construction)
+    coach bill WITH self-double-count    = 5538903
+    scout added on top, outside the shape = 368389
+    staff BILL /wk  =  5907292 => GBP 59072.92
+    staff SHARE /wk =  6077650 => GBP 60776.50
+    bill / share    =  0.9720
+```
+
+The exact residual needs the 13 real abilities and only the device has them — my set gives
+0.972x where the device measured 1.026x. **The point is the magnitude, not the sign: the bill
+sits within a few percent of the share forever, so this gate is permanently on a knife edge and
+will refuse on rounding.** That is the "third thing wrong" the brief asked to have identified
+rather than assumed: it is not the 25% share being too small, nor 13 staff being too many. It is
+that **the gate's budget and the wage bill it tests are computed from the same number**, so the
+test is close to `x > x`.
+
+Answers to the brief's four questions:
+
+1. **Does it subtract the incumbent before testing a renewal?** It zeroes the *new* salary,
+   which is equivalent and correct in intent. It then tests the absolute bill anyway, which
+   defeats it.
+2. **Same mistake for player renewals?** No. `staffHireRefusal` has exactly two callers,
+   `SignStaffPanel.tsx:136` and `DofStaffHiringService.ts:102`. Player contracts do not use it.
+3. **A renewal on LOWER terms?** Also refused. `isRenewal` discards the salary before the
+   comparison, so a reduction is indistinguishable from a no-op and both fail the absolute test.
+4. **Unrecoverable?** ⚠️ **Not strictly, and the inconsistency is its own defect.** DOF
+   auto-renewal (`GameLoop.ts:5675-5757`, section 14c) tests **only the balance against the
+   sign-on fee** — it never calls `staffHireRefusal`. So on the founder's club, which starts
+   with `dofAutoRenewContracts: true`, the DOF renews staff the player is forbidden to renew.
+   The player's own route back under the share is to let staff expire; the DOF's is not gated at
+   all. The two paths were made to share one function for exactly this reason and only one of
+   them does.
+
+## Proposed fix — NOT APPLIED
+
+Three separable changes. The first is the defect; the other two are consequences worth
+recording.
+
+**A. `staffHireRefusal` must test the DELTA on a renewal, not the absolute bill.**
+`src/economy/staffHireBudget.ts:67-74`. Add an explicit `isRenewal` (or
+`incumbentWeeklySalaryPence`) to `StaffHireInput` and skip the wage test outright for a renewal,
+or test `currentBill - incumbentSalary + newSalary`. Zeroing the salary at the call site is not
+enough and should stop being the mechanism — it reads as if it works. Give
+`DofStaffHiringService` and section 14c the same function so the player and the DOF cannot
+disagree about what is affordable.
+
+**B. The staff wage source needs ONE authority named.** Either
+`tierStaffWeeklyWagePence` prices staff and anchoring only mean-reverts toward it (the shape
+players already have — `staffRenewalWagePence` exists and does this), or
+`ampStaffWagePence` prices them and `tierStaffWeeklyWagePence` is retired. What must not
+survive is `anchorAmpStaffWages` snapping over a freshly authored figure with no record of
+which one is meant to be true. **Recommendation: keep rung 4 as the price and make anchoring
+mean-revert, never snap** — it is the only option under which the authored
+`wageMultiplierTiers` relativity means anything, and it is the owner's standing "correctness
+before calibration" reading.
+
+**C. Whatever B decides, the gate's budget and the bill must stop being the same number.**
+While a budget-exhausting solver writes the wages, no share-based gate can say anything. This is
+calibration and therefore the owner's call, so it is recorded and not proposed.
+
+Two shape bugs in `ampStaffWagePence` (`ClubWageScaleService.ts:176-190`) fall out of B and
+should be fixed with it whichever way it goes: the shape double-counts a member who is already
+in `coachStore`, and it omits `scoutStore` entirely while scouts are paid from the same share.
+
+## Housekeeping
+
+- **No file changed in either repo by this task.** `wunderkind-app` `git status` clean on
+  `new-game-save`. Two throwaway jest files were created under
+  `src/__tests__/economy/` to run the figures above and were deleted; the output is quoted
+  verbatim above.
+- `wunderkind-backend` has three modified files
+  (`EconomyWageTableCommand.php`, `Economy/LeagueSizeResolver.php`,
+  `LeagueSizeResolverTest.php`) — **not mine.** That is the sibling `slots` session's work in
+  progress, left untouched.
+- Scratch and the two live config exports are in
+  `/private/tmp/claude-501/-Users-courtneyadesile-Documents-WunderkindFactory/6fc3bf75-7117-4c9f-b028-fc8d14f19cbd/scratchpad/`
+  (`cfg-sc.json`, `starter-config.json`, `prove-output.txt`, `prove2-output.txt`). Session
+  scratch, so not durable — the figures that matter are quoted above.
+- `POST /api/initialize/starter` is 401 without a token, so the staff payload was not read off
+  the wire. It did not need to be: the backend source at `development` @ `9918839c`
+  (`WorldPackSnapshotBuilder::buildStaffSnapshot`, `StarterPackService.php:156-158`) carries no
+  `weeklySalary`, and the solver reproduces the device to 3 pence without it.
