@@ -3784,6 +3784,17 @@ not for me to assert.**
 **The order that follows:** put the country factor on payouts, then set the factor, then review the
 payout-to-turnover ratio itself. **Any other order makes a number worse before it makes it better.**
 
+## 🟩 AGREED ORDER (owner, 2026-11-19) — payouts, then the factor, then the ratio
+
+1. **Put the country factor on payouts.** Today `prizeMoney`, `leaguePositionPot` and `tvPoolPence`
+   carry none, which is why Scotland's mismatch is exactly England's doubled.
+2. **Then set `CountryProfile::economyFactorBp`.** Scotland at 0.5 of England is far too generous.
+3. **Then review the payout-to-turnover ratio itself** — 23.3× in England, independent of any
+   country factor.
+
+⚠️ **Any other order makes a number worse before it makes it better**: lowering the factor first,
+while payouts stay flat, takes Scotland from 46× to **233×**.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
