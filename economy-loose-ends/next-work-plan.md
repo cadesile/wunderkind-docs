@@ -4173,6 +4173,63 @@ pre-change squad.
 workstream's governing defect, and the only one still live: **two sources for one player's wage,
 with nothing saying which is authoritative.**
 
+## ⚠️ A21 CORRECTED — the link ALREADY EXISTS. The owner was right and I was wrong.
+
+**I wrote that starter packs have "no entity at all" and cannot be re-linked. That is false.**
+`Version20261117120000` and commit `8ff2e5fd` ("World packs become single-use sets, with generated
+squads") built exactly the thing the owner asked for, two days ago:
+
+> *"World pack SETS: a country's generated world and its starter squad become one unit, held
+> two-deep per country and claimable by exactly one club… `world_pack_set` is one generation of one
+> country: **a starter squad plus a `country_world_pack_cache` row per league tier, FK'd to it.**"*
+
+**`WorldPackSet` carries `claimedAt` and `claimed_by_club_id`, with a partial unique index so a club
+can never hold two sets.** The whole set is claimed at `POST /api/initialize/starter` — **not per
+tier.** So the squad and the world are already one unit, already claimed, already single-use.
+
+⚠️ **And my "separate player pool" diagnosis was wrong with it.** `app:pool:warm` tops up the
+*generation* pool the sets are built from; **it is not where a served starter squad comes from.**
+The squad comes from the claimed set.
+
+### 🔴 So the real defect is narrower, and sharper
+
+**A country holds a BUFFER of sets — "two-deep".** The squad inside a set is generated when the set
+is generated. So:
+
+- A set generated **before** an economy change carries a squad priced under the **old** config.
+- `WORLD_PACK_VERSION` gates pack **shape**, not pack **content validity** — and the country-factor
+  change correctly did **not** bump it.
+- **So a pre-change set stays valid, stays claimable, and hands out a pre-change squad** — while the
+  NPC clubs around it are priced live on the device.
+
+**That is exactly the split measured: NPC 0.91×, the claimed starter squad 4.8–5.1×.**
+
+### The question that settles it, and it is one command
+
+```
+php bin/console app:country:check SC
+```
+
+**It prints World pack sets.** If Scotland still holds a set generated **before** the factor change,
+the claim took it and this is confirmed. ⚠️ **If every set is newer than the change, this is wrong
+too** and the remaining candidate is the device's own config cache on the init path.
+
+### What A21 actually becomes
+
+**Not "link them" — they are linked.** The task is narrower:
+
+- **An economy change must invalidate unclaimed sets**, the way a shape change does. Today only
+  `WORLD_PACK_VERSION` can, and it is the wrong lever — bumping it for a dial change would
+  needlessly discard every cached tier payload.
+- **So the set needs a second staleness axis**: generated-under-which-economy, not just
+  generated-under-which-pack-shape.
+- ⚠️ **Or the squad stops being priced at generation at all** — the pack-is-a-census principle
+  applied one level up. **That is the cleaner fix and consistent with v11**, which removed money
+  from the pack payload but left the set's own squad carrying prices.
+
+⚠️ **The second option is probably right and is a smaller change than the first.** Worth
+establishing which before briefing.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
