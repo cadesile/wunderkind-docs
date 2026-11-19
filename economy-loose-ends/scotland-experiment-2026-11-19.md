@@ -358,3 +358,45 @@ receives.
    pass also depends on.
 
 ⚠️ **Whichever is chosen, forecast and tick must move in the same commit.**
+
+---
+
+# DONE — league sponsorship divided by club count (app `3569326b`)
+
+**Owner's ruling: divide by club count.** Implemented on `new-game-save`, all four payment
+sites in one commit.
+
+| site | club count it derives from |
+|---|---|
+| `FinancialProjectionService:243` (forecast) | `leagueTableSize(league.clubs, club.id)` |
+| `SeasonTransitionService:859` (AMP, season N) | `league.clubCount` |
+| `SeasonTransitionService:1523` (AMP, season 1) | `leagueTableSize(league.clubs, ampClubId)` |
+| `SeasonTransitionService:1658` (every NPC, season 1) | the `leagueSizeById` participants map already built in that function |
+
+**No club count is wired** — each site derives its own, per the owner's 2026-11-19 ruling.
+`leagueSponsorPerClubPence` (`src/utils/leagueFinances.ts`) is the one place the divide is
+spelled, with the measurement and the "every caller divides, or none does" constraint in its
+docblock.
+
+🟢 **`sponsorPot` keeps its meaning as the DIVISION total** — persisted that way, shown to the
+player by `LeagueScreen` as `SPONSORSHIP POT`, and used by the NPC pass as a tier-scaling
+baseline. The divide is at payment.
+
+🟢 **Fallback is `FALLBACK_DIVISION_SIZE`, not the whole pot**, so an unknown division size
+cannot silently restore the defect. Pinned by its own test.
+
+## Verification
+
+- `npx tsc --noEmit` — zero errors.
+- `npm test` — **647 suites / 10,788 passed**, 3 skipped, `--listTests` 647 (agrees).
+- One test changed, deliberately and with the reason in the test:
+  `SeasonTransitionService.test.ts`'s *"credits sponsor pot for next season"* asserted the raw
+  pot. It is now two tests — the share, and the fallback.
+- ⚠️ **The branch row did not reconcile.** It read 640 / 10,704 at `e03dd6da` + A12; the
+  shared-runway work and everything after was never re-measured, so +7 suites / +84 tests are
+  unattributed. Recorded as unattributed in `environment.md` rather than explained away.
+
+⚠️ **NOT deployed and NOT seen on device.** Next save on dev should read coverage far below
+900.4% at SC tier 4 — but ~172% rather than ~100%, because the residual (the engine paying
+~1.7x the authored tier turnover even without the pot) is a separate, open, backend authoring
+question.
