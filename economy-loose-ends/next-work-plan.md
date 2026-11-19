@@ -4123,6 +4123,56 @@ device's own config cache on the init path.
 462,865,070 is precisely the 5× the field was moved by.
 🔴 **The "economy is struggling" verdict does not stand.** It was a stale squad under a new budget.
 
+## 🟩 RULING (owner, 2026-11-19) — a worldpack rebuild must rebuild starter packs too
+
+> *"Rebuilding a worldpack should rebuild starter packs, as the two are linked. Both claimed and
+> replaced."*
+
+**Agreed, and the gap is larger than a missing link.**
+
+### What exists today
+
+| | |
+|---|---|
+| **World packs** | `WorldPackSet` entity · versioned by `WORLD_PACK_VERSION` · **claimed** (`claimedAt`, atomic conditional UPDATE) · single-use · regenerated as a unit |
+| **Starter packs** | 🔴 **no entity at all.** The squad is drawn from loose `players` rows in the generic pool, topped up by `app:pool:warm`, **unversioned, unclaimed as a set, never invalidated** |
+
+**So they cannot be "re-linked" — the link has never existed.** `StarterPackService` serves from a
+pool; `BootstrapCountryCommand` lists `app:pool:warm` as a **separate CLI step** from Generate
+Clubs.
+
+### 🔴 THE INTERIM OPERATIONAL RULE — and "warm" is not enough
+
+⚠️ **`app:pool:warm` tops a deficit up; it does not replace what is there.** If the pool already
+holds enough players, warming adds **nothing** and every stale row survives. **So after any economy
+change the pool must be PURGED, not warmed** — otherwise the next save draws the same
+pre-change squad.
+
+**Until the entity exists, treat this as part of every regeneration:**
+1. change the dial
+2. regenerate clubs / world packs
+3. **purge the starter pool, then warm it**
+4. only then start a save to measure
+
+### The task (A21), and what it has to carry
+
+**Give the starter pack the lifecycle the world pack already has**, and tie the two together:
+
+- **A set, not a puddle.** Something with an identity that can be versioned and replaced wholesale,
+  rather than a pool that is topped up and never emptied.
+- **Claimed like `WorldPackSet`** — the same `claimedAt` atomic-conditional-UPDATE idiom, so a
+  starter squad is served once and never twice.
+- **Invalidated with the world pack.** A `WORLD_PACK_VERSION` bump, or a regeneration, must make
+  the matching starter packs unservable.
+- ⚠️ **And it must not break the binding rule it currently exercises.** *"An already-priced row
+  keeps its price"* exists because re-pricing moves a wage underneath a contract severance is
+  computed from. **The fix is to stop serving stale rows, never to re-price served ones.**
+
+⚠️ **This is a design task of real size** — a new entity, a claim path, and an invalidation rule —
+**and it belongs after the correctness boundary.** But it is now the fourth instance of the
+workstream's governing defect, and the only one still live: **two sources for one player's wage,
+with nothing saying which is authoritative.**
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
