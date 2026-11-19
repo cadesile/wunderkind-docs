@@ -1,0 +1,107 @@
+A10 — LegacyNewGameFlowTest::testTheEconomyBlockShipsSwitchedOff, classified
+=============================================================================
+
+VERDICT: a GENUINE baseline item, NOT a stale test. It is an order-dependent
+flake of the same family as environment.md's documented #4 and #5, caused by two
+tests that landed TODAY leaving the shared `game_config` row dirty.
+
+-----------------------------------------------------------------------------
+1. THE ASSERTION IS STILL VALID — the shipped default really is zeros
+-----------------------------------------------------------------------------
+
+  $ grep -n 'economyBaselineTurnoverPence' src/Entity/GameConfig.php
+  1552:    // THE EXCEPTION IS `economyBaselineTurnoverPence`, WHICH SHIPS AS ZEROS AND IS NOT A
+  1589:     * SHIPS AS ZEROS, which is an unauthored table rather than a free world
+  1595:    private array $economyBaselineTurnoverPence = [0, 0, 0, 0, 0, 0, 0, 0];
+
+R2 (`Version20261118120000`) authors the turnover table deliberately, so one
+might expect this test to be stale. It is not: `wunderkind_test` is NOT
+migration-tracked (environment.md), so R2's authoring never reaches it. On a
+clean test database the shipped default is zeros and the assertion passes.
+
+-----------------------------------------------------------------------------
+2. WHO WRITES 38,866,153,952
+-----------------------------------------------------------------------------
+
+  $ grep -rn '38866153952\|38_866_153_952' src/ tests/ migrations/
+  tests/Command/EconomyAuthoredSizeDriftTest.php:156:        $config->setEconomyBaselineTurnoverPence([38_866_153_952, 0, 0, 0, 0, 0, 0, 0]);
+  tests/Command/EconomyTvCountryScalingGuardTest.php:113:        $config->setEconomyBaselineTurnoverPence([38_866_153_952, 0, 0, 0, 0, 0, 0, 0]);
+  tests/Service/Economy/LeaguePayoutResolverTest.php:73:        38866153952, 12004975671, 3557660225, 1990900941,
+
+The two `tests/Command/Economy*` files write it into the SHARED `game_config`
+row inside their own `seed()` helper and never restore it:
+
+  // A turnover table, or no tier resolves and the preview short-circuits before the
+  // per-country checks are reached.
+  $config = self::getContainer()->get(GameConfigRepository::class)->getConfig(flush: true);
+  $config->setEconomyBaselineTurnoverPence([38_866_153_952, 0, 0, 0, 0, 0, 0, 0]);
+  $em->flush();
+
+`LeaguePayoutResolverTest` uses the same literal but is a plain TestCase over
+stubs, so it writes nothing.
+
+-----------------------------------------------------------------------------
+3. THE ORDERING PROVED, THREE WAYS
+-----------------------------------------------------------------------------
+
+  $ lando ssh -s database -c "psql -U wunderkind -d wunderkind_test -tAc \
+      \"select economy_baseline_turnover_pence from game_config;\""
+  [0,0,0,0,0,0,0,0]
+
+  # (a) the reader ALONE, on that clean row
+  $ lando php bin/phpunit --no-coverage --filter testTheEconomyBlockShipsSwitchedOff \
+      tests/Controller/Api/LegacyNewGameFlowTest.php
+  .                                                                   1 / 1 (100%)
+  OK (1 test, 5 assertions)
+  # row after: [0,0,0,0,0,0,0,0]
+
+  # (b) POLLUTER then READER, one invocation
+  $ lando php bin/phpunit --no-coverage tests/Command/EconomyAuthoredSizeDriftTest.php \
+      tests/Controller/Api/LegacyNewGameFlowTest.php
+   Array &0 [
+  -    0 => 0,
+  +    0 => 38866153952,
+  /app/tests/Controller/Api/LegacyNewGameFlowTest.php:108
+  FAILURES!
+  Tests: 27, Assertions: 126, Failures: 1.
+  # row after: [38866153952,0,0,0,0,0,0,0]   <- left dirty
+
+  # (c) READER then POLLUTER, reverse order, after resetting the row
+  $ psql ... "update game_config set economy_baseline_turnover_pence = '[0,0,0,0,0,0,0,0]';"
+  UPDATE 1
+  $ lando php bin/phpunit --no-coverage tests/Controller/Api/LegacyNewGameFlowTest.php \
+      tests/Command/EconomyAuthoredSizeDriftTest.php
+  ...........................                                       27 / 27 (100%)
+  OK (27 tests, 126 assertions)
+
+  # the row was then restored to the state it was found in:
+  $ psql ... "update game_config set economy_baseline_turnover_pence = '[0,0,0,0,0,0,0,0]';"
+  UPDATE 1
+  $ psql ... "select economy_baseline_turnover_pence from game_config;"
+  [0,0,0,0,0,0,0,0]
+
+-----------------------------------------------------------------------------
+4. WHY IT IS NOT RANDOM, AND WHY IT IS NEW
+-----------------------------------------------------------------------------
+
+Default run order is alphabetical, and `tests/Command/Economy*` sorts before
+`tests/Controller/Api/Legacy*`. So the polluter always runs first in a full run
+and this failure is DETERMINISTIC from now on, not a coin flip — unlike #4 and
+#5, which genuinely come and go. It is new because both polluting files landed
+today with A7 (`LeagueTvDealResyncTest` and `EconomyAuthoredSizeDriftTest` are
+named in A7's own last-sync entry), which is why A7's 3,294-test run reported
+three failures and not four.
+
+-----------------------------------------------------------------------------
+5. WHERE THE FIX BELONGS
+-----------------------------------------------------------------------------
+
+In the POLLUTERS, not in `LegacyNewGameFlowTest`. The reader is asserting a real
+invariant — that the economy block ships switched off — and its docblock names
+exactly the mistake it is there to catch: "shipping a non-zero inflation rate or
+an authored turnover table by accident, which would change what every existing
+save derives without anyone choosing it." That is worth keeping.
+
+`EconomyAuthoredSizeDriftTest` and `EconomyTvCountryScalingGuardTest` need the
+turnover row for their own run and should put it back, or stop persisting it.
+NOT FIXED HERE: this report's task was told not to change code for any of this.

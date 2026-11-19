@@ -1,0 +1,147 @@
+============================================================================================
+THE VARIANT GATE — authored turnover vs the income the engine pays
+SOURCE: EN · 8 tiers · 30 seasons · REAL grounds from the world export
+Modelled club finishes 10th — pass --position to change it
+capacityCalculation 5000 (from the export, NOT the app default) · ticketPriceElasticity off (derived from wageModel) · ticket price flat £25 (the app default)
+BOTH runs use the same wage model, upkeep, renewals and seed. Only the revenue line differs.
+============================================================================================
+
+── Income composition, season 1, as a share of AUTHORED turnover ───────
+   COVERAGE = modelled income / authored turnover. TARGET 85-110% at every tier.
+   Outside that band the wage anchor and the revenue model disagree about what a
+   division is worth: under 85% every club is poorer than its own wage bill assumes,
+   over 110% the authored turnover has stopped being the thing wages are priced from.
+tier |     TV | matchday |  shirt | club spon | league spon |  prize | position || COVERAGE
+  1  |  41.1% |    11.8% |   4.9% |      0.7% |        1.3% |   0.0% |     0.0% ||  59.8%  <-- outside 85-110%
+  2  |  29.5% |    34.5% |   7.8% |      1.9% |        3.2% |   0.0% |     0.0% ||  76.9%  <-- outside 85-110%
+  3  |  20.6% |    51.6% |  20.4% |      1.9% |        4.8% |   0.0% |     0.0% ||  99.3%
+  4  |  14.4% |    87.3% |  23.3% |      3.2% |        6.5% |   0.0% |     0.0% || 134.8%  <-- outside 85-110%
+  5  |  10.6% |   122.8% |  34.5% |      2.1% |        4.3% |   0.0% |     0.0% || 174.3%  <-- outside 85-110%
+  6  |   7.0% |   325.9% |  44.2% |      5.8% |       11.6% |   0.0% |     0.0% || 394.4%  <-- outside 85-110%
+  7  |   4.2% |   464.6% |  75.8% |     16.9% |       25.3% |   0.0% |     0.0% || 586.7%  <-- outside 85-110%
+  8  |   2.3% |  1352.8% | 103.6% |     53.8% |       80.7% |   0.0% |     0.0% || 1593.2%  <-- outside 85-110%
+
+  COVERAGE outside 85-110%: 1, 2, 4, 5, 6, 7, 8
+  ⚠️ REPORTED, NOT A VERDICT. The verdict still follows the FLIPPED column below —
+     coverage says whether the revenue model and the authored ladder agree about a
+     division, which is a different question from whether a club stays solvent.
+
+── N6: THE THREE VERDICTS ──────────────────────────────────────────────
+  AUTHORED   = today: the gate credits authored turnover and budgets off it too
+  MODELLED   = the problem: real income, wages still anchored to authored turnover
+  FLIPPED    = Option 1: real income, wages anchored to THAT income
+
+tier | AUTHORED              | MODELLED              | FLIPPED
+     | bill% | insolvent     | bill% | insolvent     | bill% | insolvent | balance @ s30
+  1  | 62.9% |         never | 105.3% |      season 1 | 64.9% |     never |  £2,085,279,746
+  2  | 67.7% |         never | 88.0% |         never | 70.0% |     never |    £788,420,176
+  3  | 67.2% |         never | 67.6% |         never | 67.2% |     never |    £337,979,932
+  4  | 69.5% |         never | 51.6% |         never | 67.1% |     never |    £275,684,978
+  5  | 67.7% |         never | 38.8% |         never | 64.4% |     never |    £136,175,217
+  6  | 80.6% |         never | 20.4% |         never | 65.2% |     never |    £110,682,755
+  7  | 86.3% |         never | 14.7% |         never | 64.5% |     never |     £42,884,409
+  8  | 134.1% |      season 1 |  8.4% |         never | 64.6% |     never |     £36,326,933
+
+  insolvent once FLIPPED: none
+  ⚠️ Read the FLIPPED column over the whole run, not season 1. `renewalTurnoverRate`
+     converges a re-anchored bill over about three seasons, which is the
+     grandfathering decision — a club over-committed in season 1 is expected.
+
+── The same bill, split — wages vs upkeep (season 1) ───────────────────
+     |      AUTHORED      |      MODELLED      |      FLIPPED
+tier | wages | upkeep     | wages | upkeep     | wages | upkeep
+  1  | 60.0% |   2.9%     | 100.4% |   4.9%     | 60.0% |   4.9%
+  2  | 60.0% |   7.7%     | 78.0% |  10.0%     | 60.0% |  10.0%
+  3  | 60.0% |   7.2%     | 60.4% |   7.2%     | 60.0% |   7.2%
+  4  | 60.0% |   9.5%     | 44.5% |   7.1%     | 60.0% |   7.1%
+  5  | 60.0% |   7.7%     | 34.4% |   4.4%     | 60.0% |   4.4%
+  6  | 60.0% |  20.6%     | 15.2% |   5.2%     | 60.0% |   5.2%
+  7  | 60.0% |  26.3%     | 10.2% |   4.5%     | 60.0% |   4.5%
+  8  | 60.0% |  74.1%     |  3.8% |   4.6%     | 60.0% |   4.6%
+
+  AUTHORED wage share spans 60.0% - 60.0% (spread 0.0 points).
+  ⚠️ A FLAT wage share across the pyramid is the authored table being internally
+     consistent. If this row is flat, any published "wage calibration mismatch" was
+     between two DOCUMENTS, not inside the config.
+
+── The two original verdicts, for reference ────────────────────────────
+     |      AUTHORED REVENUE       ||      MODELLED REVENUE
+tier | bill% | insolvent | balance || bill% | insolvent |        balance
+  1  | 62.9% |     never |  £3,683,273,274 || 105.3% |  season 1 |  -£311,709,084
+  2  | 67.7% |     never |  £1,103,993,176 || 88.0% |     never |   £315,061,096
+  3  | 67.2% |     never |    £340,783,289 || 67.6% |     never |   £333,776,096
+  4  | 69.5% |     never |    £189,272,337 || 51.6% |     never |   £405,304,122
+  5  | 67.7% |     never |     £70,925,799 || 38.8% |     never |   £234,050,613
+  6  | 80.6% |     never |     £15,639,514 || 20.4% |     never |   £253,248,064
+  7  | 86.3% |     never |      £2,817,303 || 14.7% |     never |   £102,985,803
+  8  | 134.1% |  season 1 |     -£2,196,758 ||  8.4% |     never |    £94,112,749
+
+── F5.5: first two seasons — MODELLED (wages on authored turnover — NOT what runs today) 
+tier |   s1 income |     s1 bill | s1 bill% | s1 balance | s2 balance | rescue?
+  1  | £197,833,921 | £198,599,980 |   105.3% | -£10,390,303 | -£20,780,606 | YES
+  2  | £87,702,264 | £68,399,994 |    88.0% | £10,502,037 | £21,004,073 | no
+  3  | £34,366,427 | £20,759,984 |    67.6% | £11,125,870 | £22,251,740 | no
+  4  | £27,901,059 | £12,419,998 |    51.6% | £13,510,137 | £27,020,275 | no
+  5  | £12,757,494 |  £4,391,983 |    38.8% | £7,801,687 | £15,603,374 | no
+  6  | £10,610,285 |  £1,613,994 |    20.4% | £8,441,602 | £16,883,204 | no
+  7  |  £4,024,950 |    £411,590 |    14.7% | £3,432,860 | £6,865,720 | no
+  8  |  £3,425,317 |    £128,996 |     8.4% | £3,137,092 | £6,274,183 | no
+  tiers generating rescues in seasons 1-2: 1
+
+── F5.5: first two seasons — FLIPPED — incomeAnchoredWages ON, WHAT THE GAME RUNS TODAY 
+tier |   s1 income |     s1 bill | s1 bill% | s1 balance | s2 balance | rescue?
+  1  | £197,833,921 | £118,700,353 |    64.9% | £69,509,325 | £139,018,650 | no
+  2  | £87,702,264 | £52,621,358 |    70.0% | £26,280,673 | £52,561,345 | no
+  3  | £34,366,427 | £20,619,856 |    67.2% | £11,265,998 | £22,531,995 | no
+  4  | £27,901,059 | £16,740,636 |    67.1% | £9,189,499 | £18,378,999 | no
+  5  | £12,757,494 |  £7,654,496 |    64.4% | £4,539,174 | £9,078,348 | no
+  6  | £10,610,285 |  £6,366,171 |    65.2% | £3,689,425 | £7,378,850 | no
+  7  |  £4,024,950 |  £2,414,970 |    64.5% | £1,429,480 | £2,858,961 | no
+  8  |  £3,425,317 |  £2,055,190 |    64.6% | £1,210,898 | £2,421,796 | no
+  tiers generating rescues in seasons 1-2: none
+  ⚠️ `bill%` is the WHOLE recurring bill (player + staff wages + upkeep) over MODELLED
+     income — not a wage share, and not comparable to the authored-revenue columns.
+  ⚠️ Every cost here is a FLOOR: no transfers, no matchday variance, no injury load,
+     and the balance starts at ZERO rather than at the club's authored opening cash.
+
+── F5.4: relegation, two seasons, with the parachute ───────────────────
+w(0) = the bill carried down · target = the same ratio at the new tier
+from→to |       w(0) |     w(s1) |     w(s2) | parachute s1 | s1 balance | s2 balance
+   1→2   | £198,600,000 | £155,200,000 | £126,266,667 |  £72,029,854 | £4,532,118 | £13,987,618
+   2→3   | £68,400,000 | £52,520,000 | £41,933,333 |  £21,345,961 | £3,192,388 | £9,856,123
+   3→4   | £20,760,000 | £17,980,000 | £16,126,667 |  £11,945,406 | £21,866,465 | £41,604,462
+   4→5   | £12,420,000 | £9,744,000 | £7,960,000 |   £4,243,077 | £7,256,571 | £14,882,783
+   5→6   | £4,392,000 | £3,466,000 | £2,848,667 |   £1,403,939 | £8,548,224 | £17,245,802
+   6→7   | £1,614,000 | £1,213,200 |  £946,000 |     £349,671 | £3,161,421 | £6,473,485
+   7→8   |   £411,600 |  £317,400 |  £254,600 |      £98,911 | £3,206,828 | £6,443,485
+  ⚠️ The bill ALWAYS converges — w(k) approaches the target geometrically from
+     above, by construction. A negative balance here is an income problem at the
+     destination tier, never a wage spiral.
+
+── What the substitution changed ───────────────────────────────────────
+  insolvent on AUTHORED revenue: 8
+  insolvent on MODELLED revenue: 1
+  ⚠️ FAIL only once income is modelled: tiers 1
+  ✅ pass only once income is modelled: tiers 8
+
+── Caveats that travel with this verdict ───────────────────────────────
+  · A FLOOR on income. Not modelled, and so absent from every figure above:
+      investor_income — investor performance bonuses, re-rolled each season
+      pyramid_distribution — the pyramid payout
+      win_bonus — per-result bonus
+      fan_initiative · dividend_draw · tournament_prize · guardian_payment
+  · The insolvency ladder has NO EFFECTS in this sim: a negative balance is recorded
+    and the run continues. "Insolvent in season N" means the arithmetic goes negative,
+    not that the club is wound up or deducted points.
+  · Transfers, matchday variance and the player's own decisions are absent.
+  · Prize and position money are rescaled by 1.000x — the tier-1 tvDeal ratio
+    between the world export and live. THIS IS THE WEAKEST INPUT IN THE RUN; a fresh
+    authenticated GET /api/initialize/leagues removes the need for it entirely.
+  · AUTHORED and MODELLED both anchor wages to AUTHORED turnover — that mismatch is
+    the thing being measured. Only FLIPPED anchors them to the income it credits.
+
+============================================================================================
+VARIANT GATE: PASS — every tier solvent for 30 seasons once wages follow income
+  diagnosis, unchanged: tiers 1 cannot pay their bills while
+  wages stay anchored to authored turnover. That is the case FOR flipping the flag.
+============================================================================================

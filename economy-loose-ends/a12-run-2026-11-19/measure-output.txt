@@ -1,0 +1,192 @@
+
+====================================================================================================
+WORLD EXPORT: world.json (2026-11-18 22:00, newest)   exportedAt=2026-11-18T22:00:23+00:00
+====================================================================================================
+
+EN: club rows per tier  {"1":16,"2":16,"3":16,"4":16,"5":16,"6":16,"7":16,"8":15}
+EN: authored slots       {"1":18,"2":18,"3":18,"4":18,"5":18,"6":18,"7":18,"8":18}
+
+── EN tier 1 ─ 16 rows, 16 participants → home games 15 (was 23)
+   representative club: median by matchday income of 16 · "Manchester Hotspur"
+   weeks/season 46 · matchday/home game £1,891,937 · sponsors £619,589/wk · TV £136,000,000/season · upkeep £77,730/wk · balance £4,538,646
+                                     BEFORE (23)       AFTER (15)     change
+   weekly income                      £4,522,079       £4,193,047     -7.3%
+   season income                    £208,015,657     £192,880,161     -7.3%
+   wage share (60%)                 £124,809,394     £115,728,096     -7.3%
+   wage reservation                 £198,600,000     £198,600,000      0.0%
+   surplus                            £5,840,073      £-9,295,423   -259.2%
+   overCommitted                            true             true
+   solvency runway / band            52w healthy         22w warn
+   VERDICT FLIPS in this division: 16 of 16
+      Melton Mowbray Stanley: healthy→crisis (52w→10w)
+      Salford Albion: healthy→warn (52w→15w)
+      London Rangers: healthy→warn (52w→18w)
+      Basingstoke Rovers: healthy→crisis (52w→11w)
+      Torquay City: healthy→crisis (52w→11w)
+      Mansfield Argyle: healthy→crisis (52w→11w)
+      Sheffield Forest: healthy→warn (52w→14w)
+      Birmingham United: healthy→warn (52w→18w)
+      Manchester Hotspur: healthy→warn (52w→22w)
+      Reading Rangers: healthy→warn (52w→21w)
+      Southport Vale: healthy→crisis (52w→10w)
+      Cannock Town AFC: healthy→crisis (52w→9w)
+      Leeds Hotspur: healthy→warn (52w→24w)
+      Stevenage Albion: healthy→warn (52w→22w)
+      Preston Wanderers: healthy→warn (52w→16w)
+      Chesterfield Rangers: healthy→warn (52w→16w)
+   flips vs modelled wage share  40%:0  50%:0  55%:0  60%:16  65%:11  70%:8
+
+── EN tier 8 ─ 15 rows, 16 participants (AMP league: +1 reserved place) → home games 15 (was 23)
+   representative club: median by matchday income of 15 · "Haywards Heath Alexandra"
+   weeks/season 46 · matchday/home game £7,334 · sponsors £325/wk · TV £4,950/season · upkeep £1,875/wk · balance £105,345
+                                     BEFORE (23)       AFTER (15)     change
+   weekly income                          £4,099           £2,824    -31.1%
+   season income                        £188,565         £129,893    -31.1%
+   wage share (60%)                     £113,139          £77,936    -31.1%
+   wage reservation                     £129,000         £129,000      0.0%
+   surplus                              £-26,685         £-85,357    219.9%
+   overCommitted                            true             true
+   solvency runway / band            52w healthy      52w healthy
+   VERDICT FLIPS in this division: 0 of 15
+   flips vs modelled wage share  40%:0  50%:0  55%:0  60%:0  65%:0  70%:0
+
+SC: club rows per tier  {"1":14,"2":14,"3":14,"4":14,"5":14,"6":14,"7":14,"8":13}
+SC: authored slots       {"1":18,"2":18,"3":18,"4":18,"5":0,"6":0,"7":0,"8":0}
+
+── SC tier 1 ─ 14 rows, 14 participants → home games 13 (was 23)
+   representative club: median by matchday income of 14 · "Loanhead County"
+   weeks/season 46 · matchday/home game £2,046,860 · sponsors £586,845/wk · TV £136,000,000/season · upkeep £82,706/wk · balance £1,691,763
+                                     BEFORE (23)       AFTER (13)     change
+   weekly income                      £4,566,797       £4,121,827     -9.7%
+   season income                    £210,072,650     £189,604,050     -9.7%
+   wage share (60%)                 £126,043,590     £113,762,430     -9.7%
+   wage reservation                 £198,600,000     £198,600,000      0.0%
+   surplus                            £7,668,155     £-12,800,445   -266.9%
+   overCommitted                            true             true
+   solvency runway / band            52w healthy        6w crisis
+   VERDICT FLIPS in this division: 14 of 14
+      Dundee Rangers: healthy→crisis (32w→5w)
+      Glasgow Thistle: healthy→crisis (52w→5w)
+      Larkhall County: healthy→crisis (52w→4w)
+      Cowdenbeath Amateurs: healthy→folded (52w→3w)
+      Newtongrange Hearts: healthy→crisis (52w→4w)
+      Aberdeen Academical: healthy→crisis (52w→8w)
+      North Berwick Violet: healthy→crisis (52w→6w)
+      Loanhead County: healthy→crisis (52w→6w)
+      Muirkirk Rovers: healthy→crisis (52w→4w)
+      Dunblane Hearts: healthy→crisis (52w→6w)
+      Edinburgh Rangers: healthy→crisis (52w→9w)
+      Kilmacolm Boys Club: healthy→crisis (52w→6w)
+      Paisley Thistle: healthy→crisis (52w→7w)
+      Denny Saints: healthy→crisis (52w→7w)
+   flips vs modelled wage share  40%:0  50%:0  55%:0  60%:14  65%:14  70%:1
+
+── SC tier 8 ─ 13 rows, 14 participants (AMP league: +1 reserved place) → home games 13 (was 23)
+   representative club: median by matchday income of 13 · "Duns Hearts"
+   weeks/season 46 · matchday/home game £12,801 · sponsors £320/wk · TV £0/season · upkeep £2,550/wk · balance £51,383
+                                     BEFORE (23)       AFTER (13)     change
+   weekly income                          £6,721           £3,938    -41.4%
+   season income                        £309,161         £181,151    -41.4%
+   wage share (60%)                     £185,497         £108,690    -41.4%
+   wage reservation                     £185,497         £129,000    -30.5%
+   surplus                                £6,364         £-65,149   -1123.7%
+   overCommitted                           false             true
+   solvency runway / band            52w healthy      36w healthy
+   VERDICT FLIPS in this division: 0 of 13
+   flips vs modelled wage share  40%:0  50%:0  55%:0  60%:0  65%:0  70%:0
+
+====================================================================================================
+WORLD EXPORT: world.2148.json (2026-11-18 21:48)   exportedAt=2026-11-18T21:48:38+00:00
+====================================================================================================
+
+EN: club rows per tier  {"1":16,"2":16,"3":16,"4":16,"5":16,"6":16,"7":16,"8":15}
+EN: authored slots       {"1":18,"2":18,"3":18,"4":18,"5":18,"6":18,"7":18,"8":18}
+
+── EN tier 1 ─ 16 rows, 16 participants → home games 15 (was 23)
+   representative club: median by matchday income of 16 · "Birmingham Rangers"
+   weeks/season 46 · matchday/home game £1,817,778 · sponsors £633,623/wk · TV £136,000,000/season · upkeep £81,448/wk · balance £4,168,520
+                                     BEFORE (23)       AFTER (15)     change
+   weekly income                      £4,499,033       £4,182,898     -7.0%
+   season income                    £206,955,529     £192,413,305     -7.0%
+   wage share (60%)                 £124,173,317     £115,447,983     -7.0%
+   wage reservation                 £198,600,000     £198,600,000      0.0%
+   surplus                            £4,608,905      £-9,933,319   -315.5%
+   overCommitted                            true             true
+   solvency runway / band            52w healthy         19w warn
+   VERDICT FLIPS in this division: 14 of 16
+      Canterbury Wanderers: healthy→warn (52w→13w)
+      Oldham Athletic: healthy→crisis (52w→10w)
+      Southport Rovers: healthy→crisis (52w→9w)
+      London Hotspur: healthy→warn (52w→17w)
+      Manchester Villa: healthy→warn (52w→17w)
+      Burnley Borough: healthy→warn (52w→12w)
+      Loughborough Borough: healthy→crisis (52w→10w)
+      Birmingham Rangers: healthy→warn (52w→19w)
+      Sheffield Rangers: healthy→warn (52w→15w)
+      Leeds Villa: healthy→warn (52w→23w)
+      Plymouth Rangers: healthy→warn (52w→16w)
+      Ellesmere Port Rangers: healthy→warn (52w→13w)
+      Wolverhampton Villa: healthy→warn (52w→21w)
+      Newquay Swifts: healthy→warn (52w→18w)
+   flips vs modelled wage share  40%:0  50%:0  55%:1  60%:14  65%:10  70%:8
+
+── EN tier 8 ─ 15 rows, 16 participants (AMP league: +1 reserved place) → home games 15 (was 23)
+   representative club: median by matchday income of 15 · "Daventry Orient"
+   weeks/season 46 · matchday/home game £29,325 · sponsors £319/wk · TV £4,950/season · upkeep £6,518/wk · balance £90,672
+                                     BEFORE (23)       AFTER (15)     change
+   weekly income                         £15,089           £9,989    -33.8%
+   season income                        £694,098         £459,498    -33.8%
+   wage share (60%)                     £416,459         £275,699    -33.8%
+   wage reservation                     £416,459         £275,699    -33.8%
+   surplus                              £-22,166        £-116,006    423.4%
+   overCommitted                           false            false
+   solvency runway / band            52w healthy      52w healthy
+   VERDICT FLIPS in this division: 0 of 15
+   flips vs modelled wage share  40%:0  50%:0  55%:0  60%:0  65%:0  70%:0
+
+SC: club rows per tier  {"1":12,"2":12,"3":12,"4":12,"5":12,"6":12,"7":12,"8":11}
+SC: authored slots       {"1":18,"2":18,"3":18,"4":18,"5":0,"6":0,"7":0,"8":0}
+
+── SC tier 1 ─ 12 rows, 12 participants → home games 11 (was 23)
+   representative club: median by matchday income of 12 · "Whitburn Thistle"
+   weeks/season 46 · matchday/home game £1,879,170 · sponsors £596,201/wk · TV £136,000,000/season · upkeep £90,193/wk · balance £1,923,377
+                                     BEFORE (23)       AFTER (11)     change
+   weekly income                      £4,492,307       £4,002,089    -10.9%
+   season income                    £206,646,142     £184,096,097    -10.9%
+   wage share (60%)                 £123,987,685     £110,457,658    -10.9%
+   wage reservation                 £198,600,000     £198,600,000      0.0%
+   surplus                            £3,897,246     £-18,652,799   -578.6%
+   overCommitted                            true             true
+   solvency runway / band            52w healthy        4w crisis
+   VERDICT FLIPS in this division: 12 of 12
+      Dalry Juniors: crisis→folded (5w→2w)
+      Lesmahagow Town: healthy→folded (52w→3w)
+      Aberdeen Victoria: healthy→crisis (52w→6w)
+      Glasgow Victoria: healthy→crisis (52w→4w)
+      Port Glasgow Saints: healthy→crisis (52w→4w)
+      Haddington Athletic: healthy→crisis (52w→4w)
+      Whitburn Thistle: healthy→crisis (52w→4w)
+      Dundee Albion: healthy→crisis (52w→5w)
+      Edinburgh Caledonian: healthy→crisis (52w→6w)
+      Mauchline Royals: healthy→crisis (52w→4w)
+      Paisley Celtic: healthy→crisis (52w→7w)
+      Coatbridge Victoria: healthy→crisis (52w→5w)
+   flips vs modelled wage share  40%:0  50%:0  55%:2  60%:12  65%:11  70%:1
+
+── SC tier 8 ─ 11 rows, 12 participants (AMP league: +1 reserved place) → home games 11 (was 23)
+   representative club: median by matchday income of 11 · "Muir of Ord Boys Club"
+   weeks/season 46 · matchday/home game £29,357 · sponsors £322/wk · TV £0/season · upkeep £6,293/wk · balance £47,844
+                                     BEFORE (23)       AFTER (11)     change
+   weekly income                         £15,000           £7,342    -51.1%
+   season income                        £690,014         £337,730    -51.1%
+   wage share (60%)                     £414,008         £202,638    -51.1%
+   wage reservation                     £414,008         £202,638    -51.1%
+   surplus                              £-13,449        £-154,363   1047.7%
+   overCommitted                           false            false
+   solvency runway / band            52w healthy      27w healthy
+   VERDICT FLIPS in this division: 4 of 11
+      Fort William Caledonian: healthy→warn (52w→16w)
+      Tarbert City: healthy→warn (52w→20w)
+      Neilston Vale: healthy→warn (52w→18w)
+      Sanquhar Athletic: healthy→warn (52w→13w)
+   flips vs modelled wage share  40%:1  50%:3  55%:4  60%:4  65%:7  70%:7

@@ -1,0 +1,76 @@
+A10 — WHAT THE REAL GENERATOR PRODUCES. Nothing here reads the economy; this is the
+ground truth the deterministic expectation is checked against.
+
+Config: firstTeamAgeRange={"min":19,"max":33} youthCeil(age<20)=20% juniorCeil(age<16)=10% posWeights={"GK":8,"DEF":30,"MID":30,"ATT":24} k=2.5000
+
+MEAN current ability / potential, PER TIER
+  EN T1   band 40-90   n=1338   0.5491
+  EN T2   band 30-60   n=1201   0.5826
+  EN T3   band 20-40   n=1131   0.5906
+  EN T4   band 15-35   n=1073   0.5869
+  EN T5   band 10-25   n=1053   0.5805
+  EN T6   band 10-15   n=1074   0.5870
+  EN T7   band 5-10    n=940    0.5631
+  EN T8   band 2-7     n=871    0.5499
+  SC T1   band 75-95   n=1346   0.5014
+  SC T2   band 65-85   n=1199   0.5317
+  SC T3   band 55-75   n=1150   0.5572
+  SC T4   band 45-65   n=1058   0.5695
+  SC T5   band 35-55   n=1052   0.5751
+  SC T6   band 25-45   n=1061   0.5995
+  SC T7   band 15-35   n=944    0.5856
+  SC T8   band 10-25   n=878    0.5793
+
+MEAN current ability / potential, BY AGE — against the deterministic expectation
+  (expected uses potential 65 and the squad position weights, so it is comparable not identical)
+  age  n       measured   expTarget    model
+  19   1126    0.1134     0.1500       0.1088
+  20   1182    0.3542     0.4725       0.3633
+  21   1130    0.3618     0.4725       0.3633
+  22   1136    0.5472     0.7338       0.5680
+  23   1139    0.5498     0.7338       0.5680
+  24   1217    0.5448     0.7250       0.5680
+  25   1136    0.5396     0.7250       0.5680
+  26   1192    0.6672     0.9250       0.6937
+  27   1126    0.6645     0.9250       0.6937
+  28   1224    0.6657     0.9250       0.6937
+  29   1158    0.6628     0.9250       0.6937
+  30   1172    0.6664     0.9250       0.6937
+  31   1149    0.6635     0.9250       0.6937
+  32   1102    0.6613     0.9250       0.6937
+  33   1180    0.6622     0.9250       0.6937
+
+MEAN current ability / potential, BY POSITION
+  GK   n=1532   0.5190
+  DEF  n=5737   0.4839
+  MID  n=5570   0.5895
+  ATT  n=4530   0.6177
+
+PERSONALITY — expectedTraits() against rollTraits() over 40,000 rolls per age
+  age 19:
+    determination    measured  13.355   expectedTraits  13.650    +2.21%
+    professionalism  measured  12.960   expectedTraits  13.450    +3.78%
+    ambition         measured  10.681   expectedTraits  11.000    +2.99%
+    loyalty          measured  11.400   expectedTraits  11.900    +4.39%
+    adaptability     measured   9.234   expectedTraits   9.600    +3.97%
+    pressure         measured  10.430   expectedTraits  10.750    +3.07%
+    temperament      measured   9.649   expectedTraits   9.800    +1.57%
+    consistency      measured  13.009   expectedTraits  13.300    +2.24%
+  age 21:
+    determination    measured  13.318   expectedTraits  13.650    +2.49%
+    professionalism  measured  12.941   expectedTraits  13.450    +3.93%
+    ambition         measured  10.676   expectedTraits  11.000    +3.04%
+    loyalty          measured  11.433   expectedTraits  11.900    +4.09%
+    adaptability     measured   9.277   expectedTraits   9.600    +3.48%
+    pressure         measured  10.450   expectedTraits  10.750    +2.88%
+    temperament      measured   9.594   expectedTraits   9.800    +2.14%
+    consistency      measured  12.946   expectedTraits  13.300    +2.73%
+  age 26:
+    determination    measured  13.272   expectedTraits  13.650    +2.85%
+    professionalism  measured  12.942   expectedTraits  13.450    +3.93%
+    ambition         measured  10.675   expectedTraits  11.000    +3.04%
+    loyalty          measured  11.457   expectedTraits  11.900    +3.87%
+    adaptability     measured   9.284   expectedTraits   9.600    +3.40%
+    pressure         measured  10.436   expectedTraits  10.750    +3.01%
+    temperament      measured   9.613   expectedTraits   9.800    +1.94%
+    consistency      measured  12.940   expectedTraits  13.300    +2.78%

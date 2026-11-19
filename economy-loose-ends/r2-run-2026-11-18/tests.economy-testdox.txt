@@ -1,0 +1,237 @@
+PHPUnit 13.4.3 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.5.7
+Configuration: /app/phpunit.dist.xml
+
+...............................................................  63 / 196 ( 32%)
+............................................................... 126 / 196 ( 64%)
+............................................................... 189 / 196 ( 96%)
+.......                                                         196 / 196 (100%)
+
+Time: 00:00.085, Memory: 28.00 MB
+
+[4mAbility Range Parity (App\Tests\Service\Economy\AbilityRangeParity)[0m
+[32m ✔ [0mEvery published country comes from the authored table
+[32m ✔ [0mEvery authored band is published unchanged
+[32m ✔ [0mThe tier number is published on every row
+[32m ✔ [0mA short country is published short rather than padded to eight
+[32m ✔ [0mA country with no authored row is omitted not filled from the const fallback
+[32m ✔ [0mAn empty authored table publishes an empty list
+[32m ✔ [0mA row with no usable min is not an authored band
+[32m ✔ [0mA transposed pair is normalised the same way the pricing path does
+[32m ✔ [0mCountry codes are uppercased and sorted
+
+[4mConfig Import Export Coverage (App\Tests\Service\ConfigImportExportCoverage)[0m
+[32m ✔ [0mEvery mapped column is exported[2m with [22m[36mGameConfig[0m
+[32m ✔ [0mEvery mapped column is exported[2m with [22m[36mStarterConfig[0m
+[32m ✔ [0mEvery mapped column is exported[2m with [22m[36mPoolConfig[0m
+[32m ✔ [0mEvery exported field can be imported[2m with [22m[36mGameConfig[0m
+[32m ✔ [0mEvery exported field can be imported[2m with [22m[36mStarterConfig[0m
+[32m ✔ [0mEvery exported field can be imported[2m with [22m[36mPoolConfig[0m
+[32m ✔ [0mDenylist entries still exist
+[32m ✔ [0mSecrets and runtime state are never exported
+[32m ✔ [0mExport is json serializable[2m with [22m[36mGameConfig[0m
+[32m ✔ [0mExport is json serializable[2m with [22m[36mStarterConfig[0m
+[32m ✔ [0mExport is json serializable[2m with [22m[36mPoolConfig[0m
+[32m ✔ [0mDefaults round trip unchanged[2m with [22m[36mGameConfig[0m
+[32m ✔ [0mDefaults round trip unchanged[2m with [22m[36mStarterConfig[0m
+[32m ✔ [0mDefaults round trip unchanged[2m with [22m[36mPoolConfig[0m
+[32m ✔ [0mEach scalar type survives import
+[32m ✔ [0mFalse and zero are applied
+[32m ✔ [0mBad value is reported without blocking other fields
+[32m ✔ [0mThe economy ratio tables round trip with their values
+[32m ✔ [0mThe league payout ladders round trip with their values
+[32m ✔ [0mUnknown keys are ignored
+
+[4mEconomy Baseline Turnover Authoring (App\Tests\Service\Economy\EconomyBaselineTurnoverAuthoring)[0m
+[32m ✔ [0mThe authored turnover row is exactly the r 2 table
+[32m ✔ [0mThe authored turnover falls strictly down the pyramid
+[32m ✔ [0mEvery authored value is three significant figures
+[32m ✔ [0mThe derived wage scale is strictly decreasing
+[32m ✔ [0mThe derived wage scale is exactly the figures the brief asserts
+[32m ✔ [0mNothing is authored for wages on the config itself
+[32m ✔ [0mAn unauthored turnover row still publishes no scale at all
+
+[4mEconomy Scale Resolver (App\Tests\Service\Economy\EconomyScaleResolver)[0m
+[32m ✔ [0mThe shipped defaults change nothing
+[32m ✔ [0mScaling pence at the defaults is the identity
+[32m ✔ [0mAn unauthored turnover table is not resolvable
+[32m ✔ [0mNo baseline country at all still resolves at parity
+[32m ✔ [0mAn inflation rate of zero is always the identity
+[32m ✔ [0mThe baseline country is parity with itself whatever it stores
+[32m ✔ [0mAnother country is normalised against the baselines own value
+[32m ✔ [0mA country with no profile row falls back to parity
+[32m ✔ [0mTier factors are indexed raw not stretched
+[32m ✔ [0mA tier deeper than the country has clamps to its bottom division
+[32m ✔ [0mThe wage scale makes the reference squad cost its share of turnover
+[32m ✔ [0mThe wage scale carries sub penny precision
+[32m ✔ [0mA transposed ability band is normalised rather than inverted
+[32m ✔ [0mSeason one is always the base year
+[32m ✔ [0mThe index compounds per season
+[32m ✔ [0mAn absurd season number is bounded rather than spinning
+[32m ✔ [0mDeflation is refused at the setter
+[32m ✔ [0mA short tier list is padded to eight
+[32m ✔ [0mA long tier list is truncated to eight
+[32m ✔ [0mA full staff share cannot make every player free
+[32m ✔ [0mA zero curve exponent is refused
+[32m ✔ [0mA zero country factor is refused
+[32m ✔ [0mThe country profile is looked up once per request
+
+[4mLeague Payout Resolver (App\Tests\Service\Economy\LeaguePayoutResolver)[0m
+[32m ✔ [0mBoth tables ship at parity and both bases ship unauthored
+[32m ✔ [0mAn unauthored base resolves to null whatever the ratios say
+[32m ✔ [0mThe authored ladder puts every tier at tier 1s share of its own turnover
+[32m ✔ [0mThe resolved pence are exactly the figures the migration authors
+[32m ✔ [0mA tier eight champion no longer out earns its own division
+[32m ✔ [0mThe leagues own column wins and is not scaled
+[32m ✔ [0mZero is an override and not an absent one
+[32m ✔ [0mA cheap country scales the inherited ladder once and last
+[32m ✔ [0mThe tier factor is deliberately n o t applied
+[32m ✔ [0mThe tier 1 base at parity does not overflow int 64
+[32m ✔ [0mA very rich country still resolves exactly
+[32m ✔ [0mA four tier country reads rows one to four and never past them
+[32m ✔ [0mA tier outside one to eight resolves unauthored rather than reading past the table
+[32m ✔ [0mA steep ratio never truncates into reading as unauthored
+[32m ✔ [0mThe taper sum is 5 point 5 for any league of eleven or more at ten percent
+[32m ✔ [0mThe taper sum is not constant across real league sizes
+[32m ✔ [0mA zero decrease pays every club the full pot
+[32m ✔ [0mThe ratio list is always eight entries padded at parity
+[32m ✔ [0mA negative ratio is clamped and zero means no payout
+[32m ✔ [0mA negative base is clamped to unauthored
+[32m ✔ [0mThe authored ladder meets every constraint it alone controls
+[32m ✔ [0mR 2 sits inside check 8s amended bounds and would have breached the old ones
+[32m ✔ [0mThe old ladder failed the constraints this one meets
+
+[4mLeague Size Resolver (App\Tests\Service\Economy\LeagueSizeResolver)[0m
+[32m ✔ [0mAuthored slots win over any count
+[32m ✔ [0mZero slots means derive rather than an empty league
+[32m ✔ [0mThe bottom tier gets the players slot
+[32m ✔ [0mA uniform country comes out one larger at the bottom
+[32m ✔ [0mThe bottom tier is the d e e p e s t e x i s t i n g o n e
+[32m ✔ [0mAn empty non bottom tier is zero rather than one
+[32m ✔ [0mNo pool derives nothing
+[32m ✔ [0mA pool is split equally across the size
+[32m ✔ [0mA pool with no resolvable size refuses to divide
+[32m ✔ [0mThe split floors rather than rounding
+[32m ✔ [0mCounts are fetched once per country
+[32m ✔ [0mForget re reads the counts
+
+[4mPer Tier Sponsor And Ticket (App\Tests\Service\Economy\PerTierSponsorAndTicket)[0m
+[32m ✔ [0mAn unauthored table leaves every tier on the flat bands
+[32m ✔ [0mA tier left out of an authored table still uses the flat bands
+[32m ✔ [0mTier zero means no tier and resolves flat
+[32m ✔ [0mA partial tier row is discarded entirely
+[32m ✔ [0mA complete row is kept
+[32m ✔ [0mA per tier band is still scaled by the country factor
+[32m ✔ [0mRoll league sponsors uses the leagues own tier
+[32m ✔ [0mA transposed pair is normalised on write
+[32m ✔ [0mTiers outside one to eight are dropped
+[32m ✔ [0mTicket price ships as eight zeros
+[32m ✔ [0mTicket price is always eight entries
+[32m ✔ [0mTicket price clamps negatives and truncates a long list
+[32m ✔ [0mThe explicit row still wins once a ratio table exists
+[32m ✔ [0mA discarded partial row falls through to the ratio not the flat band
+
+[4mSponsor Band Resolver (App\Tests\Service\Economy\SponsorBandResolver)[0m
+[32m ✔ [0mEvery band is unchanged at parity
+[32m ✔ [0mNo country means no scaling
+[32m ✔ [0mA cheap country earns proportionately less sponsorship
+[32m ✔ [0mThe baseline country is parity with itself whatever it stores
+[32m ✔ [0mThe tier factor is deliberately n o t applied
+[32m ✔ [0mThe tier factor stays out even when a sponsor ratio table is authored
+[32m ✔ [0mThe roll takes the country from the league
+[32m ✔ [0mThe rolled value is written back onto each sponsor
+[32m ✔ [0mAn empty league rolls to zero
+[32m ✔ [0mAn equal band needs no roll
+[32m ✔ [0mA transposed band is normalised rather than throwing
+[32m ✔ [0mBands for carries every size keyed by its value
+
+[4mSponsor Tier Ratio (App\Tests\Service\Economy\SponsorTierRatio)[0m
+[32m ✔ [0mThe table ships at parity and is inert
+[32m ✔ [0mParity ratios leave every tier on the flat band
+[32m ✔ [0mEach tier earns its authored share of the tier one band
+[32m ✔ [0mThe tier eight share is exactly what the ratio says
+[32m ✔ [0mA non monotonic ladder is allowed rather than rejected
+[32m ✔ [0mAn explicit row is used verbatim and the ratio is not applied to it
+[32m ✔ [0mThe ratio is not read for tier zero
+[32m ✔ [0mA tier above eight resolves flat rather than reading past the table
+[32m ✔ [0mThe ratio and the country factor truncate once between them
+[32m ✔ [0mA cheap country scales a ratioed band as well
+[32m ✔ [0mThe rolled pot uses the ratio for the leagues own tier
+[32m ✔ [0mThe ratio list is always eight entries padded at parity
+[32m ✔ [0mA negative ratio is clamped to zero and zero means no sponsorship
+
+[4mStaff Tier Wage (App\Tests\Service\Economy\StaffTierWage)[0m
+[32m ✔ [0mThe same role costs less at a lower tier
+[32m ✔ [0mPay falls monotonically down the tiers
+[32m ✔ [0mWith scaling off the figure is the unscaled band
+[32m ✔ [0mA pool staff member with no tier is unscaled
+[32m ✔ [0mThe floor holds the bottom of the band up
+[32m ✔ [0mAn unauthored country still scales and never reaches zero
+
+[4mTicket Price Resolver (App\Tests\Service\Economy\TicketPriceResolver)[0m
+[32m ✔ [0mThe shipped state is zero at every tier
+[32m ✔ [0mA ratio ladder with no base resolves to zero everywhere
+[32m ✔ [0mA zero ratio zeroes only that tier
+[32m ✔ [0mA country whose factor truncates to zero resolves to zero
+[32m ✔ [0mTier zero and tiers past eight resolve to zero
+[32m ✔ [0mA very cheap price is floored at a penny not zeroed
+[32m ✔ [0mEach tier is the base times its ratio
+[32m ✔ [0mPrices for respects a short pyramid
+[32m ✔ [0mAn explicit per tier price overrides the ladder
+[32m ✔ [0mThe country factor applies to an override too
+[32m ✔ [0mNo country means no scaling
+[32m ✔ [0mThe ratio and the country factor truncate once between them
+[32m ✔ [0mThe ratio table ships at parity and is always eight entries
+[32m ✔ [0mThe base ships at zero and cannot go negative
+
+[4mTier Baseline Source (App\Tests\Service\Economy\TierBaselineSource)[0m
+[32m ✔ [0mA no country read is labelled fallback
+[32m ✔ [0mAn empty string is also fallback rather than a country
+[32m ✔ [0mA resolved country is labelled country and echoes its code
+[32m ✔ [0mThe code is normalised but still counts as resolved
+[32m ✔ [0mThe field is always present
+[32m ✔ [0mThe key set is identical either way
+
+[4mWage Model Legacy Parity (App\Tests\Service\Economy\WageModelLegacyParity)[0m
+[32m ✔ [0mPlayer wages match the old expression across every ability
+[32m ✔ [0mThe truncating cast is preserved
+[32m ✔ [0mThe strict boundary is preserved
+[32m ✔ [0mAn ability above the last row falls onto that row
+[32m ✔ [0mA null catch all row still wins
+[32m ✔ [0mStaff wages match the old expression
+[32m ✔ [0mThe seeded role bands are the old h a r d c o d e d literals
+[32m ✔ [0mA transposed role band is normalised rather than inverted
+[32m ✔ [0mAn unconfigured role is not free
+[32m ✔ [0mThe shipped model is legacy
+[32m ✔ [0mTurnover mode still falls back to legacy for an unauthored tier
+[32m ✔ [0mA pool caller with no country gets the legacy figure even under turnover
+[32m ✔ [0mThe reputation modifier is exactly neutral at the shipped spread
+[32m ✔ [0mThe modifier is neutral at reputation fifty whatever the spread
+[32m ✔ [0mThe modifier never makes a player free
+
+[4mYouth Scholarship Cap (App\Tests\Service\Economy\YouthScholarshipCap)[0m
+[32m ✔ [0mThe shipped defaults change nothing
+[32m ✔ [0mThe cap cannot bite under the legacy model
+[32m ✔ [0mThe preview sees the cap while the live model is still legacy
+[32m ✔ [0mThe previewed figure is below an average first team wage
+[32m ✔ [0mAsking under legacy explicitly is the flat figure
+[32m ✔ [0mThe two entry points agree when the model matches the live one
+[32m ✔ [0mAn unauthored tier still gets the flat figure
+[32m ✔ [0mA cap of zero means no cap
+[32m ✔ [0mA scholar never out earns an average professional at any tier
+[32m ✔ [0mThe invariant holds with an anchor and floor authored
+[32m ✔ [0mA floor above a tiers cap is clamped down to it
+[32m ✔ [0mThe anchored ladder is the same proportion at every unfloored tier
+[32m ✔ [0mThe anchor sets tier one exactly
+[32m ✔ [0mThe floor holds the bottom of the ladder up
+[32m ✔ [0mAn anchor with no turnover at tier one falls back rather than guessing
+[32m ✔ [0mA zero anchor is the old behaviour exactly
+[32m ✔ [0mThe bottom tiers are the ones that change
+[32m ✔ [0mThe cap is the configured share of the average wage
+[32m ✔ [0mA harsher cap bites harder
+[32m ✔ [0mA scholar is never free
+[32m ✔ [0mThe cap cannot exceed the whole wage
+[32m ✔ [0mThe flat figure is untouched by all of this
+
+[30;42mOK (196 tests, 2525 assertions)[0m

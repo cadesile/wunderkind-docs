@@ -1,0 +1,66 @@
+
+### EN tier 8 — band 2-7 (POTENTIAL), reference squad 22
+S_tier: 179.3699 -> 725.6891 pence per unit of ability^k  (x4.046)
+
+  CURRENT ability   wage/wk BEFORE      wage/wk AFTER
+       2                   £10.14            £41.05
+       3                   £27.96           £113.12
+       4                   £57.39           £232.22
+       5                  £100.27           £405.67
+       6                  £158.17           £639.92
+       7                  £232.53           £940.79
+
+  REAL generated squads (40 clubs, 872 players): mean current ability 2.71
+  mean weekly wage : £29.22  ->  £118.24
+  squad season bill vs player budget : 30.3%  ->  122.6%   (budget £96,750.00/season)
+
+### EN tier 1 — band 40-90 (POTENTIAL), reference squad 33
+S_tier: 262.1609 -> 1,021.3793 pence per unit of ability^k  (x3.896)
+
+  CURRENT ability   wage/wk BEFORE      wage/wk AFTER
+      40               £26,528.82       £103,356.32
+      47               £39,702.02       £154,679.12
+      54               £56,176.20       £218,862.55
+      61               £76,189.05       £296,832.63
+      69              £103,678.98       £403,933.42
+      76              £132,008.52       £514,305.34
+      83              £164,536.86       £641,035.81
+      90              £201,453.24       £784,862.05
+
+  REAL generated squads (40 clubs, 1343 players): mean current ability 35.96
+  mean weekly wage : £24,238.86  ->  £94,434.64
+  squad season bill vs player budget : 25.1%  ->  97.9%   (budget £148,950,000.00/season)
+
+### SC tier 8 — band 10-25 (POTENTIAL), reference squad 22
+S_tier: 6.6280 -> 21.9164 pence per unit of ability^k  (x3.307)
+
+  CURRENT ability   wage/wk BEFORE      wage/wk AFTER
+      10                   £20.95            £69.30
+      12                   £33.06           £109.32
+      14                   £48.60           £160.72
+      16                   £67.87           £224.42
+      19                  £104.29           £344.86
+      21                  £133.94           £442.91
+      23                  £168.15           £556.01
+      25                  £207.12           £684.88
+
+  REAL generated squads (40 clubs, 881 players): mean current ability 10.70
+  mean weekly wage : £31.18  ->  £103.12
+  squad season bill vs player budget : 32.7%  ->  108.0%   (budget £96,750.00/season)
+
+### SC tier 1 — band 75-95 (POTENTIAL), reference squad 33
+S_tier: 145.7126 -> 679.0250 pence per unit of ability^k  (x4.660)
+
+  CURRENT ability   wage/wk BEFORE      wage/wk AFTER
+      75               £70,982.32       £330,779.75
+      78               £78,294.91       £364,856.65
+      81               £86,041.82       £400,957.47
+      84               £94,231.32       £439,120.77
+      86               £99,940.88       £465,727.51
+      89              £108,886.01       £507,412.05
+      92              £118,295.07       £551,258.54
+      95              £128,175.81       £597,303.11
+
+  REAL generated squads (40 clubs, 1338 players): mean current ability 43.10
+  mean weekly wage : £20,765.01  ->  £96,765.58
+  squad season bill vs player budget : 21.5%  ->  100.0%   (budget £148,950,000.00/season)

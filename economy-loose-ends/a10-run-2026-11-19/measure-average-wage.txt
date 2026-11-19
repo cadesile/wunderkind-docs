@@ -1,0 +1,23 @@
+A10 — WageModelResolver::averageFirstTeamWagePence() prices the MID OF THE POTENTIAL BAND.
+Compared with the TRUE mean weekly wage over the reference squad, before and after.
+refMean is invariant by construction: the reference squad's bill equals the budget.
+
+cc     band    mid   |   bandMid BEFORE    bandMid AFTER |   refMean BEFORE    refMean AFTER | after/truth
+EN T1  40-90   65    |        89,299.98       347,912.83 |        98,122.52        98,122.52 |      3.55x
+EN T2  30-60   45    |        34,534.48       110,176.76 |        37,173.90        37,173.90 |      2.96x
+EN T3  20-40   30    |        11,235.44        36,040.35 |        12,088.50        12,088.50 |      2.98x
+EN T4  15-35   25    |         7,035.16        22,957.36 |         7,788.45         7,788.45 |      2.95x
+EN T5  10-25   18    |         2,632.09         8,693.16 |         2,754.17         2,754.17 |      3.16x
+EN T6  10-15   13    |         1,085.11         3,671.34 |         1,012.11         1,012.12 |      3.63x
+EN T7  5-10    8     |           314.32         1,125.16 |           291.77           291.77 |      3.86x
+EN T8  2-7     5     |           100.27           405.67 |            95.59            95.59 |      4.24x
+SC T1  75-95   85    |        97,060.91       452,306.76 |        98,122.52        98,122.52 |      4.61x
+SC T2  65-85   75    |        36,737.25       147,576.22 |        37,173.90        37,173.90 |      3.97x
+SC T3  55-75   65    |        11,895.87        41,751.03 |        12,088.50        12,088.50 |      3.45x
+SC T4  45-65   55    |         7,619.60        24,610.68 |         7,788.45         7,788.45 |      3.16x
+SC T5  35-55   45    |         2,665.94         8,476.49 |         2,754.17         2,754.17 |      3.08x
+SC T6  25-45   35    |           959.64         3,085.66 |         1,012.11         1,012.11 |      3.05x
+SC T7  15-35   25    |           263.63           861.43 |           291.77           291.77 |      2.95x
+SC T8  10-25   18    |            91.10           301.26 |            95.59            95.59 |      3.15x
+
+Scholarship config: flat=25000 capBp=5000 tier1Anchor=0 floor=0

@@ -1,0 +1,21 @@
+batch-001 EXIT=0 :: 
+batch-002 EXIT=137 :: 
+batch-003 EXIT=1 :: 
+batch-004 EXIT=0 :: 
+batch-005 EXIT=1 :: 
+batch-006 EXIT=0 :: 
+batch-007 EXIT=0 :: 
+batch-008 EXIT=0 :: 
+batch-009 EXIT=0 :: 
+batch-010 EXIT=0 :: 
+batch-011 EXIT=0 :: 
+batch-012 EXIT=0 :: 
+batch-013 EXIT=1 :: 
+batch-014 EXIT=1 :: 
+batch-015 EXIT=0 :: 
+batch-016 EXIT=0 :: 
+batch-017 EXIT=0 :: 
+batch-018 EXIT=0 :: 
+batch-019 EXIT=0 :: 
+batch-020 EXIT=0 :: 
+ALL DONE (20 batches)
