@@ -4302,6 +4302,60 @@ verified and the wage one is not.
    hardcoded fallback behind an authored table is the exact defect this workstream exists to end —
    and it stayed invisible because it only fires when a country's depth changes.
 
+## 🔴 THE WAGE HALF — narrowed to one candidate, by elimination
+
+**Every scale the live config can produce, tested against both contracts:**
+
+| scale | Gallacher (a22) | Leitch (a10) |
+|---|---|---|
+| tier 4 **now** (4 tiers, 0.10) | £2,102 | £293 |
+| tier 1 **now** | £2,882 | £402 |
+| tier 8 **pre** (8 tiers, 0.50) | £2,648 | £369 |
+| **tier 4 pre** (8 tiers, 0.50) | **£10,508** | **£1,464** |
+| **the actual contracts** | **£10,000** | **£1,500** |
+
+**Only the pre-change tier-4 scale fits, and it fits both players inside the ±8% negotiation band.**
+
+### What that rules out
+
+- 🔴 **Not legacy pricing.** My first test was invalid — legacy is piecewise, not linear (per-band
+  `playerMultiplier`). Tested properly: ability 22 falls in the ×6 band giving **£2,640–£3,696**,
+  ability 10 in the ×4 band giving **£800–£1,120**. **Both contracts are outside.** So the CHECKS
+  tab's `LEGACY` verdict is wrong, though my original reason for saying so was also wrong.
+- 🔴 **Not income anchoring.** The club's own table shows the bounded premium at ~1.25×.
+- 🔴 **Not the tier-8 request.** That explains the *ability band* (§ ABILITY_RANGES) but prices at
+  £2,648, not £10,000.
+
+### So: the squad was priced on device, at the CORRECT tier, from a STALE `economyTierBaseline`
+
+`StarterPackService`'s own v11 docblock is explicit: *"NOT PRICED AT ALL, LIKE AN NPC CLUB …
+`WorldPackSnapshotBuilder::buildPlayerSnapshot()` strips `contractValue`, so the device prices this
+squad from its division's published wage scale at initialisation."*
+
+**So the pricing is app-side, at init.** The NPC clubs in the same save priced correctly, so the
+device held the new config **by the time they were priced**. **The founder's squad did not.**
+
+⚠️ **The strongest remaining candidate: the founder's squad is priced during the FUND YOUR CLUB /
+init flow from a config block fetched before the owner's admin change, while the NPC pass and the
+CHECKS tab read a later, refreshed one.** `useInitFlow`'s `ensureConfigOrFail()` gates the flow and
+`useGameConfigSync` re-fetches only under specific conditions.
+
+🔴 **I am not calling this proven.** It is the only candidate left standing, which is not the same
+as evidence.
+
+### The one test that settles it, and it costs one save
+
+**Start another save right now, changing nothing.** The config has had time to refresh.
+
+- **Ability-22 player prices near £2,100** → the staleness was a timing artefact of changing the dial
+  mid-session. **Annoying, not a defect.**
+- **Still £10,000** → the stale config is persistent, the founder's squad is permanently priced off
+  a different block from everything around it, and **it is a real defect worth its own task.**
+
+⚠️ **Either way the ABILITY finding stands on its own** — the tier-8 request and the hardcoded
+`ABILITY_RANGES` fallback are verified from the Starter Pack Check screen and the source, and need
+fixing regardless of what the wage test returns.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
