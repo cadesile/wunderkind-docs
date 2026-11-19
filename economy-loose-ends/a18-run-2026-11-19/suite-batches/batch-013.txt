@@ -1,0 +1,20 @@
+PHPUnit 13.4.3 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.5.7
+Configuration: /app/phpunit.dist.xml
+
+...............................................................  63 / 178 ( 35%)
+..........................................................[36;1mS[0m[36;1mS[0m... 126 / 178 ( 70%)
+..........[41;37mF[0m................[33;1mN[0m.[33;1mN[0m......................            178 / 178 (100%)
+
+Time: 00:01.736, Memory: 62.50 MB
+
+There was 1 failure:
+
+1) App\Tests\Service\Friendly\FriendlyResolveSingleMatchTest::testResolvingAnAcceptedChallengeRecordsAFullResult
+Failed asserting that an array is not empty.
+
+/app/tests/Service/Friendly/FriendlyResolveSingleMatchTest.php:110
+
+[37;41mFAILURES![0m
+[37;41mTests: 178[0m[37;41m, Assertions: 2018[0m[37;41m, Failures: 1[0m[37;41m, PHPUnit Notices: 2[0m[37;41m, Skipped: 2[0m[37;41m.[0m

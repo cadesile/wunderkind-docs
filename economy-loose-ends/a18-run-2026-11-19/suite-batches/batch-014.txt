@@ -1,0 +1,66 @@
+PHPUnit 13.4.3 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.5.7
+Configuration: /app/phpunit.dist.xml
+
+............................................................[31;1mE[0m..  63 / 228 ( 27%)
+............................................................... 126 / 228 ( 55%)
+............................................................... 189 / 228 ( 82%)
+.......................................                         228 / 228 (100%)
+
+Time: 00:12.181, Memory: 310.50 MB
+
+There was 1 error:
+
+1) App\Tests\Service\LeaderboardHallOfFameTest::testTitlesProduceATierWeightedScoreOnTheLeaderboard
+Doctrine\DBAL\Exception\UniqueConstraintViolationException: An exception occurred while executing a query: SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint "uq_league_country_tier"
+DETAIL:  Key (country, tier)=(XJ, 4) already exists.
+
+/app/vendor/doctrine/dbal/src/Driver/API/PostgreSQL/ExceptionConverter.php:54
+/app/vendor/doctrine/dbal/src/Connection.php:1453
+/app/vendor/doctrine/dbal/src/Connection.php:1389
+/app/vendor/doctrine/dbal/src/Statement.php:108
+/app/vendor/doctrine/dbal/src/Statement.php:133
+/app/vendor/doctrine/orm/src/Persisters/Entity/BasicEntityPersister.php:255
+/app/vendor/doctrine/orm/src/UnitOfWork.php:1144
+/app/vendor/doctrine/orm/src/UnitOfWork.php:426
+/app/vendor/doctrine/orm/src/EntityManager.php:270
+/app/tests/Service/LeaderboardHallOfFameTest.php:78
+
+Caused by
+Doctrine\DBAL\Driver\PDO\Exception: SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint "uq_league_country_tier"
+DETAIL:  Key (country, tier)=(XJ, 4) already exists.
+
+/app/vendor/doctrine/dbal/src/Driver/PDO/Exception.php:24
+/app/vendor/doctrine/dbal/src/Driver/PDO/Statement.php:57
+/app/vendor/doctrine/dbal/src/Driver/Middleware/AbstractStatementMiddleware.php:24
+/app/vendor/doctrine/dbal/src/Logging/Statement.php:46
+/app/vendor/doctrine/dbal/src/Driver/Middleware/AbstractStatementMiddleware.php:24
+/app/vendor/symfony/doctrine-bridge/Middleware/Debug/Statement.php:58
+/app/vendor/doctrine/dbal/src/Statement.php:104
+/app/vendor/doctrine/dbal/src/Statement.php:133
+/app/vendor/doctrine/orm/src/Persisters/Entity/BasicEntityPersister.php:255
+/app/vendor/doctrine/orm/src/UnitOfWork.php:1144
+/app/vendor/doctrine/orm/src/UnitOfWork.php:426
+/app/vendor/doctrine/orm/src/EntityManager.php:270
+/app/tests/Service/LeaderboardHallOfFameTest.php:78
+
+Caused by
+PDOException: SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint "uq_league_country_tier"
+DETAIL:  Key (country, tier)=(XJ, 4) already exists.
+
+/app/vendor/doctrine/dbal/src/Driver/PDO/Statement.php:55
+/app/vendor/doctrine/dbal/src/Driver/Middleware/AbstractStatementMiddleware.php:24
+/app/vendor/doctrine/dbal/src/Logging/Statement.php:46
+/app/vendor/doctrine/dbal/src/Driver/Middleware/AbstractStatementMiddleware.php:24
+/app/vendor/symfony/doctrine-bridge/Middleware/Debug/Statement.php:58
+/app/vendor/doctrine/dbal/src/Statement.php:104
+/app/vendor/doctrine/dbal/src/Statement.php:133
+/app/vendor/doctrine/orm/src/Persisters/Entity/BasicEntityPersister.php:255
+/app/vendor/doctrine/orm/src/UnitOfWork.php:1144
+/app/vendor/doctrine/orm/src/UnitOfWork.php:426
+/app/vendor/doctrine/orm/src/EntityManager.php:270
+/app/tests/Service/LeaderboardHallOfFameTest.php:78
+
+[37;41mERRORS![0m
+[37;41mTests: 228[0m[37;41m, Assertions: 9358[0m[37;41m, Errors: 1[0m[37;41m.[0m

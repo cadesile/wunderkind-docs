@@ -3183,6 +3183,152 @@ never a reinterpretation of the old one** — the app half (`0964fedc`) already 
 `fanBaseRanges` byte-identically when this key is absent, which is what makes the backend half
 safe to land on its own.
 
+## ✅ A15 CLOSED — the mirror is DELETED, not repaired. And it corrected the brief on four points.
+
+**App, `new-game-save`, commit `c65bfa91`, not pushed.** `tsc` clean, **646 suites / 10,772 green**.
+The harness no longer keeps a copy of the backend's reference squad at all: **the turnover wage is
+derived from the authored budget.** **A10 is unblocked app-side.**
+
+**§3's (a)/(b)/(c) were not exhaustive.** The right answer was a fourth option the PM did not
+consider — *delete the duplicate rather than synchronise it*, which is the workstream's own
+principle applied properly.
+
+### 🔴 0.1 — the invariant acceptance test was WRONG, and the error came from A10 via the brief
+
+The brief said a correct mirror makes the ratio *"constant at a new value"*. **σ cancels
+algebraically:**
+
+```
+scale × σ / turnoverPence
+  = (playerBudget × UNIT / (weeks × σ)) × σ / turnoverPence
+  = UNIT × wageToTurnoverRatio × (1 − staffWageShare) / weeks
+  = 1,000,000 × 0.60 × 0.75 / 46
+  = 9782.608696
+```
+
+**A10 changed none of those four terms, so a correct mirror restores EXACTLY 9782.608696.** There
+was never a new value to record. ⚠️ **A10's §0.2 predicted `9782.608696 × σ_old/σ_new` after
+stating the correct formula two lines earlier; the brief inherited it and built an acceptance test
+on it.** Both are wrong and are corrected here.
+
+**Two consequences that matter more than the arithmetic:**
+
+1. **The invariant is a DRIFT DETECTOR, not a derivation check.** It is flat iff the app's `Σ aᵏ`
+   equals the σ that produced *that export's* scale — price the squad at `a^k × 1000` and it stays
+   flat. **It could never have validated a mirror**; it could only notice two copies disagreeing,
+   which is exactly what it did.
+2. 🔴 **It therefore never proved `floor` over `round`** for the squad size, which `loadExport.ts`
+   has claimed in a comment since it was written. **That reasoning needs re-establishing on other
+   grounds, or retiring.**
+
+### 🔴 0.3 — "the gate MUST move" was backwards
+
+The gate reads an **export**, and every export that exists is **pre-A10** (A10 is committed, not
+deployed). Against a pre-A10 export the app's figure is **already correct**, so a correct fix must
+leave it **unchanged** — and it does, to within one penny at three tiers of eight.
+
+**The 3.2–4.7× movement is what the fix PREVENTS.** A15 demonstrated it properly by projecting a
+post-A10 export and running the gate four times:
+
+| | projected post-A10 export |
+|---|---|
+| **without** the fix | **191–243% wage share — every tier insolvent in season 1** |
+| **with** the fix | **byte-identical to the pre-A10 run** |
+
+⚠️ **That is a stronger acceptance test than the brief's**, because it shows the figure is now
+*invariant under exactly the backend change that broke it*. **Adopt this pattern for any future
+app/backend mirror work.**
+
+### The lesson, and it is the fourth of its kind today
+
+**A10 stated the correct formula and then contradicted it in the next sentence; the PM propagated
+the contradiction into a brief and made it an acceptance criterion.** Three agents have now caught
+a PM error by checking rather than complying. ⚠️ **An acceptance test inherited from a report is
+not evidence — derive it.**
+
+## ✅ A18 CLOSED — ladder published. And the measurement exposes a problem the ladder cannot fix.
+
+**Backend, `development`, commit `8298cc60`, not pushed.** `fanBaseSharePercent` published,
+`fanBaseRanges` untouched and pinned by three tests, `app:economy:wage-table` byte-identical.
+
+### 🟢 No pack bump, and none was needed — my brief was wrong
+
+`populationSize` has been in `WorldPackSnapshotBuilder::buildClubSnapshot()` since that builder was
+written — **verified against cached payloads at versions 8 and 9.** `WORLD_PACK_VERSION` stays at
+**11**. ⚠️ **Bumping 11 → 12 as my brief demanded would have invalidated 107 cached tier payloads to
+publish a field already there.** **No worldpack regeneration is needed before testing.**
+
+⚠️ The app's `WorldClub::populationSize` docblock says otherwise and is wrong — flagged app-side.
+
+### 🟢 Reproduced: the spread
+
+**England 68.4:1 against today's 73.3:1** — the intended shape, and nowhere near the 164:1 that
+would mean the rejected 5–10% variant. **The ladder in the code is the one the owner settled.**
+
+### 🔴 NOT reproduced: my "×0.47–0.49 at every tier". Actual range ×0.06 to ×1.92.
+
+```
+England     tier  share%        mean fans   today mid   xtoday   >42.5k  (today)
+               1  60-70           536,713   1,100,000     0.49    13/16    16/16
+               2  49-59            34,352     600,000     0.06     6/16    16/16
+               3  40-49           288,929     475,000     0.61     5/16    16/16
+               4  33-41            18,766     325,000     0.06     2/16    16/16
+               5  27-34            16,149     170,000     0.09     0/16    16/16
+               6  22-29           153,714      80,000     1.92     1/16    16/16
+               7  18-24             9,066      35,000     0.26     0/16     0/16
+               8  15-20             7,850      15,000     0.52     0/15     0/15
+```
+
+**My error:** I computed the ×0.47 from *mean catchment per tier* and assumed those means formed a
+smooth gradient. **They do not.** Mean catchment per tier is dominated by whichever few large cities
+happen to sit in it, and that placement is effectively random — England tier 3 has a 3,996,990 plot,
+tier 6 has 2,290,410. **My "catchment falls 19:1" was true of the endpoints and false of everything
+between them.**
+
+### 🔴 THE REAL FINDING — the resulting pyramid is NON-MONOTONIC
+
+On these means, **tier 6 (153,714) would outdraw tier 2 (34,352), and tier 3 (288,929) would
+outdraw everything below tier 1.** A tier-6 club with four times the support of a tier-2 club is not
+a calibration artefact the ladder can absorb — **it is what happens when catchment is noisy rather
+than graded, and the share ladder is monotonic over it.**
+
+⚠️ **This is the owner's premise meeting its limit.** *"NPC clubs already have a tier structure
+based on the plot sizes"* is true **across the pyramid as a whole** and **not reliably tier by
+tier**. The 19:1 endpoint gradient is real; the rung-to-rung ordering is not.
+
+### 🔴 Scotland collapses — ×0.01 to ×0.10, spread 51.6:1
+
+```
+Scotland    tier  mean fans   today mid   xtoday   >42.5k  (today)
+               1     77,143   1,100,000     0.07     5/14    14/14
+               2      5,980     600,000     0.01     0/14    14/14
+               8      1,494      15,000     0.10     0/13     0/13
+```
+
+Scottish catchments are genuinely small, so **every Scottish division becomes demand-constrained** —
+only 5 clubs in the country clear 42,500. **That may be exactly right for Scotland**, but it is a
+far larger change than England's and it lands on the country the owner tests on.
+
+### 🟢 The check that matters IS working
+
+`>42.5k` falls from **16/16 at every England tier 1–6 today** to 13/6/5/2/0/1. **The demand ceiling
+stops being dead code and starts binding** — which was the strongest argument for the whole change
+and is now demonstrated rather than argued.
+
+### 🔴 THE DECISION THIS FORCES
+
+**Not the ladder — the ladder is right.** The question is whether plot assignment should grade by
+tier reliably:
+
+| | |
+|---|---|
+| **Accept it** | a big-city tier-6 club genuinely outdrawing a small-town tier-2 club is *realistic football*, and the owner has said as much. The pyramid's **income** gradient still holds through TV, prize money and sponsors; only **support** is noisy |
+| **Tighten generation** | make plot assignment correlate with tier properly, so the rung ordering holds. **That is a generation change, not an economy one**, and nothing in this workstream has touched it |
+
+⚠️ **Do not attempt to fix this by re-authoring the share ladder.** A ladder steep enough to
+overcome a 4,000,000-person plot at tier 3 would flatten the top of the pyramid to nothing. **The
+noise is in the catchments, not the shares.**
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**

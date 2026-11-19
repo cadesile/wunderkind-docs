@@ -1,0 +1,12 @@
+PHPUnit 13.4.3 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.5.7
+Configuration: /app/phpunit.dist.xml
+
+...............................................[33;1mD[0m...............  63 / 115 ( 54%)
+....................................................            115 / 115 (100%)
+
+Time: 00:01.713, Memory: 56.50 MB
+
+[30;43mOK, but there were issues![0m
+[30;43mTests: 115[0m[30;43m, Assertions: 292[0m[30;43m, PHPUnit Deprecations: 1[0m[30;43m.[0m
