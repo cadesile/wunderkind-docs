@@ -400,3 +400,68 @@ cannot silently restore the defect. Pinned by its own test.
 900.4% at SC tier 4 — but ~172% rather than ~100%, because the residual (the engine paying
 ~1.7x the authored tier turnover even without the pot) is a separate, open, backend authoring
 question.
+
+---
+
+# STAFF — status, and a correction to my own claim
+
+**Not fixed, not briefed, no task started.** Investigated only. Recorded at `f229a66`.
+
+## 🟢 Established and not in doubt
+
+Moffat Vale, SC tier 4: **12 coaches + 1 scout = GBP 62,373/wk** against **20 players =
+GBP 17,000/wk**. Staff are **3.7x the squad**. Per ability, against the debug pane's own player
+ladder on the same screen: 15 -> 2.93x, 19 -> 2.84x, 24 -> 2.70x, 27 -> 2.59x.
+
+**The observation is solid. The comparison I drew it against is not.**
+
+## ⚠️ CORRECTION — "an authored 1.2x" is the PHP DEFAULT, not necessarily the live value
+
+I read `wageMultiplierTiers` from `GameConfig.php:2862-2865` and called the 1.2 ratio
+"authored". **Those are the entity's defaults.** `wageMultiplierTiers` is editable in the admin
+(`DashboardController:461` writes it), and the owner has been tuning the economy all week, so
+the live dev value may be nothing like the default.
+
+🔴 **So "the device pays 2.3x what the config authors" is NOT established.** What is
+established is that the device pays 2.7x a player of equal ability. Whether that is a defect or
+simply what the live multipliers say is **unknown**, and I should not have stated it as the
+former.
+
+## What the rung analysis DOES settle
+
+Every rung of `resolveWorldStaffWagePence` is now accounted for, and **none of them can produce
+GBP 7,048 at ability 24 from the default multipliers**:
+
+| rung | at ability 24 | why |
+|---|---|---|
+| 1 `staff.salary` | absent | not on a fresh pack payload |
+| 2 anchored | skipped | `useInitFlow:350/:381` pass `undefined` |
+| 3 `staff.weeklySalary` | absent | `buildStaffSnapshot` carries none; starter pack uses the same builder |
+| 4 `tierStaffWeeklyWagePence` | ~GBP 3,132 | `asPlayer(24) x 0.6/0.5` |
+| 5 `legacyStaffWagePence` | **GBP 24** | `coachingAbility * 100` pence |
+
+**The most likely reading is now that rung 4 IS firing and the live `staffMultiplier` is simply
+larger than the default** — which would make this a tuning value, not a bug.
+
+⚠️ **One unchecked path remains:** `HireScreen.tsx:76` calls `resolveWorldStaffWagePence(staff)`
+with **no `economy` argument**, so staff hired through that screen skip rung 4 and fall to
+legacy's GBP 24. That is a real inconsistency regardless of the multipliers — but it produces
+wages far too SMALL, not too large, so it is not the cause of what was measured.
+
+## The one reading that settles it
+
+**The live `wageMultiplierTiers` for this config** — admin economy screen, or
+`php bin/console app:economy:wage-table`. If `staffMultiplier / playerMultiplier` is ~2.7 at
+the low band, the system is doing exactly what it is told and the question becomes whether the
+owner wants that ratio. If it is 1.2, there is a real defect and the rung analysis above says
+it is not in the chain.
+
+## 🟢 The structural half stands on its own, whatever the multipliers say
+
+`StarterPackService.php:151-152` draws the founder's staff from the SQUAD's ability band — and
+that band is the squad's **POTENTIAL**. A staff member has no current/potential split, so an
+ability-24 coach is priced at 24 from day one, while an ability-24-POTENTIAL player is priced
+on a current ability well below it. **Even at a ratio of 1.0 the staff bill would outweigh a
+young squad's**, because the two sides are not the same quantity. That is a design question —
+staff need a maturity curve, or the draw should target expected current ability — and it does
+not depend on anything above.
