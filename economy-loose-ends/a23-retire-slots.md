@@ -1,4 +1,4 @@
-<!-- STATUS: BRIEFED, NOT STARTED (2026-11-19) -->
+<!-- STATUS: IN PROGRESS — session a23-retire-slots, started 2026-11-19 -->
 
 # A23 — Retire `league.slots`; derive every division size
 

@@ -1,4 +1,4 @@
-<!-- STATUS: BRIEFED, NOT STARTED (2026-11-19) -->
+<!-- STATUS: IN PROGRESS — session a22-staff-wages, started 2026-11-19 -->
 
 # A22 — Find what actually sets staff wages
 
