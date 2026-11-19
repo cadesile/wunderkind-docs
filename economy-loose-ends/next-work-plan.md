@@ -3449,6 +3449,134 @@ Three pieces, all app-side CHECKS work:
 ⚠️ **Not in scope: Scotland 12-vs-14 itself.** The check exists to make it visible; fixing it is the
 owner's decision.
 
+## 🔴 DEVICE PASS 2026-11-19 20:34 — the authored turnover table disagrees with the authored payouts by 46×
+
+Aberdeen Victoria, SC tier 8, season 1, fresh save. **The coverage line A10 specified earned its
+keep on its first run.**
+
+### 🟢 FIRST — the catchment fan base is CONFIRMED LIVE
+
+```
+FANS  36,696
+```
+
+Aberdeen's catchment is ~200,000 and the tier-8 share is 15–20%, so **36,696 is the share path, not
+the fallback band** (which would have given 10,000–20,000 flat). ⚠️ **This is also the
+non-monotonic pyramid arriving as predicted and accepted**: a tier-8 club with 36,696 fans because
+it sits in a real city.
+
+### 🔴 THE FINDING — authored turnover £107,500 against £5,000,000 of authored prize money
+
+```
+INCOME — MODELLED vs AUTHORED
+  sponsors /wk × 46                      £0
+  matchday /wk × 46                      £220,491
+  season-end lump (TV, prize, shirts)    £1,199,455
+  = MODELLED season income               £1,419,946
+  authored turnoverPence (tier)          £107,500
+  COVERAGE modelled ÷ authored           1320.9%
+```
+
+**Verified against the authored data for SC tier 8:**
+
+| authored figure | value | × the tier's turnover |
+|---|---|---|
+| **turnover** | **£107,500** | — |
+| `prizeMoney` | **£5,000,000** | **46×** |
+| `leaguePositionPot` | **£2,000,000** | **19×** |
+| `tvDeal` | £85,714 | 0.8× |
+
+**The league winner at Scottish tier 8 receives forty-six times the tier's entire authored annual
+turnover.** The turnover table is what the wage scale is calibrated from; the payout ladder is what
+the engine actually pays. **They are not the same economy.**
+
+⚠️ **This is not new today.** Those payouts predate all of this month's work. **What is new is that
+it is visible** — the coverage line found a months-old authoring inconsistency on its first device
+run, which is the strongest possible argument for the standing "device data becomes a CHECK" rule.
+
+### 🔴 AND IT MAKES A10's WAGE FIX MOOT FOR A REAL CLUB
+
+```
+anchored microPence      3,690,692,227
+anchored ÷ authored      795%
+```
+
+**Income-anchored wages scale a club's pay to its own income.** The club's modelled income is 13×
+its authored turnover, so anchoring pays **795% of the authored scale** — the tier-8 ladder reads
+£33–£752 anchored against £26–£602 authored.
+
+⚠️ **So A10 corrected the authored scale, and anchoring immediately overrides it.** The authored
+figure is now right and is not what a real club pays. **This is one defect, not two: the authored
+turnover is too low, and every consequence follows from that.**
+
+🔴 **It also explains the CHECKS tab's 97–132% coverage reading differently from this screen.** That
+check prices the *authored* budget; this one prices what the engine *pays*. Both are correct and
+they measure different things — **and nothing reconciles them today.**
+
+### ⚠️ Sponsor income is £0 — question, not conclusion
+
+The device shows `sponsors /wk × 46 = £0` and `SPONSOR INCOME £0`, while the league carries
+**`sponsorCount` 3**. Either no sponsor has been rolled for this club yet in season 1, or the
+sponsor chain is not reaching an AMP club. **Worth one check before it is called anything.**
+
+### 🟢 The budget machinery itself reads coherently
+
+```
+income (basis)        £1,419,946      maintenance    £398,303
+wage share allowed    £851,967        surplus        £169,676
+wage floor (committed) £158,943       over-committed no
+COMMITTED ÷ income    39.2%           MAINTENANCE ÷ income  28.1%
+```
+
+**Not over-committed, positive surplus, maintenance under the ~40% bar.** The club is solvent and
+the shares behave as designed — the numbers feeding them are the problem, not the arithmetic.
+
+### What this does NOT change
+
+⚠️ **Do not re-author anything in response to this.** The owner's standing rule is correctness
+before calibration, and this is a calibration finding of exactly the kind that rule exists to
+sequence. **It belongs with the R1 ability bands and the turnover review, after the correctness
+boundary.**
+
+
+---
+
+## 🟢 NPC TIER-8 FINANCES — the catchment mechanic confirmed a second way
+
+Two clubs, **same division, same season, same ticket price:**
+
+| | season tickets | revenue | price each | wk income | wk wages | net |
+|---|---|---|---|---|---|---|
+| **Dalkeith** | **919** | £50,000 | £54.41 | £3,500 | £1,500 | **+£2,000** |
+| **Prestwick** | **307** | £17,000 | £55.37 | £1,800 | £1,900 | **−£100** |
+
+**A 3× difference in volume at an identical price — so it is fan base alone.** Dalkeith sits beside
+Edinburgh; Prestwick is a small town. **Before today both would have drawn from the same tier-wide
+band and sold roughly the same number.** This is the clearest confirmation the mechanic is live, and
+it is on NPC clubs rather than the player's.
+
+🟢 **It is also the intended pyramid behaving:** two clubs in one division with materially different
+support, and the smaller one under real financial pressure.
+
+### ⚠️ Prestwick is the knife-edge case, and the runway still reads 52+
+
+Wages (£1,900) exceed weekly income (£1,800). **The runway is not wrong** — £54,200 against a
+£100/week deficit is genuinely 542 weeks, capped at 52 — **but it is exactly the reading A17 is
+fixing**: a club whose costs exceed its income displays as comfortably healthy, because the measure
+divides by a deficit rather than projecting a balance. ⚠️ **It also excludes facility upkeep**,
+which on the player's own club was the largest weekly line (−£9k against −£1k of player wages), so
+the real position is worse than income minus wages.
+
+**This is a good case to re-measure once A17 lands** — it is the cleanest live example of the
+defect.
+
+### ⚠️ The player's club has NO sponsor; both NPC clubs do
+
+Dalkeith **£65/week**, Prestwick **£75/week**, one sponsor each. The AMP club shows
+`SPONSOR INCOME £0` and `sponsors /wk × 46 = £0`. ⚠️ **Either the player is meant to find their own
+sponsor, or the sponsor roll does not reach an AMP club.** **One check settles it; do not assume
+either way.**
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
