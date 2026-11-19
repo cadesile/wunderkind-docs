@@ -1,0 +1,18 @@
+/Users/courtneyadesile/Documents/WunderkindFactory/wunderkind-app/src/economy/harness/loadExport.ts:117
+    throw new ExportRefused(
+          ^
+
+
+ExportRefused [Error]: export is resolved for EN, not SC — refusing rather than measuring the wrong country.
+    at assertCountryResolved (/Users/courtneyadesile/Documents/WunderkindFactory/wunderkind-app/src/economy/harness/loadExport.ts:117:11)
+    at loadEconomyExport (/Users/courtneyadesile/Documents/WunderkindFactory/wunderkind-app/src/economy/harness/loadExport.ts:203:20)
+    at authored (/Users/courtneyadesile/Documents/WunderkindFactory/wunderkind-app/scripts/economy/variantGate.ts:96:16)
+    at Object.<anonymous> (/Users/courtneyadesile/Documents/WunderkindFactory/wunderkind-app/scripts/economy/variantGate.ts:666:27)
+    at Module._compile (node:internal/modules/cjs/loader:1521:14)
+    at Object.transformer (/Users/courtneyadesile/Documents/WunderkindFactory/wunderkind-app/node_modules/tsx/dist/register-OY9cqBEN.cjs:9:3619)
+    at Module.load (node:internal/modules/cjs/loader:1266:32)
+    at Module._load (node:internal/modules/cjs/loader:1091:12)
+    at cjsLoader (node:internal/modules/esm/translators:298:15)
+    at ModuleWrap.<anonymous> (node:internal/modules/esm/translators:240:7)
+
+Node.js v20.19.6

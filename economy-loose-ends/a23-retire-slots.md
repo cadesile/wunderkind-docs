@@ -1,4 +1,11 @@
-<!-- STATUS: IN PROGRESS — session a23-retire-slots, started 2026-11-19 -->
+<!-- STATUS: ✅ DONE — session a23-retire-slots, 2026-11-19. Report: a23-retire-slots-report.md -->
+<!-- ⚠️ TWO BRIEF PREMISES WERE WRONG AND ARE CORRECTED IN THE REPORT:
+     (1) §5's "with nothing authored, the DISAGREE row can never fire" — the app has never read
+         league.slots; that field is fed the PUBLISHED clubCount, so the check is still live and
+         is now the only instrument that can see a stale pack. A19 therefore needs LESS
+         re-scoping than its own note says, not more.
+     (2) the 23 "out of scope, unchecked" countries ARE checked: all 25 measured, 24 byte-identical,
+         only SC moves. That item is closed, not deferred. -->
 
 # A23 — Retire `league.slots`; derive every division size
 

@@ -1,4 +1,4 @@
-<!-- STATUS: ✅ DIAGNOSIS DONE — cause proved, fix PROPOSED NOT APPLIED. Findings in scotland-experiment-2026-11-19.md. Writer is anchorAmpStaffWages (SeasonBudgetService.ts:481), outside the resolveWorldStaffWagePence chain entirely. ⚠️ Three claims in this brief were REFUTED — see the Corrections section before reusing any of it. -->
+<!-- STATUS: ✅ DIAGNOSIS DONE + PART A APPLIED (app `c73bf9a8`). Cause: anchorAmpStaffWages (SeasonBudgetService.ts:481), outside the resolveWorldStaffWagePence chain. Gate fixed: renewals judged on the delta, DOF and player share one check. ⚠️ PART B (which source is authoritative for a staff wage) is an OPEN OWNER DECISION; PART C (gate budget and bill are the same number) stays open behind it. Three claims in this brief were REFUTED — read Corrections before reusing it. -->
 
 # A22 — Find what actually sets staff wages
 

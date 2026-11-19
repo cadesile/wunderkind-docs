@@ -893,3 +893,92 @@ in `coachStore`, and it omits `scoutStore` entirely while scouts are paid from t
   the wire. It did not need to be: the backend source at `development` @ `9918839c`
   (`WorldPackSnapshotBuilder::buildStaffSnapshot`, `StarterPackService.php:156-158`) carries no
   `weeklySalary`, and the solver reproduces the device to 3 pence without it.
+
+---
+
+# A22 PART A — APPLIED (owner approved, 2026-11-19)
+
+**App `new-game-save` @ `c73bf9a8`**, "A staff renewal is judged on the wage delta, not the bill
+it is part of". Parts B and C remain proposed and untouched.
+
+## What changed
+
+| file | change |
+|---|---|
+| `src/economy/staffHireBudget.ts` | `StaffHireInput` gains `incumbentWeeklySalaryPence`; the wage test becomes `currentBill - incumbent + newSalary`, and a refusal now needs **two** conditions |
+| `src/components/transfers/SignStaffPanel.tsx` | passes the real salary plus the incumbent's stored wage, instead of `isRenewal ? 0 : salary` |
+| `src/engine/DofStaffHiringService.ts` | passes `incumbentWeeklySalaryPence: 0` explicitly — it only ever hires |
+| `src/engine/GameLoop.ts` (section 14c) | the DOF's auto-renewal now calls `staffHireRefusal` instead of `club.balance < signOnFee` |
+| `src/__tests__/economy/staffHireBudget.test.ts` | +9 tests (14 -> 23) |
+| i18n | one new key, `message.gameLoop.body.dofStaffRenewalOverWageBudget`, merged with `--only ... --write` |
+
+## The one design decision inside part A
+
+A bare delta test is **not** sufficient, and this is the part worth remembering. With
+`after = currentBill - incumbent + newSalary`, a renewal on the SAME terms gives
+`after === currentBill`, which still fails a bare `after > weekly` on an over-allowance club —
+the original defect moved rather than fixed. And a renewal on LOWER terms gives
+`after < currentBill`, where refusing is perverse: the club is stopped from reducing the very
+bill it is refused for.
+
+So the rule is **`after > weekly && after > currentBill`** — a move is refused on wages only
+when it both raises the bill and leaves it over the allowance. *You may not make it worse.*
+Standing still and getting cheaper are always allowed; a renewal onto higher terms that breaks
+the allowance is still refused, so this is not a blanket exemption.
+
+**The mechanism deliberately stopped being "zero the salary at the call site".** That read as if
+it worked and did not, and the comment above the old call site asserted in plain words that
+renewals were "exempt from the WAGE test" — which was false for as long as it had existed. Both
+the field and that comment now say the same thing.
+
+## Player/DOF parity, and why it is pinned by a source read
+
+Section 14c tested the **raw balance against the sign-on fee and nothing else** — no wage test
+at all. So the DOF renewed staff the player was forbidden to renew, and charged the fee against
+money `allocatableBalancePence` exists to ring-fence. All three paths — player
+(`SignStaffPanel`), DOF hiring (`DofStaffHiringService`), DOF renewing (14c) — now call the one
+function.
+
+That is pinned by a **source-reading test**, on the same reasoning as
+`dressingRoomLogic.test.ts`: there is no way to assert "these three paths ask the same question"
+from their outputs, and the failure being guarded is a fourth caller quietly growing its own
+affordability test — which is precisely how the panel's defect survived. ⚠️ Per that test's own
+lesson, **a source-reading test protects exactly the files it names**, so a new staff-spend path
+means adding it to that list in the same change.
+
+Behaviour change worth noting: 14c's fee test is now **stricter**, against allocatable balance
+rather than raw. That is the parity the owner approved, not a side effect.
+
+## ⚠️ WHAT PART A DOES NOT FIX — stated plainly
+
+**Renewals work. HIRING is still on the knife edge measured above, and for the same reason it
+always was: the allowance and the bill are the same number.**
+
+A hire's resulting bill always exceeds the current one, so the second condition is trivially
+true and the hire test reduces to the `after > weekly` it has always been. On a new save
+`anchorAmpStaffWages` distributes the entire staff share across the staff, so the bill sits
+within a few percent of the allowance permanently and the gate is close to `x > x`. An
+over-allowance club therefore still cannot hire, on a correctly-priced squad as much as on this
+one.
+
+**That is part C and it stays open.** It cannot be fixed by moving this gate; it needs part B's
+decision about which source for a staff wage is authoritative. Both are the owner's to make and
+neither was touched.
+
+## Verification
+
+- `npx tsc --noEmit` — **zero errors.**
+- `npx tsx scripts/i18n/audit-tokens.ts` — **0 interpolation mismatches, 0 absent keys**, over
+  3,777 call sites.
+- `npx jest --listTests | wc -l` — **647**, equal to the baseline suite count.
+- `npm test` — **647 suites, 10,797 passed, 3 skipped, 10,803 collected.** Baseline was
+  10,788 passed; +9 is exactly this change's new tests, no suite added.
+- ⚠️ **3 failures, and they are NOT this change.** All three are in
+  `src/__tests__/economy/variantGate.test.ts`, on `homeGamesForLeague`, whose signature the
+  sibling `a23-retire-slots` session changed in `src/economy/harness/worldExport.ts` while this
+  work was in flight. That file and `scripts/economy/{variantGate,flows,dispersionGate}.ts` were
+  uncommitted in the shared checkout and are **not in this commit** — the brief said to leave
+  them alone, and the test they break is theirs to update. The four suites that cover this
+  change (`staffHireBudget`, `spendGateArchitecture`, `seasonBudgetService`, plus the panel) run
+  **63 passed, 0 failed**.
+- `git status` after committing shows only the sibling's four files still modified.
