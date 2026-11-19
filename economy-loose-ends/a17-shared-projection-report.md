@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** ✅ DONE — committed on `new-game-save`, not pushed. **Read §2 first: two of the brief's premises are measurably false, and that is the finding.**
+<!-- STATUS --> **STATUS:** ✅ CLOSED — on `new-game-save` @ `def110a8`, **pushed**, merged to `dev` and live as OTA run **487**. **Read §2 first: two of the brief's premises are measurably false, and that is the finding.** Agent session archived 2026-11-19.
 
 ---
 

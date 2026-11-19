@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** 📋 BRIEFED, NOT STARTED.
+<!-- STATUS --> **STATUS:** ✅ CLOSED — see `a16-test-pollution-report.md`. Agent session archived 2026-11-19.
 
 ---
 

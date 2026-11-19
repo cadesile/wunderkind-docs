@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** ✅ DONE — `a17-shared-projection-report.md`. ⚠️ **§2 and §3's stated mechanism is measurably false** (there was never a break-even cliff, and `weeksRunway` did count seasonal money); the recommended shape was implemented anyway and the report says why.
+<!-- STATUS --> **STATUS:** ✅ CLOSED — see `a17-shared-projection-report.md`. ⚠️ **§2 and §3's stated mechanism is measurably false** (there was never a break-even cliff, and `weeksRunway` did count seasonal money); the recommended shape was implemented anyway and the report says why. Agent session archived 2026-11-19.
 
 ---
 

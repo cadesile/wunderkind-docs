@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** ✅ DONE — committed on `development`, not pushed.
+<!-- STATUS --> **STATUS:** ✅ CLOSED — on `development` @ `9918839c`, **pushed** (origin matches) and deployed to backend `dev` @ `0e35f196`. Agent session archived 2026-11-19.
 
 ---
 
