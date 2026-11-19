@@ -2733,6 +2733,206 @@ now has **five** consumers (`PricingPane`, `new-game-setup/economy`, `SeasonTran
 
 **The owner decisions do not block steps 1–2**, so they can be taken while A15 runs.
 
+## 🟩 DECIDED (owner, 2026-11-19) — `GameLoop:1520` BUNDLES with the tier-1 knife edge
+
+**Not corrected alone.** The two become one piece of work, and the knife-edge decision gates both.
+
+**Why, in one line:** A12 proved the home-game count is not the cause — **zero verdict flips at a
+55% wage share, all sixteen at 60%** — so correcting `GameLoop` would not create the problem, it
+would **reveal** one, in a world that is about to change underneath it.
+
+**What correcting it alone would have done:** 16/16 English and 14/14 Scottish tier-1 verdicts flip,
+several to crisis, two Scottish clubs to `folded`. ⚠️ **`folded` is NOT terminal** —
+`NpcRescueService` fires: *"new chairman, investor, debt cleared"*, the rescuer takes a stake, and
+the club is *"punished for the season it was insolvent and then rescued."* **That is the owner's own
+"held up by investment" mechanic — firing at TIER 1**, which is the gradient inverted at its apex.
+
+**The asymmetry accepted in the meantime**, documented at both sites and in `.context`: the NPC
+budget counts real fixtures (15/11) while the solvency verdict still assumes 23, so a brain reads an
+optimistic runway against a corrected wage allowance. **Strictly the safer direction** — a brain
+selling on an optimistic runway sells *less*, not more.
+
+---
+
+## 🔴 NOW THE LIVE DECISION — the tier-1 knife edge
+
+**A12's sweep, flips vs the modelled wage share:**
+
+```
+EN t1   40%:0  50%:0  55%:0  60%:16  65%:11  70%:8
+SC t1   40%:0  50%:0  55%:0  60%:14  65%:14  70%:1
+EN t8   40%:0  50%:0  55%:0  60%:0   65%:0   70%:0
+SC t8   40%:1  50%:3  55%:4  60%:4   65%:7   70%:7
+```
+
+### The mechanism — it is a DISCONTINUITY, not a calibration
+
+`weeksRunway` is balance ÷ weekly deficit. **Above break-even there is no deficit**, so runway
+returns its **52-week cap** and the band reads `healthy` regardless of how thin the margin is.
+**One pound below break-even it collapses to single digits.** A club £1 either side of the line
+reads 52 weeks or 8.
+
+**So the verdict has a cliff exactly at break-even** — and tier 1 happens to sit on it, with a
+modelled wage bill plus upkeep within a few percent of income.
+
+### 🔴 Why this is structurally wrong for THIS game specifically
+
+**The owner's design deliberately puts clubs near break-even** — *"the further down you get, the
+harder it is to remain solvent… the very bottom is held up by investment."* **A solvency measure
+that cliffs at break-even is therefore wrong wherever the design is working as intended.** SC t8
+already shows it: 4 flips at 60%, 7 at 70%.
+
+**This is not a tier-1 problem. Tier 1 is just where it was noticed.**
+
+### The two candidate fixes
+
+| | | |
+|---|---|---|
+| **(i) Calibration** | give tier-1 clubs margin — raise turnover, or lower the wage-to-turnover ratio | ⚠️ **moves the symptom, not the cliff.** The cliff still bites wherever a club sits near the line, which the design *requires* at the bottom |
+| **(ii) Model** | make the verdict degrade smoothly — runway that accounts for margin size rather than only its sign | **fixes it everywhere**, and is the one consistent with the intended game |
+
+**(ii) is the recommendation**, with (i) available afterwards as a deliberate dial if the top of the
+pyramid should also be more comfortable. ⚠️ **Do not do (i) alone** — it would make tier 1 read
+healthy while leaving the same trap armed at every tier the design wants under pressure.
+
+⚠️ **Stated limit on all of the above:** A12's wage bill is **modelled** at 60% of authored turnover,
+since no world export carries NPC squads. Right ballpark, but a model — which is why it gave a sweep
+rather than a single number. **A10's wage change will move these figures**, so re-measure after it
+deploys rather than deciding the exact threshold from this table.
+
+## ✅ A11 ANSWERED — (C), measured. And my framing sent three sessions into the wrong subsystem.
+
+**It was never "Scotland lost 2 clubs."** It was a **full NPC-club regeneration at an
+operator-typed count**, twice. `NpcClubGenerationService::generateClubs(count, tier, country,
+deleteExisting: true)` deletes every row for a (country, tier), creates exactly the count given,
+and **never reads or writes `league.slots`**. Its only callers are the admin generate form and
+`app:country:bootstrap` — both operator-driven, neither linked to the authored size, no warning
+when they disagree.
+
+### The evidence nobody had: there are FIVE world exports, not one
+
+Everyone triangulated from the 11-19 file alone. Counted directly across all five (verified by the
+PM, 2026-11-19):
+
+```
+11-12 12:38   total 3167   SC [18,18,18,17,0,0,0,0]   EN [18×7,17]
+11-15 20:47   total 3183   SC [18,18,18,17,0,0,0,0]   EN [20×7,19]
+11-18 21:48   total 3175   SC [12×7,11]               EN [16×7,15]
+11-18 22:00   total 3191   SC [14×7,13]               EN [16×7,15]   ← +16 in TWELVE minutes
+11-19 14:15   total 3175   SC [12×7,11]               EN [16×7,15]
+```
+
+**Scotland went 12 → 14 → 12, and England 18 → 20 → 16, across routine operator regenerations.**
+A11's club-NAME diff: **kept = 0 in all sixteen EN+SC divisions** — every English club was replaced
+too, at an unchanged count, which is why England moving went unnoticed. Only EN and SC appear on
+either side; the other 23 countries are untouched.
+
+### 🔴 TWO CORRECTIONS TO THIS PLAN, both mine, both load-bearing
+
+1. **"The owner rebuilt the worldpack caches in that window" is TRUE AND A RED HERRING.**
+   **No worldpack path touches `npc_club`.** A11 traced the orchestrator, both message handlers,
+   the assembly service, `WorldPackCacheService`, `WorldPackSetTopUpService`,
+   `app:worldpack:warm`, `app:worldpack:maintain` and `StarterPackPoolWarmService` — every raw
+   statement hits `world_pack_*` / `country_world_pack_cache` only. **I asserted the timing
+   coincidence as the leading hypothesis and propagated it to three sessions.**
+
+2. **(A) "the export is lossy" was ARITHMETICALLY IMPOSSIBLE, not merely unlikely.** The export
+   uses `npcClubRepository->findAll()` — no join, no filter, no cap — and serialises each club's own
+   `country`/`tier` columns. So export-count ≥ joined-count **always**, and a joined 14 against an
+   unjoined 12 cannot happen. ⚠️ **`app:country:check SC` was NEVER a discriminator** — it groups on
+   the same columns with no join. **I recommended it to the owner three times.** The PACK is the one
+   that can under-count (`findByLeagueWithLand` is `league_id` only) and it did not fire here
+   (pack 95 = export 95).
+
+### 🔴 THE REAL DEFECT — two operator inputs, nothing connecting them
+
+`league.slots` is authored in one place; the generator's count is typed in another. **Nothing
+reconciles them, and nothing warns.** The £86,600,000/season mis-division is simply what happens
+when the two drift — and they will drift again on the next regeneration.
+
+**A11's proposal, NOT made:** `generateClubs` warns when the resulting count disagrees with an
+authored `slots` where the league has a pool — at the point of regeneration rather than only at the
+gate, **reusing `EconomyWageTableCommand::checkAuthoredSizeAgainstRows()` or
+`Version20261119120000::CORRECT_SQL`** (A7's note forbids a third implementation). Plus three
+columns in `CheckCountryContentCommand`'s NPC table: slots / unjoined / joined. ⚠️ Deliberately
+**not** a new app CHECKS line — check 9 and the pack comparison already cover the relationship,
+A13 is trimming that output, and the missing instrument is backend-side.
+
+### 🔴🔴 THE RESERVED PLACE IS UNENFORCED — sixth appearance of this rule today, first as a risk
+
+The deepest tier holding one fewer club reconciles perfectly in every era — **but NO CODE PRODUCES
+IT.** `generateClubs` persists exactly `$count`; `BootstrapCountryCommand` passes a flat
+`--clubs-per-tier` to every tier; the admin form is a free-text count. Nothing deletes or converts
+an `npc_club` when a player's club is created. **The operator types N−1 at the bottom tier, by
+hand, every time.**
+
+`LeagueSizeResolver` and `AUTHOR_SQL` both **compensate for a reservation that nothing creates.**
+⚠️ **If an operator ever types the same count at the deepest tier, every size calculation in the
+economy is off by one** — silently, and in the direction that over-fills a division.
+
+### Still the owner's, unchanged
+
+**Scotland at 12 or 14.** Now cleanly framed: it is not a diagnosis question, it is *what count do
+you want*, authored in `slots` **and** typed into the generator — which today are two unconnected
+inputs.
+
+## 🟩 OWNER DIRECTION (2026-11-19) — one projection, shared by the player and every NPC decision
+
+> *"I'm not too worried about the solvency and the cliff edge for the tier one clubs. It's more
+> important that we focus on fixes like the runway guide, which seem to be reporting incorrectly or
+> only reporting when teams were literally at a cliff edge… if we're using the same projection
+> mechanic for displaying estimated balance in, say, 52 weeks as the user sees, the same projections
+> need to be used for the NPC clubs as well as the NPC staff on the user's game, so that the
+> decision making is mirrored."*
+
+**This supersedes the "two candidate fixes" framing above.** The knife edge is not a model to
+design — it is **a model that already exists and is not being used.**
+
+### 🔴 THERE ARE FOUR RUNWAY IMPLEMENTATIONS. The player sees the good one.
+
+| | where | shape |
+|---|---|---|
+| ✅ | **`buildProjection`** (`FinancialProjectionService`), **11 callers**, all player-facing or AMP | projects **balance at each horizon** — 1, 4, 12, 52 weeks — including season-end lumps (`seasonEndIncome`, `extraSeasonsIncome`, `perSeasonRecurringLump`) |
+| 🔴 | `npcSolvency.ts` — `weeksRunway` / `solvencyBand`, **the NPC brain's verdict** | `balance ÷ weekly deficit`, `: 52` when there is no deficit |
+| 🔴 | `npcClubDebugAssessment.ts:77` | hand-rolled copy of the same formula |
+| 🔴 | `npcTransferExecutors.ts:177` | a **fourth** inline copy, deciding whether a club sells |
+
+**All three NPC copies share `netOutflow > 0 ? floor(balance / netOutflow) : 52`.** That ternary
+**is** the cliff — replicated by hand in three places. ⚠️ `npcClubDebugAssessment`'s own comment
+records that this duplication has **already produced a bug**: it *"overstated `weeksRunway` on this
+screen."*
+
+### 🟢 Why this makes the knife edge a side effect rather than a project
+
+`buildProjection` **has no cliff.** It computes a balance at each horizon, so a club £1 above
+break-even and one £1 below produce almost identical projections — smoothly different, as they
+should be. It also counts **season-end lumps** that `weeksRunway` ignores entirely, which is why the
+NPC verdict is both cliff-edged *and* pessimistic: a club with prize money and TV landing in six
+weeks reads as nearly insolvent today.
+
+**So adopting the player's projection for NPC decisions fixes the cliff, fixes the pessimism, and
+mirrors the decision-making — in one change.** That is the owner's instruction and the project's
+governing principle (*one source for one quantity*) arriving at the same answer.
+
+### ⚠️ The implementation constraint, which is the whole difficulty
+
+`buildProjection` reads **ten Zustand stores** and filters the fixture list for **one** club —
+`BalanceScreen`'s own comment says so, and memoises it. **It cannot be called ~1,100 times a tick.**
+
+**So the work is to extract a pure core** — the horizon arithmetic, fed a club's figures — and have
+the player's chart and all three NPC paths call *that*. ⚠️ **Not to point NPC code at
+`buildProjection` as it stands**, and ⚠️ **not to leave a fourth copy behind.**
+
+### Calibration is explicitly NOT the fix here
+
+> *"if it means that we have to increase the value of sponsors or increase the size of the TV deal…
+> maybe it means bringing players' salaries down at the very top by 10-20%… we will tune it to match
+> that."*
+
+**Tuning is accepted as the eventual answer for the LEVELS**, and comes after the correctness
+boundary. ⚠️ **But it is not the answer for the cliff**, and the owner has set the priority
+explicitly: **accuracy of the projection first.** An agent must not propose a dial here.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**

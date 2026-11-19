@@ -1,0 +1,46 @@
+A14 measurement — world 2026-11-18T22:00:23+00:00, 3191 clubs
+morale 60, manufacturing midpoint 0.45
+
+── 1. REAL populationSize per country/tier (admin world export) ──
+country tier    n        min       p25    median       p75         max
+EN      1     16     28,000    88,483   113,776   685,000   8,982,000
+EN      8     15     18,000    26,000    41,000    61,000      97,365
+SC      1     14      1,800     6,500    14,000   148,280     635,640
+SC      8     13      2,000     4,700     8,800     9,500      17,430
+
+── 2. TODAY (tier-absolute, country-blind) ──
+tier   fans min      fans max   shirt price   season shirts @min   season shirts @max
+  1     700,000     1,500,000           £45          £18,900,000          £40,500,000
+  8      10,000        20,000            £8              £47,280              £94,560
+
+── 3. AFTER (catchment × reference share ladder) ──
+tier  share%      population        fans min     fans max   shirts @min      shirts @max    multiple vs today (mid)
+  1  60–70%     small  20,000        12,000       13,999       £324,000         £377,955      0.012×
+  1  60–70%    medium 100,000        60,000       69,999     £1,620,000       £1,889,955      0.059×
+  1  60–70%  large  1,000,000       600,000      699,999    £16,200,000      £18,899,955      0.591×
+  8   5–10%     small  20,000         1,000        1,999         £4,728           £9,448      0.100×
+  8   5–10%    medium 100,000         5,000        9,999        £23,640          £47,272      0.500×
+  8   5–10%  large  1,000,000        50,000       99,999       £236,400         £472,792      5.000×
+
+── 4. AFTER, at each country/tier's own MEDIAN population ──
+country tier   median pop     fans now (mid)   fans new (mid)   multiple   shirts now (mid)   shirts new (mid)      delta
+EN      1      113,776        1,100,000           73,954      0.067×        £29,700,000         £1,996,740   £-27,703,260
+EN      8       41,000           15,000            3,075      0.205×            £70,920            £14,539       £-56,381
+SC      1       14,000        1,100,000            9,100      0.008×        £29,700,000           £245,700   £-29,454,300
+SC      8        8,800           15,000              660      0.044×            £70,920             £3,120       £-67,800
+
+── 5. EVERY TIER (England), at that tier's own median population ──
+tier   median pop   share%    fans now (mid)   fans new (mid)   multiple      shirts now        shirts new
+  1      113,776   60–70%       1,100,000           73,954     0.067×       £29,700,000        £1,996,740
+  2       58,500   52–61%         600,000           33,052     0.055×       £12,150,000          £669,296
+  3       88,000   44–53%         475,000           42,680     0.090×        £7,213,350          £648,138
+  4       36,000   36–44%         325,000           14,400     0.044×        £3,839,550          £170,122
+  5       55,000   29–36%         170,000           17,875     0.105×        £1,606,500          £168,919
+  6       45,000   21–27%          80,000           10,800     0.135×          £594,240           £80,222
+  7       44,580   13–19%          35,000            7,133     0.204×          £189,000           £38,520
+  8       41,000    5–10%          15,000            3,075     0.205×           £70,920           £14,539
+
+── 6. The attendance-cap binding threshold (capacityCalculation = 1250) ──
+level 1, Local       capacity   5,000  × fill 0.35  → binds below 1,750 fans
+level 5, National    capacity  25,000  × fill 0.7  → binds below 17,500 fans
+level 10, Elite      capacity  50,000  × fill 0.85  → binds below 42,500 fans

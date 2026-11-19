@@ -25,7 +25,7 @@ each file is the truth.
 
 | task | brief | state |
 |---|---|---|
-| **A11** — why Scotland holds 12 clubs, not 14 | `a11-scotland-12-vs-14-brief.md` | diagnosis; a report alone is the expected outcome |
+| **A11** — why Scotland holds 12 clubs, not 14 | `a11-scotland-12-vs-14-brief.md` → `a11-scotland-report.md` | ✅ ANSWERED (C): a full NPC-club regeneration replaced every EN/SC row twice without touching `slots`; NOT the worldpack rebuild. Diagnosis only, no code changed. PM: four plan corrections flagged in §7 |
 | **A14** — fan base from plot population (app half) | `a14-fanbase-catchment-brief.md` | app-only; backend half not yet written |
 
 ---
