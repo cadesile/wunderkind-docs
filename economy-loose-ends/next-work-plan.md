@@ -4064,6 +4064,65 @@ money.
 ⚠️ **The single most useful check: does a brand-new save, created now, still price the AMP squad at
 5×?** If yes it is a cached config; if no, it was a one-off of changing the dial mid-session.
 
+## 🔴 THE STARTER-PACK POOL IS A RESERVOIR OF PRE-PRICED PLAYERS, AND A WORLD REBUILD DOES NOT DRAIN IT
+
+**The save was completely fresh — leagues, clubs and worldpack caches all rebuilt — and the
+player's squad was still priced at 5×.** That rules out a cached session. One path explains it.
+
+### The starter squad does not come from the world pack
+
+It comes from a **separate player pool**, topped up by **`app:pool:warm`** —
+`BootstrapCountryCommand`'s own docblock lists the steps as *"clicks (Generate Clubs, once per
+tier) + 2 separate CLI commands (`app:pool:warm`, …)"*.
+
+🔴 **So "Generate Clubs" in the admin does not warm the pool, and neither does rebuilding the
+worldpack caches.** The pool is older than the save that draws from it.
+
+### And an already-priced row keeps its price — by design
+
+CLAUDE.md's binding rule, in its own words:
+
+> *"an already-priced row keeps its price — a scout-search/foreign/youth row is priced at SERVE
+> time and a row from SQLite carries its ingested `wage` — re-pricing either moves a wage underneath
+> a contract that severance and buyouts are computed from."*
+
+`PlayerGenerationService::generate()` leaves `contractValue` at 0 **today**, so rows minted now are
+priced on the device. **Rows minted before the v11 money-removal carry a baked `contractValue`, and
+that rule keeps it.**
+
+**So a squad drawn from the pool is priced by whatever config was live when those rows were
+generated — which can be weeks ago.** The NPC clubs in the same save come from a freshly generated
+world pack with no `contractValue` at all, so the device prices them correctly. **That is exactly
+the split measured: NPC 0.91×, the player's own squad 4.76× and 5.12×.**
+
+### 🔴 Why this matters beyond the experiment
+
+**It is the fourth instance of the workstream's own defect, in a place nobody had looked.** The pool
+is a second source of truth for a player's wage, it survives every world rebuild, and **nothing in
+the regeneration flow tells an operator it is stale.** Every economy change from here leaves it
+holding players priced under the previous one.
+
+⚠️ **It also means today's "clubs rebuilt" readings are not what they appear:** NPC clubs reflect
+the new config, the player's club reflects whenever the pool was last warmed. **Any comparison
+between them is measuring two different economies.**
+
+### The test, and it is one command
+
+**Warm or purge the starter pool, then start a new save.** If the squad then prices at ~1× the live
+scale, this is confirmed and the fix is operational (drain the pool whenever a dial moves) plus a
+warning at the point of regeneration.
+
+⚠️ **If it still prices at 5×, this explanation is wrong** and the remaining candidate is the
+device's own config cache on the init path.
+
+### What it does NOT change
+
+🟢 **The ladder-truncation finding stands** — authored tier-4 turnover is £2,070,000 against
+£107,500 at the old 8-tier bottom, 19× richer, exactly as predicted.
+🟢 **The country factor's effect on the authored scale stands** — 92,573,014 against a pre-change
+462,865,070 is precisely the 5× the field was moved by.
+🔴 **The "economy is struggling" verdict does not stand.** It was a stale squad under a new budget.
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
