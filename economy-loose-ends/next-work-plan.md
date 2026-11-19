@@ -3932,6 +3932,68 @@ established it by measuring rather than complying. ⚠️ **A12's measurement wa
 explanation of it was not** — and I propagated that explanation into the plan, a brief, and advice
 to the owner about bundling two decisions together.
 
+## 🔴 FOUND — the setup screen's player wage is HARDCODED, and it is ~7× reality
+
+> *"Numbers look off on the starter balance, is it hard coded?"* — owner, on FUND YOUR CLUB
+
+**Yes.** `src/components/new-game-setup/economy.ts`:
+
+```ts
+starterSquadWagesPence: 1_200_000,    // £12,000/week — a constant, derived from nothing
+```
+
+It is in `ECONOMY_STAND_INS`, and `useSetupHost.ts:196` names it directly: *"`homeGames`,
+`ticketPricePence` and `starterSquadWagesPence` are still not published; add one line each here when
+they are."* ⚠️ **Two of those three have since been fixed** — `ticketPricePence` was published
+2026-11-15 and `homeGames` by A6 today — **leaving this one as the last stand-in on that screen,
+and the comment stale.**
+
+### The size of it, measured
+
+| | tier-8 Scotland |
+|---|---|
+| live mean weekly wage (CHECKS, post-A10) | **8,088 pence** |
+| a 20-man squad | **£1,618/week** |
+| **the setup screen's constant** | **£12,000/week** |
+| | **≈ 7.4× reality** |
+
+**Corroborated on device:** the Aberdeen save's live projection read `PLAYER WAGES −£1k/wk`; the
+Dundee setup screen reads `−£12k`. **Same country, same tier, 12× apart.**
+
+🔴 **This is the screen where the player commits real account credit.** An overstated wage line
+inflates the weekly burn, which inflates the funding floor, which makes a player fund **several
+times more than the club needs** — and the money comes out of their account balance.
+
+⚠️ **It also cannot self-correct.** Unlike the other stand-ins it is not a fallback for an absent
+published value — **there is no published value at all**, so it is wrong on every save and always
+has been.
+
+### Why it was invisible until now
+
+A10 cut the authored wage scale's error from ~3× too low to roughly right, **so the real figure
+moved while the constant did not.** Before today the gap was smaller and read as plausible. ⚠️ **A10
+made this visible rather than causing it.**
+
+### The fix, and what it is NOT
+
+**Publish the figure**, as `ticketPricePence` already is: the backend resolves a starting squad's
+wage bill from `economyTierBaseline` for the country's lowest division, and the screen reads it —
+exactly the pattern `useSetupHost` documents and the one that removed the other two stand-ins.
+
+⚠️ **Do NOT just lower the constant.** It would be wrong again the moment any dial moves, and the
+whole workstream exists to stop exactly that.
+
+### The remaining stand-ins, for the record
+
+```
+crowdShare: 0.04            — a second catchment→demand share (A14 §5.3, already flagged)
+localFill / neutralMoraleFactor — deliberate duplicates of the tick's own constants, bridged by
+                                  setupMatchesTick.test.ts. NOT candidates for publishing.
+fundStep/BigStep/MegaStep/UltraStep — UI increments, not economy.
+```
+
+**So one real stand-in remains: `starterSquadWagesPence`.** ⚠️ **Queued as A20.**
+
 ## Tranche D — owner decisions, not engineering
 
 - ✅ ~~**The authored `slots` that disagree with the real club count**~~ — **RESOLVED 2026-11-19.**
