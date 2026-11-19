@@ -298,3 +298,63 @@ squad's EXPECTED CURRENT ability rather than its potential band.
 
 ⚠️ **And the headcount compounds both:** 13 staff to 20 players at the bottom tier of the
 smallest ladder in the game.
+
+---
+
+# CORRECTION — the sponsor pot is not a mis-attribution. It is a mis-SIZING.
+
+**I framed the GBP 15m as "the whole division's pot credited to one club by mistake," and asked
+the owner to choose a fix on that basis. The framing was wrong.** Recorded in full because the
+owner answered the wrong question.
+
+## Every club is PAID a sponsorPot-sized amount, deliberately, on both paths
+
+- **AMP**, `SeasonTransitionService.ts:864-865`:
+  `addTransaction({ amount: Math.round(sponsorPot), category: 'league_sponsor' })`
+- **Season 1**, `:1527-1528`: the same, as *"Season 1 league sponsor"*.
+- **Every NPC**, `:1658-1663`: `ampSponsorPot x (ampTier / npcTier)`, credited per club, with
+  its own docblock at `:1589-1597` describing the tier scaling as intended behaviour.
+
+**So the forecast including it is CORRECT** — it matches what the tick actually pays.
+`src/__tests__/engine/projectionMatchesTick.test.ts` exists to keep those two in step, and it
+passes today because they agree.
+
+🔴 **Removing the term from the forecast alone would make the forecast understate real income
+by ~GBP 15m and break that test — the opposite error, and a worse one**, because the money
+would still land while the club planned without it.
+
+## The real defect: a per-club payment sized by a division-wide sum
+
+`rollLeagueSponsorPot` (`src/utils/leagueFinances.ts:65-74`) sums one draw **per sponsor in the
+division**:
+
+```ts
+for (const [size, count] of Object.entries(league.sponsorSizes)) {
+  for (let i = 0; i < count; i++) total += randInt(bandConfig[band.min], bandConfig[band.max]);
+}
+```
+
+and `sponsorCount` is a per-DIVISION field on `leagueTierDefaults`
+(`GameConfig.php:2523-2534`), not a per-club one.
+
+**So the amount is division-scale and the payment is per-club.** Every club in the division
+receives the whole division's sponsorship, every season.
+
+## The choice that actually needs making — and it is NOT the prize's choice
+
+The prize was genuinely a forecast-only bug: the tick had been champion-only since the economy
+overhaul and only the forecast missed the change. **Here the tick and the forecast agree, so
+there is no "the tick is already right" option.** Changing this changes money the club
+receives.
+
+1. **Divide at the payment** — each club gets `pot / clubCount`. Smallest change, keeps the
+   authored sponsor list meaningful, and the division's total sponsorship stays what the bands
+   say. ⚠️ Must change the tick AND the forecast together, or `projectionMatchesTick` fails.
+2. **Re-author `sponsorCount` as per-club.** No code change; the bands then describe one
+   club's sponsors. ⚠️ But `:1658`'s tier scaling already treats the AMP's pot as a baseline
+   to scale from, which only makes sense for a division figure.
+3. **Credit nothing** — delete the league sponsor line entirely, from both the tick and the
+   forecast. Largest behaviour change; removes a season-1 income line the NPC start-income
+   pass also depends on.
+
+⚠️ **Whichever is chosen, forecast and tick must move in the same commit.**
