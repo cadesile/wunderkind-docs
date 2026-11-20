@@ -163,3 +163,43 @@ first — part B's snap may be masking it entirely today.
 - The three cliffs are arithmetic, not a device measurement.
 - Whether the backend's `ScoutWageCalculator` moves in the same change or the app diverges
   first.
+
+---
+
+## 🔴 Carried forward from A26, 2026-11-20 — read before designing this
+
+A26's scout `ability` work (backend `54525433`, `c05d54a7`; app `39b3c884`) landed the field
+this task will price from. Three consequences:
+
+### 1. 🟢 `ability` is now a true function of its inputs on every write
+
+`ScoutAbilityLifecycleSubscriber` hooks **`prePersist` AND `preUpdate`**. A24 can price a wage
+off `scout.ability` without caring how the row got there — generation, admin edit, import. The
+`preUpdate` half exists because an admin can edit `experience`/`judgementsJson` while `ability`
+is read-only, so without it an edit left the derived figure stale. **Under this task that would
+have been a wrong wage.**
+
+### 2. ⚠️ `weeklySalary` does NOT re-derive, deliberately — and THIS TASK IS WHERE THAT BREAKS
+
+`Scout::$weeklySalary` is excluded from the subscriber because its admin help says it is *"set
+by hand here only to override one scout"*. The distinction A26 drew, and it is the right one:
+
+> **The test is whether a field is an OVERRIDE or a DERIVATION — not whether it happens to be
+> derived at generation time.**
+
+🔴 **A24 changes which side of that line `weeklySalary` sits on.** The moment a staff or scout
+wage is priced from the band, the wage stops being an override and becomes a derivation. So this
+task must decide, explicitly:
+
+- does `weeklySalary` get the same `preUpdate` treatment `ability` just got, and
+- does the admin help text stop promising an override?
+
+**Leaving it as-is is a decision too, and a defensible one** (an operator may genuinely want to
+pin one scout's wage) — but then the band is not the only source for a wage and this workstream's
+governing defect is back. **Whichever way, say so in the change.** It has been written down at
+the subscriber and in `services.md` so it is a decision rather than a discovery.
+
+### 3. `app:backfill-scout-abilities --force` is now only for a formula change or raw-SQL rows
+
+Ordinary edits re-derive themselves. If A24 retunes the 70/30 weighting, `--force` is the only
+route — the migration is applied and cannot be re-run.
