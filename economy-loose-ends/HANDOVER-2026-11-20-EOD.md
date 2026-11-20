@@ -67,19 +67,25 @@ economy gate unmoved. Report: `b1-budget-model-report.md`.
 
 ---
 
-## 4. ⚠️ IN FLIGHT at handover — A27
+## 4. ✅ A27 — committed after this handover was first written
 
-**A27 (scout age gate) was still running its backend suite when this was written.** Check
-whether it committed. Its working-tree files were:
+| repo | branch | commit |
+|---|---|---|
+| backend | `development` | **`3e1555c5`** |
+| app | `new-game-save` | **`6fb687a0`** |
+| docs | — | `3d75287` |
 
-- backend: `ScoutGenerationService.php`, `WorldInitializationService.php`,
-  `ScoutGenerationServiceTest.php`, `migrations/Version20261120120000.php`, 3 `.context` files
-- app: `scoutNoise.ts`, `scoutNoise.test.ts`, `types/market.ts`, `types/world.ts`, 2 `.context`
+`ScoutGenerationService::build()` now writes `youth` and `senior` (rolled from the existing
+`scoutJudgementMin/Max` — A27's own ruling, reasoned in §3 of its report).
+`Version20261120120000` added both keys to all 5,278 dev scouts **and re-derived `ability`**,
+since the judgement mean is taken over keys present and 5 → 7 moves it.
 
-**If it did not commit, its work is in the working tree and must be reviewed before anything
-else touches those files.** Report: `a27-scout-age-gate-report.md`.
+**The app needed no functional change** — `ScoutJudgements` already declared seven keys and
+`ageGateFor` already read them, so it began working the moment the data existed. The app commit
+is comments, a docblock and documentation only; verified by diffing out every comment line and
+finding nothing left.
 
----
+⚠️ **Not verified on device.** Report: `a27-scout-age-gate-report.md`.
 
 ## 5. Baselines — take these fresh, they moved repeatedly today
 
