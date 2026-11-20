@@ -6,7 +6,9 @@
 byte-identical before and after, proved by diff. Scotland moves 14 → 12 at every tier.
 
 - Backend: `development`, on top of `9918839c`.
-- App: `new-game-save`, on top of `3569326b`.
+- App: `new-game-save`, on top of **`c73bf9a8`** — A22's staff-wage commit landed at 23:46, part
+  way through this session's verification, so the app change now sits on top of it rather than on
+  the `3569326b` the brief named. No file overlap (A22's 8 files, none of this change's 10).
 - Verbatim evidence: `a23-run-2026-11-19/`.
 
 ---
@@ -265,7 +267,10 @@ here.
 Tests: 3238, Assertions: 155841, Failures: 3, PHPUnit Deprecations: 1, PHPUnit Notices: 21, Skipped: 13.
 ```
 
-Baseline 3,233 → **3,238 (+5)**. ⚠️ **All three failures proven pre-existing by stashing the whole
+Baseline 3,233 → **3,238 (+5)**. ⚠️ **The +5 is verified the same way the app figure was**, since
+the arithmetic of the individual edits does not obviously give it: the five touched test files run
+**58 tests with this change and 53 with it stashed**, which matches the full-suite delta exactly.
+The backend is untouched by any sibling session. ⚠️ **All three failures proven pre-existing by stashing the whole
 change and re-running on the clean tree** (per standing notes: attribute by stash-and-rerun, never
 by reading the assertion):
 
@@ -287,7 +292,22 @@ $ npx tsc --noEmit
      (zero errors)
 ```
 
-Baseline 647 / 10,788 → **647 / 10,802 (+14 tests, no new suite)**, `--listTests` 647 ✓.
+⚠️ **CORRECTED — the +14 is not all mine.** A22's `c73bf9a8` landed at 23:46, part way through
+this verification, and we share the checkout, so the first run of this suite already included its
+work and attributing the whole delta here would have been wrong.
+
+**Measured by stash-and-rerun on the two test files this change touches, at the current HEAD:**
+
+```
+AFTER  (variantGate.test.ts + divisionSizeChecks.test.ts)   Tests: 43 passed
+BEFORE (same two files, this change stashed)                Tests: 41 passed
+```
+
+So **this change is +2 tests**; A22's commit is the other **+12**. Baseline 647 / 10,788 at
+`3569326b` → 647 / **10,802** at `c73bf9a8` + this change, of which 10,788 + 12 (A22) + 2 (A23) =
+10,802 ✓. No new suite from either. `--listTests` 647 ✓, and the full suite was re-run on the
+combined tree (`a23-run-2026-11-19/suite-app-COMBINED-with-a22.txt`) to confirm the two changes do
+not interact.
 
 ### The regression guards for the ruling itself
 
