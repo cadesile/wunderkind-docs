@@ -228,3 +228,59 @@ alone, correctly — it is a simulation change. See `a26-scout-ability-report.md
 No real save on dev, no forced v12 pack rebuild inspected, no browser check of the admin field,
 and no test persisting a `Scout` through Doctrine to prove the lifecycle subscriber fires
 (registration and `lint:container` are verified; the behaviour is not).
+
+
+---
+
+## Later the same day — committed, NOT deployed
+
+| repo | work | commit | state |
+|---|---|---|---|
+| backend | `bond_decay_floor` 50 → 20 | `d8376d94` on `development` | ✅ suite green (3,257, three known failures), **not pushed** |
+| app | A28 part 1 — manager noise decoupled from scouts | `4719b469` on `new-game-save` | proven no-op, **not pushed** |
+| app | A28 part 2 — spread 40, `MAX_BOND_BIAS` 12 | `0c52ec6c` on `new-game-save` | 650 / 10,832, **not pushed** |
+
+⚠️ **`bond_decay_floor` is already 20 on the dev DATABASE** — the migration ran there when it
+was written. The commit records it; the dev box does not need the deploy to have the new floor.
+The APP changes do need one.
+
+### 🔴 The test database is not migration-tracked — FOURTH instance, and I caused this one
+
+`doctrine:migrations:migrate --env=test` fails with *"relation admin already exists"*, so a
+schema change must be applied to `wunderkind_test` by hand. A26 recorded this three times today
+and I wrote it into this very file — then ran the suite without doing it and spent a run finding
+out. `SchemaIsInSyncTest` failed, plus one unrelated-looking error
+(`LeaderboardHallOfFameTest`) which **vanished once the DB was fixed** — so a half-migrated test
+DB produces failures that do not point at the cause.
+
+For this change:
+
+```bash
+lando php bin/console dbal:run-sql "ALTER TABLE game_config ALTER bond_decay_floor SET DEFAULT 20" --env=test
+```
+
+```bash
+lando php bin/console dbal:run-sql "UPDATE game_config SET bond_decay_floor = 20 WHERE bond_decay_floor = 50" --env=test
+```
+
+**The general lesson, now paid for four times: after ANY schema change, apply it to
+`wunderkind_test` by hand BEFORE running the suite, and do not try to attribute failures until
+you have.**
+
+### 🔴 Open finding from A28, needs an owner ruling
+
+**`PERCEIVED_MIN` is 1 and the manager's error is symmetric, so near the floor the pessimistic
+half of the draw truncates and the manager reads systematically HIGH.** Measured over the real
+`leagueAbilityRanges` at scouting range 20: a true-ability-2 player reads **+1.42 high**, with
+**44% of weeks clamped** at 1 — against +0.57 and 36% at the old spread.
+
+Confined to tiers 7–8 (true ability under ~10) and negligible from tier 6 up. **Pre-existing;
+spread 40 makes it 3–5× larger where it applies.** Not fixed — the floor is deliberate and the
+fix is a distribution change at the bottom of the pyramid. **Owner asked, not yet answered.**
+
+### Two documentation figures A28 found wrong
+
+The docblock arguing for the decay-floor change cited seeded bonds topping out at 45 and organic
+growth of 2/week. Live: `SEED_COACH_POSITIVE_RANGE` is **[10, 35]** (45 appears nowhere in
+`BondSeedService`) and `bondOrganicGrowthDelta` is **5**/week. **The conclusion held; the stated
+reasons did not.** Recorded, not fixed.
