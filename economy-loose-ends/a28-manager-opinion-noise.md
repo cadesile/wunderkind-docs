@@ -91,6 +91,59 @@ the brief assumes the number.
 makes the manager's opinion move more week to week, not just differ more from the truth. That
 is probably wanted, but it is a second effect and the owner has not been asked about it.
 
+## ✅ Third ruling, 2026-11-20 — the bond bias
+
+> *"If the manager has a positive relationship with the player, let's use that to increase how
+> highly the player is regarded… I think that weighting already exists, but let's increase it.
+> Same in reverse. If the player and the manager have a bad relationship, the manager's
+> perceived rating should be reduced greater."*
+
+🟢 **This one DOES already exist**, unlike the 70/30:
+
+```ts
+export const MAX_BOND_BIAS = 5;
+export function mapBondToBias(bond) {
+  return (Math.max(-100, Math.min(100, bond)) / 100) * MAX_BOND_BIAS;
+}
+```
+
+Bond runs −100…+100 and maps linearly to ±5 rating points, **symmetric**. It enters as
+`manager = base + managerError + bias − penalty`.
+
+⚠️ **It is damped the same way the noise is.** That ±5 carries only `MANAGER_WEIGHT` 0.60 into
+the result, so the strongest possible relationship in the game moves the manager's opinion by
+**±3 rating points** — about a third of a star. That is almost certainly why it does not read
+as doing anything.
+
+### 🔴 The caveat that could waste the whole change
+
+The docblock on `mapBondToBias` states it, and it is load-bearing:
+
+> *on a fresh save the manager has no bond with anyone (`BondSeedService` seeds a player's
+> assigned coach, and **a manager is never an assignable coach**), so this term is silent until
+> guardian events, promises, excursions or youth promotions start building the graph.*
+
+**So on a young save the bias is 0 for every player, and raising `MAX_BOND_BIAS` changes
+nothing at all.** Multiplying zero by a bigger number is still zero.
+
+**Before tuning it, measure the bond distribution on the dev save** — how many of the owner's
+players have a non-zero manager bond, and how large. If the answer is "none", the real work is
+whether a manager should build bonds at all, which is a different and larger question than the
+one asked. **Report that before changing the constant.**
+
+### ❓ Symmetric or not — needs one word from the owner
+
+*"reduced greater"* reads two ways, and they are different changes:
+
+1. **Symmetric** — raise `MAX_BOND_BIAS`, so both directions grow equally. Simplest, and what
+   *"same in reverse"* suggests.
+2. **Asymmetric** — a negative bond bites harder than a positive one lifts, e.g. ±8 up and −12
+   down. Defensible: a falling-out is usually more vivid than a good relationship, and it makes
+   the mechanic feel sharper without inflating ratings across the squad.
+
+My reading is **symmetric** (option 1), because *"same in reverse"* is the clearer half of the
+sentence. **Ask before building** — it is one word and it changes the shape of the function.
+
 ## Guards
 
 - `src/__tests__/engine/PlayerRatingService.test.ts` and the engine's own tests pin the current
@@ -116,6 +169,8 @@ update `07_synthesis/output/game-mechanics.md`, which documents this model.
 
 ## Not established
 
-- Whether consistency, bond and morale stay as they are.
+- Whether consistency and morale stay as they are.
+- Whether the bond bias is symmetric or asymmetric (above).
+- **The bond distribution on the dev save** — the blocker for the bond half.
 - The new spread value.
 - Whether the owner wants the STAR display to move or only the number.
