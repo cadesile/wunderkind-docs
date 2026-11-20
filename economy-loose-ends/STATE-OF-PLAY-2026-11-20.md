@@ -1,3 +1,7 @@
+<!-- STATUS: ⚠️ SUPERSEDED by HANDOVER-2026-11-20-EOD.md — this describes the START of 2026-11-20 -->
+
+> ⚠️ **SUPERSEDED.** This file was written at the start of 2026-11-20. A full day of work followed it. **Read `HANDOVER-2026-11-20-EOD.md` instead**; come back here only for history. The correction block immediately below is still live and is repeated there.
+
 <!-- STATUS: handover, written 2026-11-20 00:20. Read this first. -->
 
 # State of play — written at the end of the 2026-11-19 session

@@ -15,7 +15,8 @@ each file is the truth.
 
 | file | what it is |
 |---|---|
-| **`STATE-OF-PLAY-2026-11-20.md`** | 🔴 **READ THIS FIRST.** Where everything stands at the end of the 2026-11-19 session: what shipped, what is committed but not deployed, what is sitting UNCOMMITTED in the working trees, the one open owner decision, and the six claims made that session which were later refuted. Written so a fresh agent needs nothing from that conversation. |
+| **`HANDOVER-2026-11-20-EOD.md`** | 🔴🔴 **READ THIS FIRST — the entry point.** End of 2026-11-20, written for a FRESH session. What is live, what is committed but not deployed, the baselines, the four operational traps, every owner ruling made that day, and the five things that need the owner rather than an agent. **Opens with the one correction that must survive: `incomeAnchoredWages` is ON, and three documents said otherwise.** |
+| `STATE-OF-PLAY-2026-11-20.md` | ⚠️ **SUPERSEDED** by the file above — it describes the START of 2026-11-20. Kept for history. Where everything stands at the end of the 2026-11-19 session: what shipped, what is committed but not deployed, what is sitting UNCOMMITTED in the working trees, the one open owner decision, and the six claims made that session which were later refuted. Written so a fresh agent needs nothing from that conversation. |
 | **`scotland-experiment-2026-11-19.md`** | The main findings file for the Scotland experiment — the longest single record of that session. Read the state-of-play first for the summary. |
 | **`next-work-plan.md`** | **The live queue, the review log, and every decision taken.** ~2,700 lines, newest sections at the bottom before Tranche D. Its **POST-SETTLE** section indexes all parked work. |
 | `agent-standing-notes.md` | Conventions every agent brief references. Read with any brief. |
