@@ -275,8 +275,13 @@ half of the draw truncates and the manager reads systematically HIGH.** Measured
 **44% of weeks clamped** at 1 — against +0.57 and 36% at the old spread.
 
 Confined to tiers 7–8 (true ability under ~10) and negligible from tier 6 up. **Pre-existing;
-spread 40 makes it 3–5× larger where it applies.** Not fixed — the floor is deliberate and the
-fix is a distribution change at the bottom of the pyramid. **Owner asked, not yet answered.**
+spread 40 makes it 3–5× larger where it applies.**
+
+✅ **OWNER RULED, 2026-11-20: *"that is fine."*** Accepted, not a defect. Do not "fix" the
+truncation, add an asymmetric draw at the floor, or lower `PERCEIVED_MIN` to compensate —
+the floor is deliberate (a rating of exactly 0 reads as "no data", not "very bad") and the
+owner has seen the measured figures and accepted them. **Recorded so it is not reopened as a
+bug by someone who rediscovers the skew.**
 
 ### Two documentation figures A28 found wrong
 
