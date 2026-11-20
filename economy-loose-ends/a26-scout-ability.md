@@ -1,4 +1,4 @@
-<!-- STATUS: 📋 OWNER RULING, BRIEF READY, NOT STARTED (2026-11-20) -->
+<!-- STATUS: 🏗️ IN PROGRESS — formula RULED, phase 1 being built by session a26-scout-ability (2026-11-20) -->
 
 # A26 — Give scouts an `ability`, 1–100, derived from experience and judgements
 
@@ -133,9 +133,67 @@ or the next reader will think the rule was broken.
 App `new-game-save`, backend `development`. Both repos are ICM — read `.context/CONTEXT.md`
 first, and update the stage `output/` your change touches as part of finishing.
 
-## Not yet established
+## ✅ Both open questions are now settled (2026-11-20)
 
-- The 5-vs-7 judgement category count.
-- The weighting. **Put a proposal to the owner; do not pick silently.**
-- Whether anything outside the wage path should read `ability` later (the ruling says no, for
-  now).
+### Q1 — the 5-vs-7 split is REAL CODE, not a stale comment
+
+Two judgement builders write different key sets, and only one has ever written a persisted
+scout:
+
+| builder | keys | population |
+|---|---|---|
+| `ScoutGenerationService::build()` | **5** — potential, technical, physical, mental, personality | 🟢 **every scout that exists.** The shared pool (`MarketPoolService::generateScouts`) and club/world-pack scouts (`WorldPackClubGenerationService:145`) both delegate here |
+| `GenerateMarketDataCommand::buildScoutJudgements()` | **7** — adds `youth`, `senior` | a population that is **not in the scout table** |
+
+**Live dev DB: all 5,278 scouts have exactly 5 keys.** So `PoolConfig.php:241` is right and the
+app's 7-key `ScoutJudgements` type describes something else.
+
+🔴 **Consequence: average over keys PRESENT, never a fixed list.** A hardcoded `/7` divisor
+under-rates every real scout by ~29%.
+
+### Q2 — the weighting: ✅ OWNER RULED 70/30 toward EXPERIENCE
+
+```
+ability = clamp(1, 100, round(0.7 × experience + 0.3 × judgementMean))
+```
+
+**The reason is tier banding, not scale.** Verified at source by the PM session, independently
+of the agent that proposed it:
+
+- `ScoutGenerationService.php:51-52` — experience comes from the club's tier band
+  (`$abilityRange`) when present, the global config otherwise.
+- `:72-77` — **all five judgements roll from a flat global `scoutJudgementMin/Max`** (15–90 on
+  dev). No band. Same distribution for a tier-1 scout and a tier-8 one.
+
+So weight shifted onto judgements collapses tier separation:
+
+| weighting | EN t1 ability | EN t8 ability | spread |
+|---|---|---|---|
+| 0.3 exp / 0.7 jmean | 56 | 38 | 18 |
+| 0.5 / 0.5 | 59 | 29 | 30 |
+| **0.7 / 0.3 — RULED** | **61** | **19** | **42** |
+
+🔴 **This is not a hypothetical.** The docblock at `ScoutGenerationService.php:35-40` records
+the bug the banding was added to fix — a rating-33 scout among rating-2-7 coaches taking
+**£2,230/wk**, because `ClubWageScaleService` splits the budget in proportion to ability. A24
+will price wage off `ability`, so a judgement-heavy blend reopens exactly that hole.
+
+Constraints held: deterministic, monotonic in both inputs, clamped 1–100.
+
+### Also ruled
+
+- **Admin `ability` is READ-ONLY** (PM call). An editable derived field is a second source for
+  one quantity — the defect this workstream exists to remove.
+
+## Still open — recorded, NOT part of phase 1
+
+| | |
+|---|---|
+| **Pool scouts cannot exceed ~48 ability.** `scoutExperienceMin/Max` caps the shared pool at experience 4–34, so the top of the 1–100 scale belongs to tier-1 club scouts (~90). If the market should offer elite scouts, that is a **config change, not a formula change** | owner decision, unasked |
+| **`ScoutWageCalculator` interpolates on `experience / 100`**, so a pool scout maxes at 34% of its wage band | carried into **A24** |
+| Whether anything outside the wage path should read `ability` later | the ruling says no, for now |
+
+## Corrections to this brief, found while building
+
+- It listed the publish sites incompletely: **`MarketController.php:216`** is a fourth, besides
+  `MarketDataService.php:119`.
