@@ -236,9 +236,20 @@ and no test persisting a `Scout` through Doctrine to prove the lifecycle subscri
 
 | repo | work | commit | state |
 |---|---|---|---|
-| backend | `bond_decay_floor` 50 → 20 | `d8376d94` on `development` | ✅ suite green (3,257, three known failures), **not pushed** |
-| app | A28 part 1 — manager noise decoupled from scouts | `4719b469` on `new-game-save` | proven no-op, **not pushed** |
-| app | A28 part 2 — spread 40, `MAX_BOND_BIAS` 12 | `0c52ec6c` on `new-game-save` | 650 / 10,832, **not pushed** |
+| backend | `bond_decay_floor` 50 → 20 | `d8376d94` | ✅ suite green (3,257, three known failures) |
+| app | A28 part 1 — manager noise decoupled from scouts | `4719b469` | proven no-op (3,840-case grid) |
+| app | A28 part 2 — spread 40, `MAX_BOND_BIAS` 12 | `0c52ec6c` | 650 / 10,832, `--listTests` 650 |
+
+### ✅ Both deployed to dev, 2026-11-20 (second deploy of the day)
+
+| repo | `dev` merge | carries |
+|---|---|---|
+| app | **`1ff6fd56`** | A28 both parts, and the MANAGER PERCEPTION CHECKS row |
+| backend | **`52490221`** | the bond-decay-floor change |
+
+⚠️ **The backend half is a formality on this box.** `bond_decay_floor` was already 20 in the dev
+DATABASE — the migration ran when it was written. Pushing stops `dev` and `development` drifting
+apart; it changes nothing the owner will see.
 
 ⚠️ **`bond_decay_floor` is already 20 on the dev DATABASE** — the migration ran there when it
 was written. The commit records it; the dev box does not need the deploy to have the new floor.
