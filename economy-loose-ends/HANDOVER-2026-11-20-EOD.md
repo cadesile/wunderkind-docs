@@ -46,7 +46,7 @@ scout salaries on the owner's save.** That is the first thing to verify on devic
 
 | | app | backend |
 |---|---|---|
-| `dev` head | **`1ff6fd56`** (OTA **489**, splash `489 1ff6fd5`) | **`c7c32027`** |
+| `dev` head | **`36087794`** (splash `<run> 3608779`) | **`dc9c0ae3`** |
 
 Shipped today: the league sponsor pot divided by club count; `league.slots` retired and every
 division size derived (Scotland 14 → 12 at every tier, England unmoved); scouts carrying a
@@ -55,20 +55,17 @@ decoupled from scout noise and widened to spread 40; bond bias 12; bond decay fl
 
 ---
 
-## 3. Committed but NOT deployed
+## 3. ✅ EVERYTHING IS DEPLOYED TO DEV — nothing is held back
 
-| repo | branch | commit | what |
-|---|---|---|---|
-| app | `new-game-save` | **`7609125e`** | **B1 — the owner's budget model** (parts B and C) |
-| app | `new-game-save` | **`6fb687a0`** | A27 — docs/comments only (see §4) |
-| backend | `development` | **`3e1555c5`** | A27 — the scout age gate |
+Final deploy of 2026-11-20. App `dev` **`36087794`**, backend `dev` **`dc9c0ae3`**.
 
-**Both branches are AHEAD of `dev`. Nothing below has been deployed or verified on device.**
+| what | app | backend |
+|---|---|---|
+| B1 — the owner's budget model (parts B and C) | `7609125e` | — |
+| A27 — the scout age gate | `6fb687a0` (docs only) | `3e1555c5` |
 
-**B1 is the big one and it is unverified on device.** 651 suites / 10,865 tests, tsc clean,
-economy gate unmoved. Report: `b1-budget-model-report.md`.
-
----
+🔴 **NONE OF IT IS VERIFIED ON DEVICE.** Both landed green in CI and neither has been seen
+running. **This is the first thing to do:** see section 9.
 
 ## 4. ✅ A27 — committed after this handover was first written
 

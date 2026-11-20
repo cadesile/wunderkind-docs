@@ -381,3 +381,21 @@ is its purpose.
 
 ✅ **Verified non-vacuous:** with the two listener attributes disabled, all 7 new tests fail.
 A26 checked that rather than assuming it, which is the whole point of adding them.
+
+
+---
+
+## ✅ Third and final deploy of 2026-11-20
+
+| repo | `dev` | carries |
+|---|---|---|
+| app | **`36087794`** | B1 (`7609125e`) + A27's app docs (`6fb687a0`) |
+| backend | **`dc9c0ae3`** | A27's age gate (`3e1555c5`) |
+
+Verified before pushing: app tsc clean and 651 suites / 10,865 passed (run independently by the
+PM session, matching A27's own figure); backend 3,265 with only the three known pre-existing
+failures.
+
+🔴 **Nothing in this deploy has been seen running on a device.** It carries the two largest
+behaviour changes of the day — the budget model, and an age gate that has never once executed —
+so the first device session should expect movement rather than confirmation.
