@@ -1,4 +1,4 @@
-<!-- STATUS: ✅ STEP 1 COMMITTED (proven no-op) · ⏸️ STEPS 2 & 3 HELD FOR THE OWNER (2026-11-20) -->
+<!-- STATUS: ✅ COMPLETE — all three steps committed on new-game-save, nothing pushed (2026-11-20) -->
 
 # A28 report — the manager's opinion noise, and the bond bias
 
@@ -196,8 +196,10 @@ systems kept being confused for each other from source, including in this brief'
 # A28 part 2 — the owner's numbers, implemented
 
 **Ruling received 2026-11-20:** `MAX_MANAGER_NOISE_SPREAD` **20 → 40**, `MAX_BOND_BIAS`
-**5 → 12**, symmetric. Both done, plus the CHECKS line. Commit below; not pushed, not merged,
-not deployed.
+**5 → 12**, symmetric. Both done, plus the CHECKS line.
+
+**Commit `0c52ec6c`** — *"The manager reads a player 40-wide, and a bond is worth 12"*, on
+`new-game-save`, on top of part 1's `4719b469`. **Not pushed, not merged, not deployed.**
 
 ## What changed
 
@@ -209,7 +211,7 @@ not deployed.
 | max manager-term contribution, range 20 | ±3.66 | **±7.33** |
 | max week-to-week move, range 20 | 7.33 | **14.65** |
 | strongest possible bond | ±3.0 | **±7.2** |
-| settled youth-graduate bond (decay floor 20) | +0.60 | **+1.44** |
+| settled youth-graduate bond (at the live decay floor — see §"the floor") | +1.50 | **+1.44** |
 
 `mapBondToBias` keeps its shape — one linear map over one constant, no asymmetric branch.
 `deriveErrorMargin` keeps its signature and inputs. The draw order and the shared
@@ -266,6 +268,15 @@ lines including the docblock, plus 4 lines of wiring in `ChecksTab`). Three rows
 
 `info` rows only, never `fail`: a save with no manager bonds is a young save, not a broken one.
 
+⚠️ **A correction to something I claimed mid-task.** I moved these three reads to lazy
+`require`s (the repo's existing pattern — `PlayerRatingService` requires `OwnerMandateService`
+for the same reason) after a static `bondRepository` import coincided with a new "worker process
+has failed to exit gracefully" warning in the jest run. **That attribution was wrong**: the
+warning reproduces between two unrelated component suites with none of my code loaded, so it is
+pre-existing and run-ordering-dependent. The lazy requires are still right — a debug module
+should not pull `@/db/client` into module scope for suites that never touch the database — but
+they are not a fix for that warning and the docblock no longer says they are.
+
 ⚠️ **One thing I hardened beyond the ask.** `ChecksTab` awaits every section in sequence inside
 one `try`, so a throw in a new section silently costs every section after it — the database,
 pragma, sizing, pool and checkpoint passes. `findManager()` reads `coachStore`, which is not
@@ -273,27 +284,80 @@ populated on every path (`PlayerRatingService` wraps the same call for exactly t
 the bond query touches the database. Both are now guarded and degrade to a `warn` row.
 `managerPerceptionCheck.test.ts` pins that it never throws in either direction.
 
+## 🔴 The floor: I was right by accident, wrong on the reasoning, and the route matters
+
+My part-1 report said a settled bond is worth +0.6 because `bondDecayFloor` is 20. **The figure
+was right and the sourcing was wrong** — I read 20 off the app's `DEFAULT_GAME_CONFIG`, which is
+a **pre-sync fallback**, not the live value. Corrected and verified against all three sources:
+
+| source | value |
+|---|---|
+| app `DEFAULT_GAME_CONFIG.bondDecayFloor` | 20 — fallback only, never used on a real save |
+| backend `GameConfig.php:90`, and the admin UI's own help text ("Default: 50") | 50 |
+| **live synced config** (`deploy-run-2026-11-20/game-config-sc.LIVE.json`) | **50** |
+
+So the floor was **50** all along, and my +0.6 should have been +1.5. Then the owner was shown
+the choice and ruled **"let them fade"**, so the floor was lowered to **20** backend-side on
+2026-11-20 — which lands the arithmetic back on my original number by a completely different
+route. **Final state: floor 20, settled bond worth +1.44 at bias 12.**
+
+### ⚠️ And the two bond changes partly cancel — the owner should hear this plainly
+
+`MAX_BOND_BIAS` 5 → 12 (stronger) and the floor 50 → 20 (fades further) landed the same day:
+
+| settled youth-graduate bond | floor 50 | floor 20 |
+|---|---|---|
+| bias 5 (before today) | **+1.50** | +0.60 |
+| bias 12 (now) | +3.60 | **+1.44** |
+
+**+1.50 → +1.44 — the steady state is effectively unchanged.** The bias increase is real, but it
+shows up in *fresh and maintained* bonds (a new graduate at 60 is worth +4.32 against +1.80
+before; a guardian fallout bites harder) rather than in the baseline everything settles to. Both
+changes are the owner's and both are intended; the interaction was not the point of either.
+
+### The deeper finding — recorded, not fixed
+
+The app's docblock on `bondDecayFloor` argues for 20 and gives a rationale ("was 50, which sat
+above almost every bond the game actually produces … so in practice nothing ever decayed") **as
+though the change had taken effect.** It had not: the synced 50 overrode the app's fallback the
+whole time. **Two sources for one quantity, with the documentation describing the losing side** —
+the same defect class as the `player_rating` / `current_ability` split. In §7b.
+
+⚠️ **Two of that docblock's supporting figures are also wrong**, which is worth knowing because
+they were the argument for the change: seeded COACH bonds top out at **35**
+(`SEED_COACH_POSITIVE_RANGE` is `[10, 35]`), not the 45 it claims — 45 is nowhere in
+`BondSeedService` — and organic growth adds `bondOrganicGrowthDelta` = **5** a week on the live
+config, not 2. So the premise "nothing ever decays at 50" was right for a reason the docblock
+states inaccurately.
+
+**The CHECKS bond row now prints the live floor** and how many rows sit at or below it, read
+from the synced config. Its test uses a floor of **37** deliberately — a value neither repo has
+ever held — so the assertion can only pass if the row really reads the save rather than a number
+compiled into the app. Given that this quantity has now held two different values in two places
+within one day, that seemed the only honest way to pin it.
+
 ## Still open, recorded not acted on
 
-1. **The decay floor, not the bias, is what caps the bond term.** At `MAX_BOND_BIAS` 12 the
-   headline ±7.2 needs a bond of ±100 and nothing sustains one: a graduate seeded at 50–60
-   decays to `bondDecayFloor` **20** and sits there, worth **+1.44** — the same 20 the floor
-   hands a player the manager has never met. So a player the manager personally promoted and a
-   stranger differ by 1.44 points forever. Raising the bias scales that gap; it does not make it
-   mean anything. **Whether `bondDecayFloor` should apply to manager bonds at all is a decay
-   question and needs its own ruling.** In §7b as an OPEN item.
-2. **The manager is on every staff excursion, filed as a coach.** `ExcursionService` builds
+1. **The manager is on every staff excursion, filed as a coach.** `ExcursionService` builds
    `bondStaff` from `coachStore.coaches` with no role filter. Untouched, as instructed; in §7b
    as an OPEN item for a ruling.
+2. **The `PERCEIVED_MIN` floor bias at tiers 7–8**, above. Not fixed — the floor is deliberate
+   and the fix is a distribution change at the bottom of the pyramid.
 3. **The real bond count on the owner's save** — still unmeasured by me (device SQLite), but the
-   CHECKS line now answers it in one tap.
+   CHECKS line now answers it, and the floor too, in one tap.
 
 ## Verification
 
-`npx tsc --noEmit` clean. `npm test` **650 suites / 10,829 passed** (10,832 collected, 3
+`npx tsc --noEmit` clean. `npm test` **650 suites / 10,832 passed** (10,835 collected, 3
 skipped), `npx jest --listTests | wc -l` = **650**. Against the 649 / 10,819 baseline from part 1
-that is **+1 suite / +10 tests** — `managerPerceptionCheck.test.ts` (8) plus the two constant
+that is **+1 suite / +13 tests** — `managerPerceptionCheck.test.ts` (11) plus the two constant
 assertions in `playerRatingEngine.test.ts`. Reconciles exactly. `CLAUDE.md` row updated.
+
+⚠️ **One pre-existing warning, not caused by this change:** "a worker process has failed to exit
+gracefully" appears on a multi-suite run. It reproduces with none of this change's code loaded
+(`checksReportCopy` + `dressingRoomLogic` together), so it is run-ordering-dependent and was
+present before — but it did NOT appear on the part-1 run, so anyone diffing the two logs will
+see it arrive with this commit and should not conclude it came from it.
 
 **No behavioural test needed changing to accommodate the new numbers** — every existing
 assertion in `playerRatingEngine.test.ts` and `PlayerRatingService.test.ts` was written
