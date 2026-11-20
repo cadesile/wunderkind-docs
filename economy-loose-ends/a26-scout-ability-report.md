@@ -115,7 +115,10 @@ nobody tidies it later: `ScoutAbilityCalculator`'s class docblock and the docblo
 | `src/Service/WorldInitializationService.php` | `WORLD_PACK_VERSION` **11 → 12**, with the census-vs-money argument written out |
 | `src/Controller/Admin/ScoutCrudController.php` | `ability` on index **and** forms, **read-only** (`disabled`, so a hand-crafted POST cannot set it either) |
 | `src/Repository/ScoutRepository.php` | corrected a comment that said "Scout carries only `experience`" |
-| `tests/Service/ScoutAbilityCalculatorTest.php` | **new** — 11 tests, 443 assertions |
+| `tests/Service/ScoutAbilityCalculatorTest.php` | **new** — 11 tests, 443 assertions: the four committed properties, the 5-vs-7 mean, the `?? 0` ban, and the exact-.5 parity regression |
+| `tests/Service/ScoutAbilityPublishedTest.php` | **new** — 5 tests: `ability` reaches BOTH the market payload and the world pack, carries the **stored** figure rather than a re-derivation, `experience` and `ability` are published as distinct numbers, `tier` is still derived from `experience`, and the pack still carries **no** wage |
+| `tests/Service/ScoutGenerationServiceTest.php` | +3 — generation actually wires the calculator, never leaves a scout at the floor, and writes exactly the five authoritative judgement keys |
+| `tests/Service/WorldPackClubGenerationServiceTest.php` | constructor arg |
 | `tests/Service/WorldInitializationTierPackAgentTest.php` | the pinned scout-snapshot key list gains `ability` |
 
 **Three decisions worth flagging:**
@@ -357,11 +360,28 @@ narrative content.
 `ScoutAbilityCalculatorTest`'s **11** tests → **3,249**, which is what the run collects. The
 brief's stated 3,233 baseline predates A23's +5.
 
-🔴 **`wunderkind_test` is not migration-tracked, and it cost 19 errors before I spotted it.** The
-first full run reported **20 errors and 5 failures**; nineteen of the errors were one missing
-column (`column "ability" does not exist`) cascading through everything that loads a `Scout`. This
-is the third time `environment.md` has had to record this exact failure mode, so I have added this
-instance to it, with the commands. Applied by hand, nullable → backfill → `NOT NULL`:
+🔴 **`wunderkind_test` is not migration-tracked, and that is the third instance `environment.md`
+now records.** The first full run reported **20 errors and 5 failures**. The full attribution,
+measured rather than assumed:
+
+| cause | cost | mine? |
+|---|---|---|
+| `ScoutGenerationService` gained a constructor argument; two test classes instantiate it by hand | **16 errors** | yes (§3.1b) |
+| `scout.ability` missing from `wunderkind_test` | **4 errors** | yes, the second half of adding a column |
+| `SchemaIsInSyncTest` — the migration's `DROP DEFAULT` | 1 failure | yes (§3.1a) |
+| `WorldInitializationTierPackAgentTest` — the pinned snapshot key list | 1 failure | yes, expected: I added a key |
+| `NotificationLog`, `Competition`, `Friendly` | 3 failures | **no — pre-existing, proven by A23** |
+
+⚠️ **I first wrote this up as "19 of the 20 errors were the missing column", and that was wrong.**
+I pattern-matched `environment.md`'s 2026-11-02 precedent (35 of 36 errors from one missing column)
+instead of comparing my own two runs: adding the column took the run from 20 errors to 16, so it
+was **4**. Corrected here and in `environment.md`, which now carries the caveat explicitly,
+because a postmortem whose numbers come from the shape of the last incident rather than from the
+runs is worse than none. **The practical lesson is the one that survives: this failure mode does
+not always look like a wall of identical red**, so check `information_schema.columns` for your new
+column regardless of how the failures look.
+
+Applied by hand, nullable → backfill → `NOT NULL` → `SET DEFAULT`:
 
 ```bash
 lando php bin/console dbal:run-sql "ALTER TABLE scout ADD COLUMN IF NOT EXISTS ability INT" --env=test
@@ -386,7 +406,8 @@ $ npx tsc --noEmit
 $ npx jest --listTests | wc -l
 648
 
-<<APP_RESULT>>
+Test Suites: 648 passed, 648 total
+Tests:       3 skipped, 10816 passed, 10819 total
 ```
 
 `CLAUDE.md`'s `new-game-save` row updated from 647 / 10,788 to the measured figure.
@@ -422,6 +443,21 @@ app:backfill-scout-abilities --force --dry-run
   0 of 5278 scout(s) would have ability re-derived          ← PHP agrees with the SQL
 ```
 
+**The backfill command was exercised for real, not just asserted.** I set one scout
+(`01a0e9cd-…`, experience 25, ability 34) down to the floor of 1 and ran the command's default
+(non-`--force`) path:
+
+```
+app:backfill-scout-abilities --dry-run    1 of 1 scout(s) would have ability re-derived
+  → the row still read 1 afterwards                        ← --dry-run really writes nothing
+app:backfill-scout-abilities              1 of 1 scout(s) had ability re-derived
+  → the row read 34 again                                  ← exactly its original figure
+```
+
+That is the command's whole purpose (find rows at the floor, derive them, leave everything else
+alone) verified end to end, and it confirms the floor-sentinel filter selects correctly. The dev
+box is back to 5,278 scouts at 11–48, none at the floor, and `--force --dry-run` reports 0 again.
+
 ### ⚠️ What I did NOT verify
 
 - **A real save on dev.** The brief asks for a save where scouts carry a plausible ability and the
@@ -432,10 +468,16 @@ app:backfill-scout-abilities --force --dry-run
 - **The world-pack rebuild at v12.** The bump is correct and the key is published, but I did not
   force a regeneration and inspect a cached v12 payload. First client request per country/tier
   will rebuild (~2–4s), as the constant's docblock describes.
-- **The admin screens in a browser.** The `ability` field is wired read-only and the suite is
-  green, but I did not load `/admin` and look at it.
-- **`GenerateMarketDataCommand` end to end.** Its `ability` line is covered by the type system and
-  the shared calculator's tests, but I did not run the command against a live pool.
+- **The admin screens in a browser.** The `ability` field is wired read-only and
+  `lint:container` passes, but I did not load `/admin` and look at it.
+- **`GenerateMarketDataCommand` end to end.** Its `ability` line is covered by the shared
+  calculator's tests, but I did not run the command against a live pool.
+- **The lifecycle subscriber firing on an admin create.** Registration is verified
+  (`debug:container` shows the `doctrine.event_listener` tag on `prePersist`, and
+  `lint:container` passes) and `fill()` is pure and trivially correct, but **there is no test
+  that persists a `Scout` through Doctrine and asserts the subscriber derived its ability.** The
+  two generation paths set it explicitly and are tested; the subscriber is the net under the
+  admin create form, and that net is verified by wiring rather than by behaviour.
 
 ---
 
@@ -498,10 +540,32 @@ Two notes for the PM's reconciliation:
 <<BACKEND_FILES>>
 ```
 
-### App `new-game-save` — `<<APP_SHA>>`
+### App `new-game-save` — `39b3c884`
+
+21 files, +626 / −29. A23's backend-half commit `4ea3c5be` landed cleanly on top of it afterwards.
 
 ```
-<<APP_FILES>>
+.context/shared/last-sync.md                       |  49 ++++++++
+.context/stages/01_overview/output/environment.md  |   2 +-
+.context/stages/03_data/output/entities.md         |  49 ++++++++
+.../stages/07_synthesis/output/game-mechanics.md   |  24 ++++
+src/__tests__/db/bootstrap.test.ts                 |  33 ++++-
+src/__tests__/engine/StaffConsensus.test.ts        |   4 +
+src/__tests__/engine/npcScouting.test.ts           |   4 +
+src/__tests__/utils/scoutAbility.test.ts           | 140 +++++++++++++++++++++
+src/api/endpoints/market.ts                        |  14 +++
+src/db/bootstrap.ts                                |   7 +-
+src/db/cacheRepair.ts                              |   6 +-
+src/engine/NpcScoutingService.ts                   |  13 +-
+src/engine/SeasonBudgetService.ts                  |  20 ++-
+src/engine/scoutNoise.ts                           |  18 ++-
+src/hooks/useInitFlow.ts                           |  12 ++
+src/screens/office/HireScreen.tsx                  |   4 +
+src/stores/marketStore.ts                          |   3 +
+src/types/market.ts                                |  69 ++++++++--
+src/types/tournament.ts                            |  13 +-
+src/types/world.ts                                 |  41 ++++--
+src/utils/scoutAbility.ts                          | 130 +++++++++++++++++++
 ```
 
 (`CLAUDE.md` is gitignored, so its updated row is not in the commit.)

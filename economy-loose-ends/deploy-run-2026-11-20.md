@@ -15,8 +15,18 @@ App tree clean. Both local `dev` branches level with `origin/dev`.
 
 ## 🔴 `wunderkind_test` is NOT migration-tracked — run these before any backend suite
 
-Third recorded instance of this trap; it cost A26 19 errors before it was spotted. **Order
-matters, the column is `NOT NULL`.** Also in the backend's `environment.md`.
+Third recorded instance of this trap. ⚠️ **It cost 4 errors, not the 19 first reported** — A26
+corrected itself after comparing its own two runs (20 errors before the column, 16 after; the
+other 16 were a new constructor argument). The 19 came from pattern-matching the 2026-11-02
+incident, where 35 of 36 errors had one cause.
+
+🔴 **That correction changes the practical lesson, and for the worse.** 2026-11-02 was a wall of
+identical red, which is what `environment.md` trained people to look for. This time the missing
+column was a MINORITY of the noise and would have been easy to dismiss as fallout from the real
+bug. **Check `information_schema.columns` for your new column regardless of how the failures
+look.**
+
+**Order matters, the column is `NOT NULL`.** Also in the backend's `environment.md`.
 
 ```bash
 lando php bin/console dbal:run-sql "ALTER TABLE scout ADD COLUMN IF NOT EXISTS ability INT" --env=test
@@ -55,7 +65,8 @@ because someone made it match. Recorded so a future schema mismatch on dev is no
 ## Verification gate — nothing is pushed until all of this passes
 
 1. Backend suite on the combined tree, `--filter '/^(?!.*AdminShellCoverage).*$/'` (a full run
-   OOMs at ~183/3305). Expected **3,252** = A23's 3,238 + A26's 11 + 3. Three failures are
+   OOMs at ~183/3305). Expected **3,257** (was quoted as 3,249, then 3,252, as A26 added
+   coverage — take the figure from its final report, not from here). Three failures are
    proven pre-existing (A23 stashed the whole change and re-ran to confirm).
 2. App suite: expected **648 / 10,816**, `--listTests` 648, `tsc --noEmit` clean. Already
    measured by A26 on the working tree; **re-run now that both halves are committed**, because
