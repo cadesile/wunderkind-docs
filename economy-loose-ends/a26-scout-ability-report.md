@@ -485,12 +485,9 @@ box is back to 5,278 scouts at 11–48, none at the floor, and `--force --dry-ru
   `lint:container` passes, but I did not load `/admin` and look at it.
 - **`GenerateMarketDataCommand` end to end.** Its `ability` line is covered by the shared
   calculator's tests, but I did not run the command against a live pool.
-- **The lifecycle subscriber firing on an admin create.** Registration is verified
-  (`debug:container` shows the `doctrine.event_listener` tag on `prePersist`, and
-  `lint:container` passes) and `fill()` is pure and trivially correct, but **there is no test
-  that persists a `Scout` through Doctrine and asserts the subscriber derived its ability.** The
-  two generation paths set it explicitly and are tested; the subscriber is the net under the
-  admin create form, and that net is verified by wiring rather than by behaviour.
+- ~~**The lifecycle subscriber firing on an admin create.**~~ **CLOSED 2026-11-20 — see §10.**
+  Originally shipped verified by wiring rather than behaviour, which was a defensible call and
+  the wrong one; the review that reopened it also changed the design.
 
 ---
 
@@ -620,3 +617,103 @@ src/utils/scoutAbility.ts                          | 130 +++++++++++++++++++
   A `PoolConfig` decision, already with the PM.
 - The one open defect: **`ageGateFor` has always returned 0** (§4). Not A24's business, but it is
   in scouting and somebody should own it.
+
+
+---
+
+## 10. Addendum (2026-11-20, same day): the subscriber gap closed, and the design corrected
+
+§6 listed one gap I'd judged not worth a 25-minute suite re-run: **no test persisted a `Scout`
+through Doctrine to prove `ScoutAbilityLifecycleSubscriber` actually fires.** Registration was
+verified, behaviour was not.
+
+**The PM reopened it on A24's account, and that reframing is what makes it right.** The argument
+is not about this task: A24 prices staff and scout WAGES off `ability`, so a scout written outside
+the generation path with a stale or defaulted figure becomes a wrong wage, discovered far from its
+cause and long after. *"Registration is verified, behaviour isn't"* is an acceptable gap right up
+until a money path reads the field. It is also, as they pointed out, the exact shape this
+workstream keeps finding: **two routes to one quantity where only one is actually exercised** — I
+had proved the calculator and proved the registration, and nothing proved the wire.
+
+### 🔴 Writing the test changed the design, not just the coverage
+
+The requested UPDATE case **could not pass as specified.** The subscriber was `prePersist` only,
+and §2(c) of this report *documented* that an admin edit deliberately did not re-derive, with
+`app:backfill-scout-abilities --force` as the path.
+
+Checking `ScoutCrudController` settled it against my original reasoning: **`experience` (`:174`)
+and `judgementsJson` (`:199`) are both EDITABLE while `ability` is read-only.** So an admin could
+move an input and leave the derived figure stale, with nothing in the schema or the UI saying the
+two now disagree — and under A24 that is a wrong wage. Leaving it to a remembered command is not a
+mechanism.
+
+**So the subscriber gained a `preUpdate` hook.** `ability` is now a true function of its inputs at
+all times. A side effect worth having: the read-only intent is **enforced** rather than merely
+presented — an `ability` written by any route is corrected on flush, not ignored.
+
+⚠️ **`weeklySalary` is deliberately NOT treated the same way, and the asymmetry is principled.**
+Its own admin help text says it is *"set by hand here only to override one scout"* — an
+intentional override, which auto-recomputation would destroy. `ability` is intentionally not
+overridable, so it must be recomputed. **The test is whether a field is an OVERRIDE or a
+DERIVATION**, not whether it happens to be derived at generation. Recorded at the subscriber and
+in `services.md`, because the inconsistency looks like an oversight otherwise.
+
+Implementation note: a changed field in `preUpdate` does not stick on its own (the unit of work
+has already computed its changeset), so the hook calls `recomputeSingleEntityChangeSet()`. It
+early-returns when the derived figure already matches — the common case — which skips the
+recompute entirely; a recompute does not re-fire `preUpdate`, so neither path loops.
+
+### The tests, and proof they are not vacuous
+
+`tests/EventSubscriber/ScoutAbilityLifecycleSubscriberTest.php` — 7 cases through a real flush:
+the admin create path; the derived value **as it lands in the database** rather than on the object;
+`experience` changing on update; `judgements` changing on update; a hand-written `ability` being
+corrected; an unrelated update leaving `ability` alone; and the no-judgements fallback to
+experience rather than to zero.
+
+**Verified non-vacuous:** with the two `AsDoctrineListener` attributes disabled, **all 7 fail**.
+That was the entire point of the exercise, so it was checked rather than assumed.
+
+### Four statements this made false, all corrected
+
+The admin field's help text, the admin `indexFields()` docblock,
+`BackfillScoutAbilitiesCommand`'s docblock (it claimed `--force` was needed after an edit), and
+the `services.md` / `entities.md` entries. **`--force` is now only for a FORMULA change or rows
+written by raw SQL**, not for an admin edit.
+
+### Verification
+
+Test DB checked first, per the procedure this report put into `environment.md` — `bond_decay_floor`
+default 20 and `scout.ability` default 1 both present, `SchemaIsInSyncTest` and
+`LeaderboardHallOfFameTest` green — so nothing here is attributed to a half-migrated schema.
+Baseline had moved to `d8376d94`.
+
+```
+Tests: 3264, Assertions: 156399, Failures: 3, PHPUnit Deprecations: 1, PHPUnit Notices: 21, Skipped: 13.
+```
+
+**Zero errors; the three failures are the same pre-existing trio.** Count reconciles exactly:
+3,257 + 7 new = **3,264**.
+
+```
+```
+
+Commit: `c05d54a7` on `development`. Not pushed.
+
+### Postscript: what was actually holding this session open
+
+The PM's archive attempts were being refused with "still has live work" twice after I reported
+idle. **The cause was mine:** seven `until grep …; do sleep N; done` background loops, started to
+wait on the long suite runs, whose grep patterns **could never match** — so they span-looped for
+over an hour.
+
+PHPUnit colourises each *field* of its summary line separately, so the raw bytes are
+`\e[37;41mTests: 3257\e[0m\e[37;41m, Assertions: …`. `^Tests: ` fails because the line starts
+with an escape, **and the unanchored `Tests: [0-9]+, Assertions` fails too**, because
+`\e[0m\e[37;41m` sits between `3257` and the comma. I had assumed the unanchored one was safe; it
+was not. The reading greps elsewhere in this report worked only because their `.*` happens to span
+the escapes.
+
+**Pass `--colors=never` when machine-reading PHPUnit output, or strip ANSI before matching.** And
+note the honest gap in the loop: the work really was finished when I reported idle, and a stuck
+background task is invisible from inside the session — `ps aux | grep "[s]leep"` is the check.
