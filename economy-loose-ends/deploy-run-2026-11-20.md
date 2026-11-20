@@ -1,4 +1,4 @@
-<!-- STATUS: ✅ DEPLOYED TO DEV — OTA 488, 2026-11-20 -->
+<!-- STATUS: ✅ DEPLOYED TO DEV TWICE — OTA 488 and 489, 2026-11-20 -->
 
 # Deploy run, 2026-11-20 — A23 + A26 to dev
 
@@ -244,7 +244,7 @@ and no test persisting a `Scout` through Doctrine to prove the lifecycle subscri
 
 | repo | `dev` merge | carries |
 |---|---|---|
-| app | **`1ff6fd56`** | A28 both parts, and the MANAGER PERCEPTION CHECKS row |
+| app | **`1ff6fd56`** — ✅ **OTA run 489, success** | A28 both parts, and the MANAGER PERCEPTION CHECKS row |
 | backend | **`52490221`** | the bond-decay-floor change |
 
 ⚠️ **The backend half is a formality on this box.** `bond_decay_floor` was already 20 in the dev
@@ -300,3 +300,13 @@ The docblock arguing for the decay-floor change cited seeded bonds topping out a
 growth of 2/week. Live: `SEED_COACH_POSITIVE_RANGE` is **[10, 35]** (45 appears nowhere in
 `BondSeedService`) and `bondOrganicGrowthDelta` is **5**/week. **The conclusion held; the stated
 reasons did not.** Recorded, not fixed.
+
+
+### OTA 489 — the day's second app deploy
+
+`gh run list` reports **489 success**, head `1ff6fd56`. Splash shows `489 1ff6fd5`.
+
+**On device, to confirm:** CHECKS → **MANAGER PERCEPTION**. It prints the live
+`bondDecayFloor` read from the synced config (expect **20**) and how many bond rows sit at or
+below it — the manager-bond count nobody could measure from source, because it exists only on
+the device.
