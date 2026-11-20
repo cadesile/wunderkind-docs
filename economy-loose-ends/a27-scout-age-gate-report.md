@@ -5,8 +5,8 @@
 **Owner ruling, 2026-11-20**, asked whether scouting accuracy should vary by the player's age:
 **"Yes, it should."** It now does.
 
-**Branches:** backend `development`, app `new-game-save`. **Committed on both, nothing pushed,
-nothing deployed.**
+**Branches and commits:** backend `development` **`3e1555c5`**, app `new-game-save`
+**`6fb687a0`**. **Nothing pushed, nothing merged, nothing deployed.**
 
 ---
 
@@ -244,3 +244,84 @@ true of every generated figure in this schema.
 
 ## 8. Verification
 
+**Backend — `lando php vendor/bin/phpunit --colors=never --filter '/^(?!.*AdminShellCoverage).*$/'`**
+
+```
+Tests: 3265, Assertions: 156979, Failures: 3, Skipped: 13
+  1) NotificationLogCrudControllerTest::testIndexRowIsClickableToADetailPageShowingTheFullPayload
+  2) CompetitionControllerTest::testShowIncludesResultsOnceRoundsAreProcessed
+  3) FriendlyResolveSingleMatchTest::testResolvingAnAcceptedChallengeRecordsAFullResult
+```
+
+✅ **Those are exactly the three known pre-existing failures**, unmoved. ✅ **3,265 reconciles
+exactly** against the 3,264 baseline at `c05d54a7`: **+1 test**, the one new
+`testTheAgeBandJudgementsAreIndependentRollsWithinTheConfiguredBounds` (the five-key pin was
+*renamed* to seven, not added, so it does not change the count).
+
+⚠️ **`wunderkind_test` needed no hand-application this time** — no DDL. That is the exception to
+the trap, not a repeal of it.
+
+**App — `npx tsc --noEmit` clean. `npm test`: 651 suites passed / 651 total, 10,865 passed, 3
+skipped, 10,868 collected, `--listTests` 651.** ✅ **Identical to B1's `7609125e` row, and it must
+be** — this change is comment-only in `src/`, so it adds no test and moves no count. (The
+"worker process has failed to exit gracefully" warning is the documented pre-existing one.)
+
+**The ability backfill, re-run after the keys existed**, which the brief named as the thing that
+must not be skipped:
+
+```
+app:backfill-scout-abilities --force --dry-run  →  0 of 5278 would have ability re-derived
+app:backfill-scout-abilities --force            →  0 of 5278 had ability re-derived
+```
+
+**Key coverage on dev:** 5,278 of 5,278 scouts carry `youth`, 5,278 carry `senior`, and there is
+**one distinct key-count across the whole table** (seven) — no row was left behind or
+double-written.
+
+---
+
+## 9. The app test run, and an honest note about a failure that is not mine
+
+The first full app run reported **651 suites / 10,868 collected**, matching B1's baseline at
+`7609125e` exactly — but with **2 failures in `src/__tests__/db/clientRecovery.test.ts`** (10,863
+passed rather than 10,865).
+
+**They are not this change's, and here is the evidence rather than the assertion:**
+
+- **My entire app diff is comment-only.** `git diff -U0 -- src app` filtered to non-comment lines
+  returns nothing. A comment cannot change `mockOpen.mock.calls.length`.
+- `src/__tests__/db/clientRecovery.test.ts` and `src/db/client.ts` are **untouched by anyone**
+  (clean in `git status` for both me and B1's commit).
+- The suite passes **14/14 standalone on a pristine `git archive HEAD` copy** and **14/14
+  standalone on my tree**.
+
+⚠️ **The likely cause is mine in a different sense, and worth recording:** I ran the backend
+phpunit suite and the app jest suite **concurrently**, and both failing assertions are
+timing/budget-bounded (`gives up after a bounded wait`, and a reopen-budget count inside a time
+window). A saturated machine is exactly what breaks them. **The solo re-run is clean: 651/651 suites, 10,865
+passed, 0 failures.** `CLAUDE.md`'s `new-game-save` row is left exactly as B1 measured it, because
+a comment-only change cannot move it — restating it would only create a seventh chance for that
+paragraph to go stale.
+
+**Carry this forward:** do not run the backend phpunit suite and the app jest suite concurrently on
+this machine. It cost a false failure and ~6 minutes to disprove.
+
+---
+
+## 10. Loose ends I am deliberately leaving, with reasons
+
+1. 🔴 **`marketStore.ts:216` anchors a scout's wage on `experience` through a parameter named
+   `abilityOf`.** This is A24's, documented in §4(e) above. It is the experience-as-ability
+   conflation A26 exists to remove, still live in a fourth site beyond the three A26 named, and it
+   matters because the two quantities now have different ranges (pool-scout `experience` 4–34 vs
+   `ability` 12–47). **I left it because changing it moves a live wage**, which is outside A27.
+2. **Nothing is pushed, merged or deployed.** Backend `development` and app `new-game-save` each
+   carry their own commit. A23 + A26 went out as OTA 488 today and the owner has not confirmed them
+   on device, so a fourth deploy was not mine to make.
+3. **Not verified on device.** Everything here is measured against the dev database and the real
+   engine functions in Node — not an APK. The thing to watch when it is: the two new rows on the
+   scout profile card ("Judges youth" / "Judges seniors"), and whether the owner reads the improved
+   accuracy as a fix or as a buff. §1 says which it is.
+4. **`GenerateMarketDataCommand::buildScoutJudgements()` is untouched.** It already wrote seven
+   keys for a different population and still does; it remains the one place where a *different*
+   seven-key set is authored, and it does not write the scout table.
