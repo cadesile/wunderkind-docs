@@ -60,7 +60,10 @@ decoupled from scout noise and widened to spread 40; bond bias 12; bond decay fl
 | repo | branch | commit | what |
 |---|---|---|---|
 | app | `new-game-save` | **`7609125e`** | **B1 — the owner's budget model** (parts B and C) |
-| backend | `development` | — | *(A27 pending, see §4)* |
+| app | `new-game-save` | **`6fb687a0`** | A27 — docs/comments only (see §4) |
+| backend | `development` | **`3e1555c5`** | A27 — the scout age gate |
+
+**Both branches are AHEAD of `dev`. Nothing below has been deployed or verified on device.**
 
 **B1 is the big one and it is unverified on device.** 651 suites / 10,865 tests, tsc clean,
 economy gate unmoved. Report: `b1-budget-model-report.md`.
@@ -91,8 +94,8 @@ finding nothing left.
 
 | | figure | at |
 |---|---|---|
-| app `npm test` | **651 suites / 10,865 tests** | `7609125e` |
-| backend `phpunit` | **3,264** | `c05d54a7` |
+| app `npm test` | **651 suites / 10,865 tests** | `6fb687a0` |
+| backend `phpunit` | **3,265** | `3e1555c5` |
 
 Backend has **three known pre-existing failures** — `NotificationLogCrudControllerTest`,
 `CompetitionControllerTest`, `FriendlyResolveSingleMatchTest`. Proven pre-existing by
@@ -145,7 +148,7 @@ stash-and-rerun. **Anything else is yours.**
 
 | | state |
 |---|---|
-| **A24** — staff + scout wages priced from the band | 📋 ruled, briefed, **blocked behind B1 reaching dev**. ⚠️ Must decide whether `weeklySalary` stops being an override and becomes a derivation — see the brief's carried-forward section |
+| **A24** — staff + scout wages priced from the band | 📋 ruled, briefed, **blocked behind B1 reaching dev**. ⚠ A27 moved every scout's `ability` (the judgement mean is taken over keys present and the count went 5 to 7), so the distribution must be RE-MEASURED before anything prices a wage off it. ⚠️ Must decide whether `weeklySalary` stops being an override and becomes a derivation — see the brief's carried-forward section |
 | **A29** — a CHECKS panel sampling real players: ability → wage → band | 📋 briefed, ready. Stops the owner photographing screens |
 | **A19** — re-scope | now only a wording check against A23's rename |
 | **A25** — staff ability bands are two flat globals | 🟡 **unruled** |
