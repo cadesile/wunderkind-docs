@@ -81,19 +81,69 @@ figure was right.
 ### 🟢 England economy gate: byte-identical
 
 ```
-$ diff a23-run-2026-11-19/variantGate-EN.AFTER.txt deploy-run-2026-11-20-gate-EN.txt
+$ diff a23-run-2026-11-19/variantGate-EN.AFTER.txt deploy-run-2026-11-20/variantGate-EN.AFTER.txt
    (empty)
 ```
 
 Same invocation A23 used. A23's AFTER was itself byte-identical to its BEFORE, so **England is
-provably unmoved by A23 AND by A26.** Output kept as `deploy-run-2026-11-20-gate-EN.txt`.
+provably unmoved by A23 AND by A26.** Output kept as `deploy-run-2026-11-20/variantGate-EN.AFTER.txt`.
 
 ⚠️ My md5 (`a56bc740…`) does not match the hashes A26 quoted (`c5941b30…` / `aff1aacd…`); those
 came from its own invocation with different arguments, so the two are not comparable. **The
 diff against A23's recorded run is the proof, not the hash.**
 
-⚠️ **Scotland is still not gate-covered** — no SC-resolved config export exists. Unchanged from
-A23's report; the device CHECKS line is the confirmation.
+### 🟢 Scotland IS gate-coverable after all — the blocker was ONE missing file
+
+A23's report, and mine after it, said Scotland could not be gated because no SC-resolved config
+export existed. **It is one HTTP GET.** `loadExport`'s own refusal message says so and nobody
+followed it:
+
+```bash
+curl -s "https://api.dev.buildmyclub.co.uk/api/game-config?country=SC" -o game-config-sc.LIVE.json
+```
+
+`starter-config.LIVE.json` needs no SC variant — it carries `leagueAbilityRanges` for **both**
+countries. The world export already holds all 25. **So Scotland was one file away from being
+gated for the whole workstream.** Saved here as `deploy-run-2026-11-20/game-config-sc.LIVE.json`.
+
+### ✅ What the Scotland gate says about A23 — measured BEFORE and AFTER
+
+Run in a throwaway worktree at `39b3c884` (A26 in, A23's app half out) against the same inputs:
+
+| tier | matchday BEFORE | matchday AFTER | everything else |
+|---|---|---|---|
+| 1 | 11.4% | **9.7%** | identical |
+| 2 | 28.9% | **24.4%** | identical |
+| 3 | 36.3% | **30.8%** | identical |
+| 4 | 54.4% | **46.1%** | identical |
+
+🟢 **A23's app half moves the matchday column and NOTHING else.** TV, shirt, club sponsor,
+league sponsor, prize and position are byte-identical. That is home games going 13 → 11 —
+exactly what the change claims, and no side effects. Coverage barely moves (644.8% → 643.0% at
+t1).
+
+⚠️ TV does not move here because the app-side gate reads the **published** `tvDeal` off the
+2026-11-19 world export, which predates the backend half. A23's divisor change shows once the
+backend deploys and a fresh export is taken.
+
+### 🔴 Scotland's absolute coverage is 643–1188% — but DO NOT act on that number yet
+
+The gate reports COVERAGE outside 85–110% at **all four** tiers, with TV at 410% and league
+position at 191–920% of authored turnover. **Pre-existing: identical before and after A23, so
+neither A23 nor A26 causes any of it.**
+
+🔴 **The inputs are mismatched and that alone could explain it.** Measured:
+
+- the 2026-11-19 world export holds **SC at 8 tiers** (1–8)
+- today's `game-config?country=SC` baseline holds **4 tiers**
+
+So the gate priced a 4-tier ladder against an 8-tier world: its "tier 4" is the BOTTOM of the
+authored ladder but a MID-table division in the export, with mid-table grounds and gates. That
+is the obvious candidate for a 920% position figure.
+
+**Before anyone treats this as a finding, re-run with a world export taken from the rebuilt dev
+box.** It also does not reconcile with the ~172% at SC t4 already on the open list, which is a
+second reason to distrust it. Evidence kept as `variantGate-SC.{BEFORE,AFTER}-A23.txt`.
 
 ## Verification gate — nothing is pushed until all of this passes
 
