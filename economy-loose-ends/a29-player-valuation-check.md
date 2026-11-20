@@ -1,4 +1,4 @@
-<!-- STATUS: 📋 OWNER ASK, BRIEF READY, NOT STARTED — blocked behind A28 (2026-11-20) -->
+<!-- STATUS: ✅ DONE — built and committed, app `new-game-save` @ b8ee4594 (2026-11-20). Report: a29-checks-panel-report.md. The "blocked behind A28" section below is spent. -->
 
 # A29 — a CHECKS panel that samples real players and shows ability → wage → band
 

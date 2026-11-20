@@ -36,9 +36,18 @@ so it resolves **TRUE at every tier**. Income anchoring is live on dev.
 > | `wageMultiplierTiers` | committed defaults 0.5/1.0/2.5/5.0 | **a different admin table entirely** |
 > | `incomeAnchoredWages` | "default false" | **true, derived** |
 
-🔴 **Still to act on:** A26's scout-`ability` change shipped in **OTA 488** on the claim that it
-was *latent* because anchoring was off. It is **live**. **Nobody has checked what it did to
-scout salaries on the owner's save.** That is the first thing to verify on device.
+✅ **CLOSED 2026-11-20 — and the correction above still stands.** A26's scout-`ability` change
+shipped in **OTA 488** on the claim that it was *latent* because anchoring was off. Anchoring is
+**live**. But scout salaries **did not move by one pence**: all **5,278 of 5,278** dev scouts
+have a stored `weekly_salary` exactly equal to `ScoutWageCalculator(experience)`, only 9 coincide
+with an ability-based formula (rows where `ability` happens to equal `experience`), and neither
+migration wrote to `weekly_salary`. Nine pricing sites traced by call graph; **all nine resolve on
+`experience` and none on `ability`.** Evidence: `scout-wage-impact-report.md`.
+
+⚠️ **Read the reason, not just the verdict.** "Latent" was correct **by accident** — it was
+justified on anchoring being off, and anchoring was on. The change was inert because `ability`
+is not wired to a price **yet**. `ScoutAbilityCalculator`'s own docblock says A24 is what wires
+it. So this closes as a fact about today, not as a reason to relax when A24 lands.
 
 ---
 
@@ -55,7 +64,27 @@ decoupled from scout noise and widened to spread 40; bond bias 12; bond decay fl
 
 ---
 
-## 3. ✅ EVERYTHING IS DEPLOYED TO DEV — nothing is held back
+## 3. 🔴 EVERYTHING IS DEPLOYED TO DEV — AND B1 HAS A REVIEWED DEFECT
+
+> ### 🔴 Read before trusting the DOF pot — added late 2026-11-20
+>
+> **B1's arithmetic is right; the pot it charges is not durable.** `clubStore.transferBudget` is a
+> live percentage of the balance, recomputed by **five** paths with no term for what has been
+> spent — one of them the Chairman's four-weekly rebalance, which is **ON by default** and is
+> *triggered by the draw-down itself*. So a wage commitment charged for up to 46 weeks is
+> **refunded within about four weeks**, silently (`spendTransferBudget` floors at zero). The
+> owner's third limb is implemented but **not delivered in play**.
+>
+> **Also: part C gated staff and not players.** The charge is symmetric, the gate is not —
+> `SignPlayerPanel`, `DofProposalService`, `DofProposalCard` test up-front cash only while being
+> charged up-front **plus** `wage × weeksRemaining`; `SignYouthPanel` does not consult the pot at
+> all. A £5,000/wk signing 40 weeks out has £200,000 ungated.
+>
+> Full review and specification: **`b1-pm-review.md`** (§2, §3, §5, and §10 for what the owner is
+> accepting). Verified independently by the PM against `clubStore.ts:530-551`, `GameLoop.ts:5850`
+> and `clubStore.ts:504`. Fix briefed as **"Finish B1 — pot as a ledger + player gates"**.
+>
+> ⚠️ **A27 reviewed separately: accept with caveats** — `a27-pm-review.md`.
 
 Final deploy of 2026-11-20. App `dev` **`36087794`**, backend `dev` **`dc9c0ae3`**.
 
@@ -145,16 +174,22 @@ stash-and-rerun. **Anything else is yours.**
 
 | | state |
 |---|---|
-| **A24** — staff + scout wages priced from the band | 📋 ruled, briefed, **blocked behind B1 reaching dev**. ⚠ A27 moved every scout's `ability` (the judgement mean is taken over keys present and the count went 5 to 7), so the distribution must be RE-MEASURED before anything prices a wage off it. ⚠️ Must decide whether `weeklySalary` stops being an override and becomes a derivation — see the brief's carried-forward section |
+| **A24** — staff + scout wages priced from the band | 📋 **RULED THREE TIMES; part-B blocker VERIFIED GONE in code** (`anchorAmpStaffWages` retired + guard test). Briefing is held for ONE thing only: the band-ceiling answer (`wageMultiplierTiers` stop at `maxAbility` 60, `coach_ability_max` is 75). 🟢 Settled late 2026-11-20: scouts price off the **existing `scout.ability`** A26 built, not `experience`; `weeklySalary` **becomes a derivation** (admin help must stop promising an override); the three wage cliffs are to be **measured via A29 first**, not fixed here. The scout `ability` distribution is already measured in `scout-wage-impact-report.md` — use it, do not recompute. |
 | **A29** — a CHECKS panel sampling real players: ability → wage → band | 📋 briefed, ready. Stops the owner photographing screens |
 | **A19** — re-scope | now only a wording check against A23's rename |
-| **A25** — staff ability bands are two flat globals | 🟡 **unruled** |
+| **A25** — staff ability bands are two flat globals | 🟢 **RULED 2026-11-20** — its own authored per-country/per-tier table, replacing both the flat globals and the `StarterPackService` borrow-the-player-band workaround; staff ability defined against player **current ability**, settled in the same change. Work still parked behind A24. See `a25-staff-ability-bands.md` |
 
 ---
 
 ## 9. ❓ Needs the OWNER, not an agent
 
-1. 🔴 **Did OTA 488 move scout salaries?** (§1) — the open consequence of a wrong premise.
+1. ✅ **Did OTA 488 move scout salaries?** — **ANSWERED: no, zero pence** (§1). No longer needs
+   the owner. ⚠️ **Two findings it turned up that DO need you:** the live `scout_experience_min/max`
+   is **4–34** against a field documented as a 0–100 score, which makes the entire live scout wage
+   band **£26.80–£40.30** — £13.50 wide across every scout in the game, i.e. a scout's wage is
+   effectively flat regardless of quality (an admin edit, not code — same class as item 4 below).
+   And the live `wageMultiplierTiers` top out at `maxAbility` **60** while `coach_ability_max` is
+   **75**, so a coach can be generated above the top of the band table A24 will price from.
 2. **Does unspent remainder return to the DOF pot** when a contract ends or a player is sold
    mid-season? B1 raised it; never asked.
 3. **The excursion role filter** — the manager joins every staff excursion and builds bonds,

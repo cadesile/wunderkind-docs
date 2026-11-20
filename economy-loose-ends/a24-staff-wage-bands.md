@@ -1,4 +1,4 @@
-<!-- STATUS: 📋 RULED ON TWICE, DIAGNOSIS DONE, NOTHING BUILT. UNBLOCKED BY PART B (2026-11-20) -->
+<!-- STATUS: 📋 RULED ON THREE TIMES, DIAGNOSIS DONE, NOTHING BUILT. PART-B BLOCKER VERIFIED GONE. Awaiting the band-ceiling answer before briefing (2026-11-20) -->
 
 # A24 — Staff and scout salaries priced from the wage band
 
@@ -203,3 +203,69 @@ the subscriber and in `services.md` so it is a decision rather than a discovery.
 
 Ordinary edits re-derive themselves. If A24 retunes the 70/30 weighting, `--force` is the only
 route — the migration is applied and cannot be re-run.
+
+---
+
+## ✅ Third ruling pass — owner, 2026-11-20 (late). READ THIS BEFORE THE BODY ABOVE.
+
+Three open questions in this brief are now settled. **The body above is unchanged and still
+accurate on everything else; where it recommends something these rulings overturn, these win.**
+
+| question | ruling | effect on the brief above |
+|---|---|---|
+| Which scout number drives the band? | 🟢 **Give scouts a real ability and price on that.** Experience stays a scouting-effectiveness stat. | **Option 2, not option 1.** The brief's own recommendation of option 1 is OVERRULED — see below for why this is far cheaper than the brief assumes. |
+| Is `weeklySalary` an override or a derivation? | 🟢 **A derivation.** It gets the same `preUpdate` treatment `ability` has, and the admin help text stops promising an override. | Settles §"Carried forward from A26" item 2. The band becomes the single source for a wage. |
+| What about the three wage cliffs? | 🟢 **Measure them on a real save via A29 first**, then decide. Not accepted, not fixed — measured. | Settles §"The cliffs become the owner's decision". Do not re-author the ratios in this task. |
+
+### 🟢 Why "give scouts an ability" is NOT the big change this brief calls it
+
+The brief rates option 2 *"cleanest conceptually, biggest change"* and warns of schema work.
+**That schema work is already done.** A26 and A27 built exactly this field:
+
+- `Scout::$ability` exists, derived `0.7 × experience + 0.3 × judgementMean`, mean over keys present.
+- `ScoutAbilityLifecycleSubscriber` hooks **`prePersist` AND `preUpdate`**, so it is a true
+  function of its inputs on every write — generation, admin edit, import.
+- It is **read-only in admin** by owner ruling.
+- A27's `Version20261120120000` re-derived it for all **5,278** dev scouts.
+- `ScoutAbilityCalculator`'s own docblock already names this task as the consumer: *"Because A24
+  will price a scout's wage off `ability`."*
+
+**So the ruling is the one the code was already built for.** A24 prices scouts off the existing
+`scout.ability`. No new column, no migration, no conversion layer — and no violation of the
+project's no-conversion-at-boundaries rule, because `ability` is a stored derivation rather than a
+mapping applied at read time.
+
+### ⚠️ The range consequence — PM arithmetic, VERIFY IT, do not quote it
+
+Why this ruling also dodges a trap the brief could not have seen. Live `pool_config` has
+`scout_experience_min/max = 4/34` and `scout_judgement_min/max = 15/90`.
+
+- **Pricing on `experience` (option 1)** would span only **4–34**, so against band edges
+  15/25/40/60 a scout could reach bands 1–3 and **never band 4** — structurally cheaper than a
+  coach forever, for no designed reason.
+- **Pricing on `ability` (the ruling)** spans roughly `0.7×4 + 0.3×15 ≈ 7` to
+  `0.7×34 + 0.3×90 ≈ 51`, which **does** reach band 4.
+
+🔴 **That is PM arithmetic off the live config row, not a measurement.** The first thing the
+implementing agent does is measure the real `ability` distribution across the 5,278 dev scouts
+against the live band edges and report it — `scout-wage-impact-report.md` already has that
+distribution; use it rather than recomputing, and say if it disagrees with the above.
+
+### ⚠️ Still open, and briefing waits on it
+
+**The band ceiling.** Live `wageMultiplierTiers` top out at `maxAbility: 60`; live
+`coach_ability_max` is **75**. What the resolution code does with an ability of 61–75 — clamp to
+the last band, fall through to a zero or undefined multiplier, or throw — is under investigation.
+**A24 must not be built before that answer**, because a fall-through to zero would price the best
+staff in the game at nothing and CI would most likely pass.
+
+### 🟢 The part-B blocker is verified gone, not merely deployed
+
+Checked against the code on 2026-11-20, not taken from a report: `anchorAmpStaffWages` is
+**retired** (`SeasonBudgetService.ts:483` carries the retirement note) and
+`dofHireCharge.test.ts:308-309` is a guard asserting it stays retired. The five-rung chain in
+`staffWages.ts` is now
+`staff.salary ?? anchoredPence ?? staff.weeklySalary ?? tierStaffWeeklyWagePence(...) ?? legacy`,
+and nothing overwrites rung 1 at a season transition any more. **So a change to rung 4 is now
+visible on the screen the owner is looking at** — which is exactly what this brief predicted
+would not be true before part B.
