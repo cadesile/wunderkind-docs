@@ -1,7 +1,7 @@
-<!-- STATUS: 🟡 BUILT AND COMMITTED — app `9f46bf66`, backend `6c5e4ad5`. NOT PUSHED, NOT
-DEPLOYED. ⚠️ VERIFICATION INCOMPLETE: 4 app test failures UNATTRIBUTED and the backend suite
-stopped at ~14%, both re-runs pending — §9. Do NOT quote a test figure from this report.
-2026-11-20 -->
+<!-- STATUS: ✅ BUILT, COMMITTED AND VERIFIED — app `9f46bf66`, backend `6c5e4ad5`.
+NOT PUSHED, NOT DEPLOYED. App suite GREEN at `598ff158` (655/10,962); backend at the
+documented 3-failure baseline, all three named. The 4 earlier app failures did NOT
+reproduce and are recorded as machine load — §9. 2026-11-20 -->
 
 # A24 report — staff AND scout wages priced from `wageMultiplierTiers`
 
@@ -375,7 +375,12 @@ and backend-side, the regression guard that catches the wrong 0–100 number bei
   ✓ Scout overload reads the entity's own ability   (sets experience 50, ability 30; asserts 30 and NOT 50)
 ```
 
-The six pricing sites after this change:
+🔴 **CORRECTED 2026-11-20, AFTER THIS CHANGE DEPLOYED: THE COUNT WAS WRONG. It is EIGHT, and
+two of them were still on `experience` in shipped code.** The PM found them by grepping for what
+still reads scout `experience`; this report had said six and named the four from the brief plus
+two it found itself. **It missed the INCOME-ANCHORED path entirely** — which is the one rung that
+sits ABOVE everything A24 changed, so missing it meant A24's pricing was being overwritten on the
+live market. Full account and fix: `a24b-scout-anchor-input-report.md`.
 
 | site | prices from |
 |---|---|
@@ -385,12 +390,20 @@ The six pricing sites after this change:
 | `StaffPoachingService.worldMemberSalaryPence` | the scout's own `salary`, written at init off the band |
 | `market.ts` (hire market) | backend `weeklySalary` — §1a |
 | backend `ScoutWageCalculator` | `scoutWageMin/Max` on `ability` — the hire-market figure |
+| 🔴 `marketStore.setMarketData` → `anchorStaffWages` | **was `experience`**, now `ability`. OVERWRITES the `market.ts` figure above, so it outranked A24 entirely |
+| 🔴 `GameLoop` §14c staff renewal anchor | **was `experience`**, now `ability`. The renewal mean-reverts toward it |
+
+⚠️ **The lesson, and it is the workstream's own governing one in a new costume.** A24 traced every
+path that *computes* a scout's wage and moved them all onto `ability`. It did not ask which rung
+of `resolveWorldStaffWagePence`'s chain OUTRANKS the ones it was changing — and the answer was
+`anchoredPence`, whose two producers were still being handed `experience`. **Tracing the sites
+that compute a quantity is not the same as tracing the sites that decide it.**
 
 ---
 
 ## 9. Verification
 
-### ⚠️ First: another session is writing in this same checkout
+### ⚠️ First, and it shaped every figure below: another session was writing this same checkout
 
 My brief says *"You are the only writer in this checkout right now."* **That is not true**, and
 I found it the first time I typechecked:
@@ -448,84 +461,123 @@ Time:        2825.428 s
 mine: `scoutWageBands.test.ts` (14) and `staffValuationChecks.test.ts` (19). No third-party suite
 gained or lost a test; `staffWages.test.ts` was edited but not lengthened.
 
-### 🔴 4 failures in 2 suites — UNATTRIBUTED, RE-RUN PENDING. Do not read this as pre-existing
+### ✅ RESOLVED — the 4 failures did NOT reproduce. The cause was machine load
 
+**The clean re-run, at `598ff158` (A24 + B1), with nothing else running on the machine:**
+
+```bash
+npx jest --listTests | wc -l
+npx jest
 ```
-FAIL src/__tests__/db/clientRecovery.test.ts (60.89 s)
-  ● markDatabaseDead › stops reopening a file that will not open
-  ● reopen budget › still gives up on a file that genuinely will not open
-FAIL src/__tests__/screens/tournamentHubRender.test.tsx
-  ● Tournament Hub screens render › Inbox          (+1 more in the same suite)
+```
+listTests:   655
+Test Suites: 655 passed, 655 total
+Tests:       3 skipped, 10962 passed, 10965 total
+Time:        151.095 s
 ```
 
-**I could not attribute these, and the honest state is that the question is open.** What I have:
+**Zero failures.** `db/clientRecovery.test.ts` and `screens/tournamentHubRender.test.tsx` both
+pass.
 
-| evidence | result |
-|---|---|
-| Both suites run ALONE, with my changes present | ✅ **2 passed, 33 tests passed** |
-| Full suite at **pristine HEAD** (`930fcde7`), same worktree, same machine | ✅ **652 passed / 10,891, zero failures** |
-| `clientRecovery.test.ts`'s imports | `expo-sqlite` and `@/db/client` only — **no path to any file A24 touches** |
-| The failing assertion | `expect(mockOpen.mock.calls.length).toBeLessThanOrEqual(5)` → received **9**. A retry budget, i.e. timing-sensitive |
+### 🔴 The decisive number is the WALL CLOCK, not the pass/fail
 
-⚠️ **I first wrote this up as load-induced flake and that was wrong to assert.** The pristine-HEAD
-run was green, which is precisely the evidence against the easy reading, so "pre-existing" is not
-available and is not claimed here. **`CLAUDE.md`'s two preceding `new-game-save` rows do document a
-run-ordering-dependent class on this branch** ("A worker process has failed to exit gracefully …
-run-ordering-dependent and pre-existing"), and adding 2 suites does reshuffle which files share a
-worker — **but that is a HYPOTHESIS I did not confirm, and it is recorded as one.**
+| run | conditions | time | result |
+|---|---|---|---|
+| A24 alone, isolated worktree | **sharing the machine with the 3,271-test phpunit run and a `tsc`** | **2,825 s** | 4 failures in 2 suites |
+| pristine HEAD, same worktree | phpunit still running | 1,331 s | green |
+| **A24 + B1, real checkout, nothing else running** | **alone** | **151 s** | ✅ **green** |
 
-**Why the confirming re-run did not happen.** The PM stopped it, correctly: the B1 session is
-writing this same checkout and has **committed on top of A24** (`4c3f45eb`, the DOF pot ledger), so
-a run started now measures A24 **plus** B1 against a tree that can move mid-run — unattributable
-either way, which is worse than no run.
+**151 s against 2,825 s is 18.7×, on the same suite and the same machine.** That is not an
+inference about test ordering — it is a direct measurement of how starved the first run was, and
+it is the mechanism for every failure seen today, because **every one of them is a clock**:
 
-**🟢 The agreed next step, so this is not left as a judgement call.** Once B1 commits and goes
-idle, re-run the full suite at A24+B1 and ask whether these 4 reproduce. **If they do, bisect
-against `9f46bf66`'s parent** (`930fcde7`) rather than deciding by inspection. Nothing in A24 is
-blocked on the answer — the commit is in and the two new suites pass — but **the branch's test
-figure should not be updated in `CLAUDE.md` or `environment.md` until it is settled.** Left to the
-PM, per standing note §3 and the six times that table has gone stale from a well-meant edit.
+- `reopen budget › still gives up on a file that genuinely will not open` —
+  `expect(mockOpen.mock.calls.length).toBeLessThanOrEqual(5)` read **9**. A retry budget.
+- `db/health/runner.test.ts` (B1's run, at `598ff158`) — a **150 ms** wall-clock tripwire read
+  **207 ms**.
 
-### Backend — ⚠️ STOPPED PART-WAY, NOT A RESULT
+Run the clock 18.7× slower and a timeout-driven retry fires more often and a 150 ms budget blows.
+
+⚠️ **I first wrote this up as load-induced flake, then retracted that when the pristine-HEAD run
+came back green, because a green control run is evidence against the easy reading.** The retraction
+was right at the time: what was missing was the timing column, and the pristine run had phpunit
+still running too — so it was never the clean control I treated it as. **The conclusion the
+evidence supports is "these suites are load-sensitive and this machine was loaded," not "ordering."**
+Ordering only decides *which* clock-sensitive suite becomes the casualty on a given run.
+
+**Three suites are load-sensitive and each passes in isolation.** Across four runs today, no two
+agreed on which failed:
+
+| suite | seen failing in | in isolation |
+|---|---|---|
+| `src/__tests__/db/clientRecovery.test.ts` | A24's contaminated run (2 tests) | ✅ passes |
+| `src/__tests__/screens/tournamentHubRender.test.tsx` | A24's contaminated run (2 tests) | ✅ passes |
+| `src/__tests__/db/health/runner.test.ts` | B1's run at `598ff158` (1 test) | ✅ passes |
+
+**No bisect was needed and none was run.** A24's pricing change cannot plausibly reach any of
+them — `clientRecovery` imports only `expo-sqlite` and `@/db/client`.
+
+### ✅ The counts reconcile across three independent runs
+
+| | suites | collected | vs previous |
+|---|---|---|---|
+| A29 baseline (`930fcde7`) | 652 | 10,894 | — |
+| A24 alone | 654 | 10,927 | **+2 suites / +33** — `scoutWageBands` (14) + `staffValuationChecks` (19) |
+| **A24 + B1 (`598ff158`)** | **655** | **10,965** | +1 suite / +38, B1's |
+
+🟢 **And it cross-checks against B1's own run of the same tree.** B1 reported 10,961 tests with one
+failure: `10,961 passed + 1 failed + 3 skipped = 10,965 collected` — **identical to this run's
+collected total**, two independent runs differing only by B1's one load casualty.
+
+**⚠️ `598ff158` is A24 + B1 together, so `655 / 10,962` is not an A24 figure.** A24's own is
+`654 / 10,924 passed`, and it was only ever measured on the contaminated run. Updating
+`CLAUDE.md`'s `new-game-save` row and `environment.md`'s green-master bar is **left to the PM** —
+per standing note §3, and because that table has gone stale six times from well-meant edits.
+
+### ✅ Backend — ran to completion, exactly the documented baseline
 
 ```bash
 lando php vendor/bin/phpunit --colors=never --filter '/^(?!.*AdminShellCoverage).*$/'
 ```
 ```
-PHPUnit 13.4.3 by Sebastian Bergmann and contributors.
-Runtime:       PHP 8.5.7
-Configuration: /app/phpunit.dist.xml
+Time: 05:39.785, Memory: 811.50 MB
 
-.............................................................   61 / 3271 (  1%)
-.............................................................  122 / 3271 (  3%)
-.............................................................  183 / 3271 (  5%)
-.............................................................  244 / 3271 (  7%)
-.............................................................  305 / 3271 (  9%)
-.............................................................  366 / 3271 ( 11%)
-.............................................................  427 / 3271 ( 13%)
-F............................................................  488 / 3271 ( 14%)
-....................................................
+There were 3 failures:
+
+1) App\Tests\Controller\Admin\NotificationLogCrudControllerTest::testIndexRowIsClickableToADetailPageShowingTheFullPayload
+The row for this log entry should be present.
+Failed asserting that 0 is greater than 0.
+/app/tests/Controller/Admin/NotificationLogCrudControllerTest.php:65
+
+2) App\Tests\Controller\Api\CompetitionControllerTest::testShowIncludesResultsOnceRoundsAreProcessed
+a freshly generated result must carry a non-empty narrative timeline
+Failed asserting that an array is not empty.
+/app/tests/Controller/Api/CompetitionControllerTest.php:807
+
+3) App\Tests\Service\Friendly\FriendlyResolveSingleMatchTest::testResolvingAnAcceptedChallengeRecordsAFullResult
+Failed asserting that an array is not empty.
+/app/tests/Service/Friendly/FriendlyResolveSingleMatchTest.php:110
+
+FAILURES!
+Tests: 3271, Assertions: 157033, Failures: 3, PHPUnit Deprecations: 1, PHPUnit Notices: 21, Skipped: 13.
 ```
 
-**🟢 The collected total reconciles exactly: 3,271 against the documented baseline of 3,265 —
-+6, which is my +6** (`ScoutAbilityLifecycleSubscriberTest` +5, `ScoutGenerationServiceTest` +1;
-`ScoutWageCalculatorTest` renamed cases without changing its count).
+🟢 **All three failures are the documented pre-existing ones, confirmed BY NAME** —
+`NotificationLogCrudControllerTest`, `CompetitionControllerTest`,
+`FriendlyResolveSingleMatchTest`. **Nothing else failed, so nothing is attributable to A24** and no
+stash-and-rerun was needed.
 
-⚠️ **It reached ~14% (around test 480 of 3,271) and I stopped it on the PM's instruction. This is
-not a pass and must not be quoted as one.**
+🟢 **The count reconciles exactly: 3,271 against the documented 3,265 baseline — +6, which is
+mine.** `ScoutAbilityLifecycleSubscriberTest` +5, `ScoutGenerationServiceTest` +1;
+`ScoutWageCalculatorTest` renamed its cases without changing its count.
 
-**One `F`, at test 428, and I DO NOT KNOW WHICH TEST IT IS.** PHPUnit prints failure detail only in
-its closing summary, which this run never reached, so there is no name, class or assertion to
-report — and **I am not going to infer one from the position.** In particular I cannot say whether
-it is one of the three documented pre-existing failures
-(`NotificationLogCrudControllerTest`, `CompetitionControllerTest`, `FriendlyResolveSingleMatchTest`),
-because the run stopped before naming anything. **Of those three, I observed ZERO by name.**
+**5m 40s, run alone.** The earlier aborted run reached ~14% with one unnamed `F` at test 428 and
+no summary to name it from; `NotificationLogCrudControllerTest` sorts early enough to be that `F`,
+which is consistent — **but that remains an inference and the clean run above is the result.**
 
-**What the backend re-run needs to establish**, in order: the final count against 3,271; which
-tests failed, by name; whether each is one of the documented three; and for anything else, the
-stash-and-rerun attribution the standing note requires — never a read of the assertion text. The
-backend repo is clean apart from my commit (`6c5e4ad5`) and B1 is app-only, so unlike the app side
-there is no moving-target problem — it just needs the time.
+⚠️ **The `wunderkind_test` migration trap did not apply.**
+`git show --name-only HEAD | grep migrations/` is empty for `6c5e4ad5`: A24 priced off two columns
+that already existed, so there was no schema change to hand-apply.
 
 ### What IS verified
 
@@ -537,6 +589,8 @@ there is no moving-target problem — it just needs the time.
 | The 4 suites my change actually touches, run together | ✅ **4 passed / 58 tests** (`staffWages`, `packIsACensus`, `scoutWageBands`, `staffValuationChecks`) |
 | `php -l` on all 11 changed backend source files + 3 test files | ✅ no syntax errors |
 | App suite at pristine HEAD, for attribution | ✅ 652 / 10,891, green |
+| **App suite at `598ff158` (A24 + B1), run ALONE** | ✅ **655 / 10,962 passed, 10,965 collected, zero failures, 151 s** |
+| **Backend suite, run ALONE to completion** | ✅ **3,271 tests, 157,033 assertions, the documented 3 failures and nothing else** |
 
 ---
 
@@ -547,12 +601,18 @@ there is no moving-target problem — it just needs the time.
 1. **🔴 Two sessions are writing `new-game-save` in one checkout.** B1 has now committed on top of
    A24 (`4c3f45eb`). My brief said I was the only writer; it was wrong, and it cost a full suite
    run plus a pristine-HEAD run to work around. Worth fixing in the briefs, not just here.
-2. **🔴 The 4 app failures are unattributed** (§9). Re-run at A24+B1 when B1 is idle; bisect
-   against `930fcde7` if they reproduce. **Do not update `CLAUDE.md`'s `new-game-save` row or
-   `environment.md`'s green-master bar until then** — the figure would be `654 / 10,924 passed` on a
-   run that also had 4 failures, which is not a baseline.
-3. **🔴 The backend suite needs a clean full run.** Stopped at ~14% with one unnamed failure (§9).
-   No moving-target problem there.
+2. **✅ CLOSED — the 4 app failures did not reproduce** (§9). The clean run at `598ff158` is
+   green, 655/10,962, in **151 s against 2,825 s** for the contaminated run. Three suites are
+   load-sensitive and each passes in isolation: `db/clientRecovery.test.ts`,
+   `screens/tournamentHubRender.test.tsx`, `db/health/runner.test.ts`. No bisect needed.
+   ⚠️ **Still yours: `CLAUDE.md`'s `new-game-save` row and `environment.md`'s green-master bar.**
+   `655 / 10,962` is A24 **+ B1**; A24's own figure is `654 / 10,924 passed` and was only ever
+   measured on the contaminated run.
+   🟢 **Worth a line in `environment.md` on its own account:** the three suites above assert wall
+   clocks and retry budgets, so a loaded machine fails them and the failure names a different
+   suite each time. That is most of what the "three to five failures" baseline has been.
+3. **✅ CLOSED — the backend suite ran to completion**, 3,271 tests, **exactly the documented
+   three failures, all confirmed by name** (§9). Nothing attributable to A24.
 
 **Decisions that are the owner's, with the numbers to make them on:**
 

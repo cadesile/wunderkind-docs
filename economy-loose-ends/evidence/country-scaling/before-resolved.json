@@ -1,0 +1,172 @@
+{
+    "factorBp": {
+        "EN": 10000,
+        "SC": 1000
+    },
+    "EN1": {
+        "tvPool": 30000000000,
+        "prize": 10000000000,
+        "pot": 10000000000,
+        "parachute": null,
+        "wageScale": 48869120733,
+        "youthEnforced": 150000
+    },
+    "EN2": {
+        "tvPool": 14000000000,
+        "prize": 7500000000,
+        "pot": 8000000000,
+        "parachute": {
+            "seasons": 3,
+            "perSeasonPence": [
+                7202985402,
+                4801990268,
+                2400995134
+            ]
+        },
+        "wageScale": 25551637695,
+        "youthEnforced": 57356
+    },
+    "EN3": {
+        "tvPool": 7000000000,
+        "prize": 5000000000,
+        "pot": 5000000000,
+        "parachute": {
+            "seasons": 3,
+            "perSeasonPence": [
+                2134596135,
+                1423064090,
+                711532045
+            ]
+        },
+        "wageScale": 12232775033,
+        "youthEnforced": 19200
+    },
+    "EN4": {
+        "tvPool": 5000000000,
+        "prize": 3050000000,
+        "pot": 3000000000,
+        "parachute": {
+            "seasons": 3,
+            "perSeasonPence": [
+                1194540564,
+                796360376,
+                398180188
+            ]
+        },
+        "wageScale": 12962985584,
+        "youthEnforced": 13400
+    },
+    "EN5": {
+        "tvPool": 3000000000,
+        "prize": 2550000000,
+        "pot": 1000000000,
+        "parachute": {
+            "seasons": 3,
+            "perSeasonPence": [
+                424307748,
+                282871832,
+                141435916
+            ]
+        },
+        "wageScale": 8139051881,
+        "youthEnforced": 5094
+    },
+    "EN6": {
+        "tvPool": 1000000000,
+        "prize": 1500000000,
+        "pot": 870000000,
+        "parachute": {
+            "seasons": 3,
+            "perSeasonPence": [
+                140393928,
+                93595952,
+                46797976
+            ]
+        },
+        "wageScale": 6080571648,
+        "youthEnforced": 2500
+    },
+    "EN7": {
+        "tvPool": 500000000,
+        "prize": 1000000000,
+        "pot": 500000000,
+        "parachute": {
+            "seasons": 3,
+            "perSeasonPence": [
+                34967076,
+                23311384,
+                11655692
+            ]
+        },
+        "wageScale": 3871348693,
+        "youthEnforced": 2500
+    },
+    "EN8": {
+        "tvPool": 120000000,
+        "prize": 500000000,
+        "pot": 200000000,
+        "parachute": {
+            "seasons": 3,
+            "perSeasonPence": [
+                9891092,
+                6594061,
+                3297030
+            ]
+        },
+        "wageScale": 3321008411,
+        "youthEnforced": 2500
+    },
+    "SC1": {
+        "tvPool": 30000000000,
+        "prize": 10000000000,
+        "pot": 10000000000,
+        "parachute": null,
+        "wageScale": 4886912073,
+        "youthEnforced": 150000
+    },
+    "SC2": {
+        "tvPool": 14000000000,
+        "prize": 7500000000,
+        "pot": 8000000000,
+        "parachute": {
+            "seasons": 3,
+            "perSeasonPence": [
+                7202985402,
+                4801990268,
+                2400995134
+            ]
+        },
+        "wageScale": 2555163769,
+        "youthEnforced": 57356
+    },
+    "SC3": {
+        "tvPool": 7000000000,
+        "prize": 5000000000,
+        "pot": 5000000000,
+        "parachute": {
+            "seasons": 3,
+            "perSeasonPence": [
+                2134596135,
+                1423064090,
+                711532045
+            ]
+        },
+        "wageScale": 1223277503,
+        "youthEnforced": 19200
+    },
+    "SC4": {
+        "tvPool": 5000000000,
+        "prize": 3050000000,
+        "pot": 3000000000,
+        "parachute": {
+            "seasons": 3,
+            "perSeasonPence": [
+                1194540564,
+                796360376,
+                398180188
+            ]
+        },
+        "wageScale": 1296298558,
+        "youthEnforced": 13400
+    }
+}

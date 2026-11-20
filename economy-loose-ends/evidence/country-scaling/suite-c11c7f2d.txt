@@ -1,0 +1,139 @@
+PHPUnit 13.4.3 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.5.7
+Configuration: /app/phpunit.dist.xml
+
+.............................................................   61 / 3366 (  1%)
+.............................................................  122 / 3366 (  3%)
+.............................................................  183 / 3366 (  5%)
+.............................................................  244 / 3366 (  7%)
+.............................................................  305 / 3366 (  9%)
+.............................................................  366 / 3366 ( 10%)
+.............................................................  427 / 3366 ( 12%)
+.............................................................  488 / 3366 ( 14%)
+.......F.....................................................  549 / 3366 ( 16%)
+.............................................................  610 / 3366 ( 18%)
+.............................................................  671 / 3366 ( 19%)
+.............................................................  732 / 3366 ( 21%)
+..............................F..............................  793 / 3366 ( 23%)
+.............................................................  854 / 3366 ( 25%)
+.............................................................  915 / 3366 ( 27%)
+.............................................................  976 / 3366 ( 28%)
+............................................................. 1037 / 3366 ( 30%)
+............................................................. 1098 / 3366 ( 32%)
+............................................................. 1159 / 3366 ( 34%)
+............................................................. 1220 / 3366 ( 36%)
+.................................................NNNNNNN..... 1281 / 3366 ( 38%)
+............................................D................ 1342 / 3366 ( 39%)
+...................................................NNNNNNNNNN 1403 / 3366 ( 41%)
+NN........................................................SSS 1464 / 3366 ( 43%)
+SS.S......................................................... 1525 / 3366 ( 45%)
+............................................................. 1586 / 3366 ( 47%)
+............................................................. 1647 / 3366 ( 48%)
+............................................................. 1708 / 3366 ( 50%)
+............................................................. 1769 / 3366 ( 52%)
+............................................................. 1830 / 3366 ( 54%)
+............................................................. 1891 / 3366 ( 56%)
+............................................................. 1952 / 3366 ( 57%)
+............................................................. 2013 / 3366 ( 59%)
+............................................................. 2074 / 3366 ( 61%)
+............................................................. 2135 / 3366 ( 63%)
+............................................................. 2196 / 3366 ( 65%)
+......................SS.............F................N.N.... 2257 / 3366 ( 67%)
+............................................................. 2318 / 3366 ( 68%)
+.................E........................................... 2379 / 3366 ( 70%)
+............................................................. 2440 / 3366 ( 72%)
+............................................................. 2501 / 3366 ( 74%)
+............................................................. 2562 / 3366 ( 76%)
+............................................................. 2623 / 3366 ( 77%)
+............................................................. 2684 / 3366 ( 79%)
+............................................................. 2745 / 3366 ( 81%)
+............................................................. 2806 / 3366 ( 83%)
+............................................................. 2867 / 3366 ( 85%)
+............................................................. 2928 / 3366 ( 86%)
+............................................................. 2989 / 3366 ( 88%)
+...S......................................................... 3050 / 3366 ( 90%)
+............................................................. 3111 / 3366 ( 92%)
+............................................................. 3172 / 3366 ( 94%)
+............................................................. 3233 / 3366 ( 96%)
+....................SSSS..................................... 3294 / 3366 ( 97%)
+............................................................. 3355 / 3366 ( 99%)
+...........                                                   3366 / 3366 (100%)
+
+Time: 04:57.593, Memory: 839.50 MB
+
+There was 1 error:
+
+1) App\Tests\Service\LeaderboardHallOfFameTest::testTitlesProduceATierWeightedScoreOnTheLeaderboard
+Doctrine\DBAL\Exception\UniqueConstraintViolationException: An exception occurred while executing a query: SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint "uq_league_country_tier"
+DETAIL:  Key (country, tier)=(AE, 4) already exists.
+
+/app/vendor/doctrine/dbal/src/Driver/API/PostgreSQL/ExceptionConverter.php:54
+/app/vendor/doctrine/dbal/src/Connection.php:1453
+/app/vendor/doctrine/dbal/src/Connection.php:1389
+/app/vendor/doctrine/dbal/src/Statement.php:108
+/app/vendor/doctrine/dbal/src/Statement.php:133
+/app/vendor/doctrine/orm/src/Persisters/Entity/BasicEntityPersister.php:255
+/app/vendor/doctrine/orm/src/UnitOfWork.php:1144
+/app/vendor/doctrine/orm/src/UnitOfWork.php:426
+/app/vendor/doctrine/orm/src/EntityManager.php:270
+/app/tests/Service/LeaderboardHallOfFameTest.php:78
+
+Caused by
+Doctrine\DBAL\Driver\PDO\Exception: SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint "uq_league_country_tier"
+DETAIL:  Key (country, tier)=(AE, 4) already exists.
+
+/app/vendor/doctrine/dbal/src/Driver/PDO/Exception.php:24
+/app/vendor/doctrine/dbal/src/Driver/PDO/Statement.php:57
+/app/vendor/doctrine/dbal/src/Driver/Middleware/AbstractStatementMiddleware.php:24
+/app/vendor/doctrine/dbal/src/Logging/Statement.php:46
+/app/vendor/doctrine/dbal/src/Driver/Middleware/AbstractStatementMiddleware.php:24
+/app/vendor/symfony/doctrine-bridge/Middleware/Debug/Statement.php:58
+/app/vendor/doctrine/dbal/src/Statement.php:104
+/app/vendor/doctrine/dbal/src/Statement.php:133
+/app/vendor/doctrine/orm/src/Persisters/Entity/BasicEntityPersister.php:255
+/app/vendor/doctrine/orm/src/UnitOfWork.php:1144
+/app/vendor/doctrine/orm/src/UnitOfWork.php:426
+/app/vendor/doctrine/orm/src/EntityManager.php:270
+/app/tests/Service/LeaderboardHallOfFameTest.php:78
+
+Caused by
+PDOException: SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint "uq_league_country_tier"
+DETAIL:  Key (country, tier)=(AE, 4) already exists.
+
+/app/vendor/doctrine/dbal/src/Driver/PDO/Statement.php:55
+/app/vendor/doctrine/dbal/src/Driver/Middleware/AbstractStatementMiddleware.php:24
+/app/vendor/doctrine/dbal/src/Logging/Statement.php:46
+/app/vendor/doctrine/dbal/src/Driver/Middleware/AbstractStatementMiddleware.php:24
+/app/vendor/symfony/doctrine-bridge/Middleware/Debug/Statement.php:58
+/app/vendor/doctrine/dbal/src/Statement.php:104
+/app/vendor/doctrine/dbal/src/Statement.php:133
+/app/vendor/doctrine/orm/src/Persisters/Entity/BasicEntityPersister.php:255
+/app/vendor/doctrine/orm/src/UnitOfWork.php:1144
+/app/vendor/doctrine/orm/src/UnitOfWork.php:426
+/app/vendor/doctrine/orm/src/EntityManager.php:270
+/app/tests/Service/LeaderboardHallOfFameTest.php:78
+
+--
+
+There were 3 failures:
+
+1) App\Tests\Controller\Admin\NotificationLogCrudControllerTest::testIndexRowIsClickableToADetailPageShowingTheFullPayload
+The row for this log entry should be present.
+Failed asserting that 0 is greater than 0.
+
+/app/tests/Controller/Admin/NotificationLogCrudControllerTest.php:65
+
+2) App\Tests\Controller\Api\CompetitionControllerTest::testShowIncludesResultsOnceRoundsAreProcessed
+a freshly generated result must carry a non-empty narrative timeline
+Failed asserting that an array is not empty.
+
+/app/tests/Controller/Api/CompetitionControllerTest.php:807
+
+3) App\Tests\Service\Friendly\FriendlyResolveSingleMatchTest::testResolvingAnAcceptedChallengeRecordsAFullResult
+Failed asserting that an array is not empty.
+
+/app/tests/Service/Friendly/FriendlyResolveSingleMatchTest.php:110
+
+ERRORS!
+Tests: 3366, Assertions: 157810, Errors: 1, Failures: 3, PHPUnit Deprecations: 1, PHPUnit Notices: 21, Skipped: 13.

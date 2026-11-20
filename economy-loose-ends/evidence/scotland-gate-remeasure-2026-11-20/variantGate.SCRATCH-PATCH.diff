@@ -1,0 +1,57 @@
+--- /private/tmp/claude-501/-Users-courtneyadesile-Documents-WunderkindFactory/5a48c59f-288a-4ee0-8a7b-8cac05391ee8/scratchpad/out/variantGate.ORIG.ts	2026-11-20 16:48:53
++++ scripts/economy/variantGate.ts	2026-11-20 18:06:30
+@@ -96,12 +96,37 @@
+ const loaded = loadEconomyExport(cfg, starter, country);
+ const world = JSON.parse(readFileSync(worldPath, 'utf8')) as WorldExport;
+ const grounds = groundsByTier(world, country);
+-const fin = leagueFinancials(world, country);
++// ── SCRATCH SCENARIO FLAG (2026-11-20, scotland-gate-remeasure §17) ────────────────────────
++// `--league-money-divisor N` divides the THREE league-money lines the export carries — tvDeal,
++// prizeMoney and leaguePositionPot — by N before anything reads them. It models the owner's
++// "Scotland should be 1/10 of England's economy (TV deal, prize money etc)" and NOTHING else:
++// turnover, wages, ticket price, sponsor bands, shirts and grounds are untouched, because those
++// are already country-scaled by `countryFactorBp`. It changes no repo file.
++const LEAGUE_MONEY_DIVISOR = Number(argOf('league-money-divisor') ?? 1);
++const finRaw = leagueFinancials(world, country);
++const fin = LEAGUE_MONEY_DIVISOR === 1 ? finRaw : finRaw.map((l) => ({
++  ...l,
++  tvDeal: l.tvDeal == null ? l.tvDeal : Math.round(l.tvDeal / LEAGUE_MONEY_DIVISOR),
++  prizeMoney: l.prizeMoney == null ? l.prizeMoney : Math.round(l.prizeMoney / LEAGUE_MONEY_DIVISOR),
++  leaguePositionPot: l.leaguePositionPot == null ? l.leaguePositionPot
++    : Math.round(l.leaguePositionPot / LEAGUE_MONEY_DIVISOR),
++}));
+ // ⚠️ THE DEEPEST TIER THIS COUNTRY ACTUALLY HAS, which is where the player's own club goes and
+ // therefore the one division whose size is its club rows PLUS ONE. See `homeGamesForLeague`.
+ const deepestTier = deepestTierForCountry(world, country);
+ 
+-const TIERS: readonly TierFixture[] = loaded.tiers;
++// ── SCRATCH MEASUREMENT PATCH (2026-11-20, scotland-gate-remeasure) ─────────────────────
++// `loadExport` sets `tvPerClubPence: prior?.tvPerClubPence ?? 0` — ENGLAND_DEV's hardcoded
++// fixture, for EVERY country. The game pays TV as `league.tvDealPence`, the per-club share the
++// backend maintains as `intdiv(tvPoolPence, clubCount)` and publishes on the league payload
++// (`seasonFinances.ts:79`, `types/api.ts:298`). This takes it from the world export's own
++// league rows instead. `RESCALE` then falls out at exactly 1.000 by construction, because
++// liveTv1 and exportTv1 become the same number — so prize and position money stop being
++// rescaled by a ratio whose numerator was England's fixture.
++const TIERS: readonly TierFixture[] = loaded.tiers.map((t) => ({
++  ...t,
++  tvPerClubPence: fin.find((l) => l.tier === t.tier)?.tvDeal ?? 0,
++}));
+ const raw = cfg as unknown as Record<string, number | undefined>;
+ const templates = ((cfg as unknown as { facilityTemplates?: FacilityTemplate[] }).facilityTemplates ?? []);
+ const SEASONS = 30;
+@@ -420,6 +445,14 @@
+     + ` || ${pct(totalIncomePence(lines) / t.turnoverPence).padStart(6)}`
+     + `${coverageFlag(totalIncomePence(lines) / t.turnoverPence)}`,
+   );
++}
++
++// ── SCRATCH ADDITION: exact pence per income line, so a subset can be recomputed ──────────
++console.log('\n── SCRATCH: income lines in PENCE (exact), plus authored turnover ───────');
++console.log('tier | turnoverPence |            tv |      matchday |         shirt | clubSponsors | leagueSponsors |         prize |      position |         TOTAL');
++for (const t of TIERS) {
++  const l = incomeFor(t);
++  console.log(`  ${String(t.tier).padEnd(2)} | ${String(t.turnoverPence).padStart(13)} | ${String(Math.round(l.tv!)).padStart(13)} | ${String(Math.round(l.matchday!)).padStart(13)} | ${String(Math.round(l.shirt!)).padStart(13)} | ${String(Math.round(l.clubSponsors!)).padStart(12)} | ${String(Math.round(l.leagueSponsors!)).padStart(14)} | ${String(Math.round(l.prize!)).padStart(13)} | ${String(Math.round(l.position!)).padStart(13)} | ${String(Math.round(totalIncomePence(l))).padStart(13)}`);
+ }
+ 
+ const outsideCoverage = TIERS.filter((t) => {

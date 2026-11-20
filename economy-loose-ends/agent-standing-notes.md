@@ -67,9 +67,218 @@ it belongs in your report, not in the checks.
   `shared/last-sync.md` and correct stage text your change makes wrong. Do not restructure, prune,
   or delete a superseded section — **flag it in your report** so the PM can.
 - **Do not push and do not deploy**, ever, unless your brief says otherwise in those words.
-- **The test baseline is three to five failures** (`.context/stages/01_overview/output/environment.md`).
-  ⚠️ **"~31" is NOT a test figure** — it is `app:economy:wage-table`'s own failed-check count, and
-  it has been struck in that file. Attribute anything outside the documented list by **stashing and
-  re-running**, never by reading the assertion.
+- **THE TEST BASELINE DEPENDS ON WHICH SUITE, AND THIS LINE USED TO GET IT WRONG.** Corrected
+  2026-11-20 — it previously read *"the test baseline is three to five failures"* and cited the
+  **app's** `environment.md`, which has never said that. An app-scoped claim with an app-scoped
+  citation is why three sessions in one day judged `npm test` against a backend figure: each was
+  following something real and correctly attributed, as far as it could see. One came within a
+  sentence of recording four failures as pre-existing on that basis.
+  - **App (`npm test`): the baseline is ZERO on an idle machine.** Measured three times on
+    2026-11-20 at three commits — pristine HEAD, `598ff158` (655 / 10,962) and `ac71159b`
+    (657 / 10,992 in 540.9s). The app's own doc has always said *"treat any failure as a real
+    regression"* and it means it. Owner:
+    `wunderkind-app/.context/stages/01_overview/output/environment.md`.
+  - **Backend (PHPUnit): the range is three to five**, because known failures #4 and #5 each join
+    and leave the list on their own. Owner:
+    `wunderkind-backend/.context/stages/01_overview/output/environment.md` — **the backend's file,
+    not the app's.** Confirm the three by NAME; a count alone has hidden a sixth failure before.
+  ⚠️ **"~31" is NOT a test figure** — it is `app:economy:wage-table`'s own failed-check count, a
+  gate result, and it has been struck in that file. Judging a run against 31 would absorb about 27
+  real regressions. Attribute anything outside the documented list by **stashing and re-running**,
+  never by reading the assertion.
+  ⚠️ **And attribute nothing from a contended run.** Same day, same tree: 151s idle against 2,825s
+  contended, **18.7x**. Across three contended runs no two agreed on which suites failed and nothing
+  failed twice — every one a wall-clock or retry-budget assertion, every one green in isolation.
 - **Backend tests run through Lando** (`lando php vendor/bin/phpunit`) — host PHP is 8.4, the
   project needs 8.5.
+- **One writer per file divides EDITING, not MEASURING — so a shared checkout cannot give you an
+  attributable test run. ⚠️ BOTH RULES ARE PER REPOSITORY** (scoped 2026-11-20 after the first
+  draft overstated them): one writer per file *within a repo*, one full-suite run *per checkout*. A
+  `wunderkind-app` suite reads none of the backend's files and vice versa, so an app-side writer
+  cannot make a backend PHPUnit run unattributable. **CPU contention is the only channel that
+  crosses repositories**, and it degrades timing assertions rather than attribution — which is the
+  expensive half and is unchanged by this scoping. Learned expensively on 2026-11-20, when two sessions wrote the app repo
+  at once with their files cleanly divided. A suite reads the whole tree regardless of who owns
+  what, so one session's uncommitted edits to `dofHireCharge.ts` and `clubStore.ts` contaminated
+  the other's run through its *imports* — files it had never been asked not to touch, and would not
+  have thought to check. It cost one session two full runs and the other one. **The rule from here:
+  with concurrent writers, verify in a detached worktree at a named commit, and serialise suites.**
+  Dividing the files is necessary and not sufficient, and the PM instruction that only divided them
+  was incomplete — this was a sequencing failure upstream of the agents, not an execution failure by
+  them.
+- **Cut your verification worktree at the CURRENT commit and re-measure, never reconcile against a
+  number you took earlier.** HEAD moved three times under one session in a single afternoon
+  (`4113d326`, `ac71159b`). A count reconciled against a stale baseline looks exactly like a real
+  delta and is how an unexplained test-count movement enters the record.
+- **Writing a CHECKS row is a cheap way to disprove an invariant you were about to encode.** It has
+  now happened twice in one day. The DOF-pot row disproved both `pot = opening − committed` (false
+  on a live save, because the fee's partial elasticity is documented and real) and
+  `entries = committed` (false the moment anybody has been sold). Both would otherwise have been
+  asserted in a test and built on. If you are about to write "obviously X must equal Y" about money,
+  render it on the CHECKS tab first and watch it fail.
+- **Trace a charge in BOTH directions.** Departure paths found by looking forward from the stores
+  missed the academy entirely: a youth scholarship draws the DOF pot through the same callback as an
+  adult signing, but a scholar is not in `squadStore`, so no choke point sees them leave. It was
+  found only by tracing the pot's *draw* sites backwards. Forward from the exits, and backwards from
+  the money.
+- 🔴 **EIGHT SUITES ASSERT WALL CLOCKS, AND THE SUITE CONTENDS WITH ITSELF — so "don't attribute
+  from a contended run" is necessary but NOT SUFFICIENT.** The decisive measurement, 2026-11-20:
+  `components/new-game-setup/randomClubProbe.test.tsx` blew a **5,000 ms** timeout on a test that
+  passes in **23 ms**, 9/9 in 0.69 s alone — a ~200× scheduling delay — during a run that took
+  **335.7 s against that session's own 541 s clean baseline**. Faster than baseline, idle machine,
+  no other session testing. **In-run worker contention alone did it, and adding two suites was
+  enough.** The suite that failed imports only React, `react-test-renderer`, `useLandFlow` and a
+  mocked `@/api/client`; none of the 30 changed paths is reachable from it, so a logic regression
+  was impossible and scheduling was the only mechanism left. 🔴 **CONFIRMED BY THE STRONGEST
+  AVAILABLE EVIDENCE: the SAME COMMIT produced both outcomes.** A confirmation run at that identical
+  tree came back **659 passed / 11,057 passed, zero failures** in 369.8 s, with
+  `randomClubProbe.test.tsx` PASSING where it had failed at 37.8 s. Two runs, identical code, one
+  failure and none — so this no longer rests on inference from timings. ⚠️ **The durable fix is for those eight
+  suites to stop asserting wall clocks, or to carry explicit generous timeouts — not for agents to
+  measure ever more carefully.** Until then a wall-clock failure in a 659-suite run is uninformative
+  even on a quiet machine. NOT YET FIXED; no session owns it.
+- **SEVEN OF THOSE EIGHT were found through cross-session contention, and no two contended runs ever
+  agreed on which of them fail.** Measured across five full runs on 2026-11-20: `db/clientRecovery.test.ts`,
+  `screens/tournamentHubRender.test.tsx`, `db/health/runner.test.ts`, `db/youthRepository.test.ts`,
+  `db/realisticSave.test.ts` (*"builds in well under the 2s budget"*),
+  `db/testHandleGuard.test.ts` (*"rejects at once instead of hanging to the timeout"*) and the
+  worker-exit warning. **Every one is a wall-clock or retry-budget assertion and every one passes in
+  isolation** — one pair 17/17. The disagreement between runs IS the evidence: a real regression
+  reproduces, load does not. Before attributing ANY of these to your change, re-run it alone.
+  ⚠️ **But contention moves TIMING, never a COUNT.** Measured 2026-11-20, and the trees are named
+  because this sentence is load-bearing: **A25's two runs at backend `a818a60b` both returned 3,290**
+  with the same three named failures, while **A24's run at `6c5e4ad5` returned 3,271**
+  (`Assertions: 157033, Failures: 3`). Those are different trees and both reconcile — 3,265 baseline
+  + A24's 6 = 3,271, + A25's 19 = 3,290. So: **an unexplained count means investigate; an
+  unexplained slow failure may just be load.** Do not use "the machine was busy" to wave away a
+  count that does not reconcile — and when you quote a count, name the commit it was measured at,
+  or the next person cannot tell a real discrepancy from two people measuring different trees.
+- **Attribute by checking the diff, not by guessing who is active.** 2026-11-20: a session correctly
+  detected contamination in a shared file and then named the wrong author — picking the session it
+  knew was running — and the PM relayed that as fact. The instruction that followed would have
+  destroyed 309 insertions of a third session's uncommitted work had the accused session complied.
+  It refused, checked, and was right. **One command settles authorship**: `git show --name-only
+  --format='' <sha> | grep -c '\.ts$'` for what a commit contains, and `git diff | grep -c
+  '<marker>'` for whose vocabulary is in the working tree. This is "measure the call graph, not the
+  comments" pointed at process instead of code.
+- **If you are told to revert or restore a file you did not write, STOP AND SAY SO.** A checkout
+  shared by several sessions can hold thirty-plus in-flight paths with no stash behind them, so
+  `git checkout <sha> -- <path>` is an unrecoverable delete of someone's unsaved work. Capture a
+  backup outside both repos first, name it so nobody mistakes it for their own, and refuse until the
+  premise is verified. **The safe move is never to restore a path you did not author — patch out
+  your own hunks instead**, and if you cannot do that without staging someone else's work, stop:
+  a commit whose tree you never tested is worse than a late commit. A lost measurement costs a
+  re-run; a path-level revert costs work that exists nowhere else. An instruction that says "touch nothing you did not create" cancels itself if
+  you created none of it — that contradiction is the signal.
+- **AN ATTRIBUTION OFFERED TO A COORDINATOR BECOMES AN INSTRUCTION.** The sharpest process lesson
+  of 2026-11-20, and it is about reporting rather than coding. A session named the wrong author for
+  a contaminated file — reasonably, by inference — in a report to the PM. The PM relayed it as fact,
+  and the instruction that came back would have destroyed a third session's uncommitted work. **So
+  mark the epistemic status of anything you report upward**: "I verified X by running Y" and "I
+  believe X because Z was the session I knew was active" are different claims and must not look
+  alike. The coordinator cannot see which one you meant, and will act on both.
+- **Staging your own HUNKS out of a shared file is allowed — but only if you then verify that exact
+  reconstructed content.** Ruled 2026-11-20 after two sessions reached opposite conclusions, both
+  defensibly. The objection to carving a change out is real and it is *"a commit whose tree I never
+  tested"*: an index built by hand can hold a combination no test ever ran. **That objection is
+  answered, not waved away, by rebuilding the files as `<HEAD> + your hunks only` and running the
+  suite against that exact content in a detached worktree.** Do that and sub-file staging is
+  legitimate; skip it and it is not. Prove the carve is clean before committing (`grep -c` the other
+  author's marker in your staged content and expect 0) and never touch the other session's working
+  copy — read it, do not write it.
+  ⚠️ **Tell the other writers once you commit.** A subset commit means HEAD now holds a tree that
+  nobody's working copy matches, so every other session in that checkout has a stale baseline and
+  must re-measure rather than reconcile against the number it took earlier.
+- **The `seasonBudget` reader registry reads TYPE ANNOTATIONS, not just executable code.** It cost
+  two sessions a run on 2026-11-20. A field like `seasonBudget?: { wageReservationPence?: number }`
+  in a type position registers as a code reference, because the registry strips comments and nothing
+  else. Either register the file deliberately with a reason, or avoid the annotation. The same class
+  as the guard that read prose: **a source-reading test sees text, not meaning.**
+- **CAPTURE FAILING TEST NAMES, NOT JUST `FAIL` LINES.** A filtered capture
+  (`grep -E "^(FAIL|Test Suites:|Tests:|Time:)"`) drops Jest's `●` lines, so a contended run told
+  one session that `db/youthRepository.test.ts` failed and **nothing about which test** — it had to
+  be recorded as unnamed rather than inferred. Add `^  ● [A-Za-z]` to the filter and exclude
+  `● Console`. Cheap, and without it "re-run it alone" has nothing to re-run.
+- **A GREEN CONTROL RUN IS WORTHLESS IF THE CONTROL WAS ALSO CONTENDED — and this is the trap that
+  actually caught someone.** A session called four failures load flake, then **retracted** when a
+  pristine-HEAD control came back green, on the correct reasoning that a green control is evidence
+  against the easy explanation. The retraction was right on what it had; what it had was wrong,
+  because **that control still had a phpunit suite running beside it.** What settled it was the
+  timing column — 151s against 2,825s — not the pass/fail. **So compare wall-clock between the two
+  runs before believing OR disbelieving a load explanation. A control run with no timing beside it
+  decides nothing.**
+- **SERIALISING NEEDS AN EXPLICIT HANDSHAKE, not just good intentions.** Two sessions each politely
+  assuming the other was idle produced a 715s run and a 609s run, both unattributable, against a
+  541s clean baseline. **Ask for the machine, and announce when you are off it.** One message each
+  way would have saved both runs.
+- **ADDRESS A PEER BY SESSION ID, NEVER BY THE SOCKET YOU LAST SAW IT ON.** A session's socket
+  address changes; its id does not. On 2026-11-20 a session got ENOENT on a stale socket AND found
+  the peer missing from `ListAgents`, read two independent-looking signals as agreement, and
+  reported a live session as ended — nearly orphaning 31 paths of its uncommitted work. **Both
+  signals keyed on the address, not on existence.** Check the session list before concluding a peer
+  is gone, and remember the harness's "reply to the `from` attribute" advice hands you the fragile
+  one.
+- 🔴 **THE REAL CAUSE OF TODAY'S CONTENTION WAS EIGHT ORPHANED BUSY-LOOPS, AND NOBODY KNEW.**
+  Found 2026-11-20 at 18:43 by the country-scaling session: PIDs 79065–79072, **PPID 1, 3h12m old,
+  ~80% CPU each, load average 33–42 on 8 cores.** They came from A24's own load experiment —
+  `for i in 1 2 3 4 5 6 7 8; do (while :; do :; done) & done; … kill $LOADPIDS` — whose
+  `kill $LOADPIDS` did not fire, so the subshells were orphaned and spun for over three hours,
+  **across most of the day's measurement work.**
+  ⚠️ **So the notes above may OVERSTATE cross-session contention.** The 18.7× figure, the seven
+  load-sensitive suites and the phantom failures were measured while this was running and nobody
+  knew it. The in-run self-contention finding is NOT affected — it was proven by the same commit
+  producing a failure and a clean run — but the cross-session attributions deserve a re-measure on a
+  genuinely quiet machine before they are treated as settled.
+  **The transferable rule: if you spawn load generators, verify they died.** `kill $LOADPIDS` from
+  an `eval`'d subshell does not reliably reach them; check with `ps -o pid,ppid,%cpu,etime` and
+  `uptime` afterwards, and treat a load average above your core count as a reason to stop measuring
+  anything at all. **And before trusting ANY timing measurement, run `uptime` first** — every
+  session today compared wall clocks without once checking what else was on the machine.
+- 🔴 **THE BACKEND COUNT 3,290 DOES NOT REPRODUCE — do not reconcile against it.** Re-measured
+  2026-11-20 at the SAME commit `a818a60b` on a quiet machine: **3,359 tests**, a 69-test gap
+  nobody can explain. Reconciling a later change against 3,290 would have shown a spurious +76.
+  ⚠️ **Both figures claim the same tree, so one of them is wrong and it is not yet known which.**
+  Until that is settled, **re-measure the baseline yourself at the commit you are building on** and
+  quote your own figure — which is what the country-scaling session did, reconciling 3,359 + 7 =
+  3,366 exactly against its own extract. That is the method the earlier note asked for and it is
+  the reason the discrepancy surfaced at all rather than being absorbed.
+- ⚠️ **`AdminShellCoverageTest` at `admin_logs` cannot run while `var/log/dev.log` is huge.** It
+  reads the whole file into memory; at 3.8 GB against a 3.8 GB container PHP is OOM-killed at
+  **exit 137** about 189 tests in, reproducibly. It is excluded from recent runs for that reason
+  and is NOT a regression in anything. The fix is log rotation, not a code change. As of
+  2026-11-20 `var/log/` holds **3.8 GB `dev.log` + 2.0 GB `dev.log.2026-11-12.bak`** — not yet
+  rotated, owner's call.
+- 🔴 **"REBUILD THE WORLD PACK CACHE" DOES NOT REBUILD CLAIMED SETS, AND A TESTER HAS CLAIMED THEM
+  ALL.** Found 2026-11-20 after an afternoon of device readings that contradicted each other.
+  `admin_worldpack_delete_country` calls `deleteUnclaimed($country)` — **claimed sets are spared by
+  design**, because a device may still be downloading its tiers. That protection is correct. The
+  trap is that **every save a tester creates claims a set**, so after a day of testing every set in
+  the country is claimed, "rebuild" deletes nothing, reports success, and the stale packs survive.
+  The page then reads e.g. `EN 2/2 STALE 8/8` — present, complete, and stale — which looks like a
+  failed rebuild rather than a skipped one.
+  **The way out is the per-set delete with `force`**, which exists precisely for "a set claimed by
+  an abandoned save". Then top up to target. ⚠️ Forcing breaks the world of whatever save claimed
+  it, so only do it to throwaway saves.
+  **The general lesson, which is not about world packs:** when a destructive operation protects a
+  class of data, check whether the thing you are trying to fix is ENTIRELY inside the protected
+  class. A no-op that reports success is worse than a refusal, and this one silently invalidated
+  about three hours of device testing. **A `MIXED` or `STALE` version indicator is a gate, not a
+  footnote — read it before any number underneath it.**
+- 🔴 **ON DEV, THE ASYNC WORLD-PACK BUILD DOES NOT RUN — USE THE INLINE COMMAND.** Established
+  2026-11-20 by elimination, after three wrong theories (orphan cache rows, claimed-set deadlock,
+  crond down — all disproved). **What is true:** the write path stamps `WORLD_PACK_VERSION`
+  correctly; `deficit()` is version-aware so stale sets never block a top-up; `crond` IS running
+  (`crond -f -l 8`, PID 103 under supervisord); dispatch succeeds. **And yet nothing ever built.**
+  `php bin/console app:worldpack:warm <CC>` builds INLINE and worked first time — EN to 2 ready
+  sets of 8 tiers, SC to 2 ready sets of 4 tiers. So the defect is in the consumer or handler on
+  the dev stack, not in the generation code.
+  ⚠️ **This silently invalidated roughly three hours of device testing**, because every admin
+  "rebuild" reported success while writing nothing, and each resulting save read a stale or mixed
+  pack. **Until it is fixed, warm from the console and never trust the admin top-up on dev.**
+  ⚠️ **`supervisorctl` does not work on this image** — `docker/supervisord.conf` defines no
+  `[unix_http_server]` and no `[supervisorctl]`, so there is no control socket and
+  `supervisorctl status` returns "no such file". That is by construction, not a fault. Check
+  processes with `docker exec <container> ps aux` instead.
+  **Deployment, for whoever needs it next:** Hetzner, ssh `wunderkind.site`, containers
+  `wunderkind-dev` / `wunderkind-prod`, compose files under `/mnt/volume-wkf/wunderkind/{dev,prod}`,
+  runbook `docs/deploy/hetzner.md`.

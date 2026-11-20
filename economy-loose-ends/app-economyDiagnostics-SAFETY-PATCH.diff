@@ -1,0 +1,474 @@
+# SAFETY BACKUP of UNCOMMITTED app-repo work. NOT A25's WORK.
+# 🔴 DO NOT APPLY WITHOUT ASKING THE OWNERS NAMED BELOW. SEE THE WARNING AT THE BOTTOM.
+#
+# Captured 2026-11-20 against wunderkind-app HEAD ac71159b by the A25 (backend) session,
+# as a protective measure only. A25 modified nothing in wunderkind-app; every action it
+# took there was read-only (git status / git diff / ls).
+#
+# ⚠️ THIS FILE HAS MORE THAN ONE AUTHOR, which the first version of this header got wrong.
+# `git diff <path>` is path-level, so capturing "A24's work" captured every writer's hunks
+# in those paths:
+#
+#   * A24  — the `staffValuationChecks` rework and the `npcStaffWagePence` import
+#            (9 references in this patch). Its own comments say "since A24, a scout" and
+#            cite a24c-npc-rate-finding.md.
+#   * the DOF-pot refund session — the `dofPotChecks` block (~line 295 of the file).
+#
+# Neither is A25's. This patch contains ZERO references to staffAbilityRanges /
+# StaffAbilityRange / A25.
+#
+# WHY THIS EXISTS: two sessions asked A25 to restore these paths to ac71159b, believing the
+# work was A25's. A25 declined — a path-level `git checkout` would have destroyed ~309
+# uncommitted insertions belonging to two other sessions, with no stash to recover from in a
+# shared checkout — and wrote this backup in case anyone acted on that belief. Both sessions
+# have since verified the attribution themselves and retracted. So this patch is most likely
+# REDUNDANT, and that is the good outcome.
+#
+# 🔴 WARNING BEFORE APPLYING: once either owner commits its own work, applying this whole
+# patch will REINTRODUCE OR CONFLICT WITH the other's hunks. Do not `git apply` it blind.
+# Extract only the hunks belonging to the author you are restoring, and ask that session
+# first. The DOF-pot session also holds its own independent backup of both files.
+#
+# Known failing at capture time (A24's hunks, not the DOF session's): the
+# economyDiagnostics.test.ts architecture guard, because `@/engine/ClubWageScaleService`
+# breaks the "stays runnable outside the app" rule; and the seasonBudget reader registry in
+# seasonBudgetService.test.ts, which reads a type annotation as a code reference.
+#
+# Full record: section 13 of a25-ability-bands-report.md.
+
+diff --git a/src/__tests__/economy/staffValuationChecks.test.ts b/src/__tests__/economy/staffValuationChecks.test.ts
+index 3e8a4369..ec1116bc 100644
+--- a/src/__tests__/economy/staffValuationChecks.test.ts
++++ b/src/__tests__/economy/staffValuationChecks.test.ts
+@@ -167,6 +167,33 @@ describe('judgeStaffValuation', () => {
+     expect(judgeStaffValuation(NULL_TOP_CONFIG, sample({ ability: 70 })).onCatchAll).toBe(false);
+   });
+ 
++  it('calls a scout off the band a STALE WRITE, which is what it means', () => {
++    // 🔴 The reading the Scotland save unlocked. A scout is priced once at world build and never
++    // re-priced; `tierStaffWeeklyWagePence` is exactly linear in `wageScaleMicroPence` (measured
++    // EN/SC = 10.000), so an off-band scout IS the config's scale having moved since the build.
++    // Scotland read 10.00 on all four sampled scouts against England's 1.00 — and England's
++    // 1.00 was a FALSE PASS, a coincidence of the country tested first.
++    const economy = resolveEconomy(LIVE_CONFIG, 1);
++    const band = tierStaffWeeklyWagePence(30, economy)!;
++    const stale = [club({
++      tier: 1,
++      scouts: [{ id: 'sc1', name: 'Stale Scout', ability: 30, salary: band * 10 }],
++    })];
++    const row = staffValuationChecks(LIVE_CONFIG, pickStaffValuationSample(stale, [1]))
++      .find((r) => r.id === 'staffvaluation.scouts')!;
++
++    expect(row.status).toBe('warn');
++    expect(row.full).toContain('STALE WRITE');
++    // And a correctly-priced scout is NOT accused of it.
++    const fresh = [club({
++      tier: 1, scouts: [{ id: 'sc2', name: 'Fresh Scout', ability: 30, salary: band }],
++    })];
++    const ok = staffValuationChecks(LIVE_CONFIG, pickStaffValuationSample(fresh, [1]))
++      .find((r) => r.id === 'staffvaluation.scouts')!;
++    expect(ok.status).toBe('pass');
++    expect(ok.full).not.toContain('A SCOUT OFF THE BAND = STALE WRITE');
++  });
++
+   it('survives a row with no ability rather than pricing it at the floor', () => {
+     const v = judgeStaffValuation(LIVE_CONFIG, sample({ ability: null }));
+     expect(v.expectedPence).toBeNull();
+diff --git a/src/economy/economyDiagnostics.ts b/src/economy/economyDiagnostics.ts
+index bcf7828e..b8c87311 100644
+--- a/src/economy/economyDiagnostics.ts
++++ b/src/economy/economyDiagnostics.ts
+@@ -19,7 +19,8 @@
+ import type { GameConfig } from '@/types/gameConfig';
+ import { resolveWageTier } from '@/types/gameConfig';
+ import {
+-  resolveEconomy, isCountryResolved, type EconomyFallbackReason,
++  resolveEconomy, isCountryResolved,
++  type EconomyFallbackReason, type ResolvedEconomy,
+ } from '@/economy/economyConfig';
+ import { weeklyWageRange } from '@/economy/wages';
+ // 🔴 THE PRICING PATH ITSELF, imported rather than injected. This is what prices a coach at
+@@ -243,6 +244,117 @@ export function npcHomeGamesChecks(input: {
+   ];
+ }
+ 
++/**
++ * 🔴 **The DOF's pot, as relationships rather than figures — two lines, one of which can fail.**
++ *
++ * Standing notes §1: a figure only a device can confirm belongs in the checks, and both halves
++ * of this ledger are that. Nobody has yet seen B1 or its refund running on a real save, and the
++ * pot's whole difficulty is that **every individual number looks correct while the relationship
++ * between them is wrong** — which is how the original defect (a 46-week commitment handed back
++ * within four weeks of game time) survived review.
++ *
++ * ## ⚠️ `pot = opening − committed` is NOT an invariant, and writing this check is what showed it
++ *
++ * That equality is what `carriedTransferBudgetPence` computes, so it is the obvious thing to
++ * assert — and it holds only in the instant after a re-derivation. `transferBudget` is a STORED
++ * figure drawn down by every spend since; `opening` is a live percentage of a balance those
++ * spends also moved. A fee of `F` lowers the pot by `F` and the opening by only `pct × F`, which
++ * is the fee's **documented partial elasticity** (`clubStore.carriedTransferBudgetPence`,
++ * `b1-finish-report.md` §2.1), still deliberately unfixed. A grant (`grantTransferBudget`) moves
++ * the pot and not the opening either.
++ *
++ * So row 1 prints the derivation as **what the next rebalance will produce** rather than as a
++ * figure the pot must already equal, and fails on the one relationship that genuinely cannot be
++ * legitimate: **the pot exceeding its own opening allocation while a commitment is outstanding.**
++ * That can only happen if a refund credited `transferBudget` with more than it took — which is
++ * precisely the failure mode the 2026-11-20 refund introduces, so it is the right thing to guard.
++ *
++ * Row 2 is the refund's own invariant, and it is an **INEQUALITY**: entries are permission slips
++ * against the total, so they may account for less than it holds but never more. When they claim
++ * more, a refund is over-refunded and floored — what `reportDofOverRefund` warns about, and that
++ * warning is dev-builds only, so this is the one place it is visible on demand.
++ *
++ * ⚠️ **It is NOT `entries sum = committed`, and that guess is wrong in a way no test would catch
++ * until somebody had been sold.** A refund retires the whole entry but gives back only the weeks
++ * AFTER the departure, so the weeks the club actually used stay on the total with no entry behind
++ * them. That remainder is correct and permanent for the period.
++ *
++ * The non-refundable remainder therefore has two legitimate sources and one illegitimate one, and
++ * the row reports the figure instead of judging it: **used weeks of departed contracts**
++ * (correct), a **charge drawn with no `subjectId`** (carried correctly but never refundable — the
++ * one way this mechanism is incomplete rather than wrong), and a genuine leak. A remainder that
++ * is large and growing on a save with few departures points at the middle one.
++ *
++ * The period pair is the third relationship: the stale period IS the graduation, so seeing the
++ * ledger's week beside the budget's `createdWeek` is the only way to tell "nothing committed"
++ * from "committed, but to a period that has gone".
++ */
++export function dofPotChecks(input: {
++  /** `Math.floor(allocatableBalancePence × transferBudgetPercent / 100)`. */
++  openingPence: number;
++  /** `carriedDofWageCommitmentPence(state)` — 0 once the period has rolled. */
++  committedPence: number;
++  /** `clubStore.transferBudget` as it actually stands. */
++  potPence: number;
++  /** The period the stored total belongs to, `dofWageCommitmentPeriodWeek`. */
++  ledgerPeriodWeek: number;
++  /** The club's own `seasonBudget.createdWeek`, 0 when no budget has been derived. */
++  budgetCreatedWeek: number;
++  /** `liveDofWageCommitments(state)` — count and summed original charges. */
++  entryCount: number;
++  entriesPence: number;
++}): EconomyCheck[] {
++  const nextDerivation = Math.max(0, input.openingPence - input.committedPence);
++  // A pot larger than its own opening allocation, with money still committed out of it, cannot
++  // be legitimate: the refund is the only thing that credits `transferBudget` upward, and it can
++  // only ever give back weeks it took. (A grant can exceed the opening, but not while a
++  // commitment is outstanding and unspent — and if it does, it is worth a look either way.)
++  const potImpossible = input.committedPence > 0 && input.potPence > input.openingPence;
++
++  // Three period states, not two. A save that has never committed anything has ledger period 0
++  // against a real `createdWeek`, which is a MISMATCH — and calling that "graduated" would be
++  // alarming nonsense on every fresh save.
++  const nothingCommitted = input.committedPence === 0 && input.entryCount === 0
++    && input.ledgerPeriodWeek === 0;
++  const periodState = nothingCommitted
++    ? 'NO LEDGER'
++    : input.ledgerPeriodWeek === input.budgetCreatedWeek ? 'CARRIED' : 'GRADUATED';
++
++  // The inequality, not an equality — see the docblock.
++  const nonRefundable = input.committedPence - input.entriesPence;
++  const entriesFit = nonRefundable >= 0;
++
++  const p = (n: number) => n.toLocaleString();
++
++  return [
++    {
++      id: 'dof.pot',
++      label: 'DOF pot (opening · committed · pot · next rebalance)',
++      status: potImpossible ? 'fail' : 'info',
++      detail: `opening ${p(input.openingPence)} · committed ${p(input.committedPence)}`
++        + ` · pot ${p(input.potPence)} · next rebalance ${p(nextDerivation)}`
++        + ` · period wk ${input.ledgerPeriodWeek} vs budget wk ${input.budgetCreatedWeek}`
++        + ` — ${periodState}`
++        + (potImpossible
++          ? ' — IMPOSSIBLE: the pot exceeds its own opening allocation while money is still'
++            + ' committed out of it, so a refund has credited back more than it took'
++          : ''),
++    },
++    {
++      id: 'dof.commitments',
++      label: 'DOF pot ledger (entries never claim more than the total holds)',
++      status: entriesFit ? 'pass' : 'fail',
++      detail: `${input.entryCount} refundable ${input.entryCount === 1 ? 'entry' : 'entries'}`
++        + ` · refundable ${p(input.entriesPence)} · committed ${p(input.committedPence)}`
++        + (entriesFit
++          ? ` · non-refundable ${p(nonRefundable)} (weeks already used, plus any charge drawn`
++            + ' with no subjectId) — FITS'
++          : ` — DISAGREE by ${p(-nonRefundable)}: entries claim more than the total holds, so a`
++            + ' refund would be over-refunded and floored'),
++    },
++  ];
++}
++
+ // ─── Division size, three ways ────────────────────────────────────────────────
+ 
+ /**
+@@ -980,6 +1092,15 @@ export const STAFF_VALUATION_PER_TIER = 2;
+ export interface StaffValuationSample {
+   id: string;
+   name: string;
++  /**
++   * The id of the club this row belongs to — enough for `NpcStaffRateResolver` to find the real
++   * `WorldClub` and price it, without this module importing the store layer to do so.
++   *
++   * ⚠️ **Every row this panel samples is an NPC club's**, because it reads `worldStore.clubs` and
++   * the player's own club lives in `clubStore`. That is not incidental — it decides which rate
++   * governs the row, and the panel was reporting against the wrong one until 2026-11-20.
++   */
++  clubId?: string;
+   /** `'coach'`, `'manager'`, … for a staff row; `'scout'` for a scout row. */
+   role: string;
+   clubName: string;
+@@ -1060,6 +1181,7 @@ export function pickStaffValuationSample(
+               : (typeof asScout.ability === 'number' ? asScout.ability : null),
+             // 🔴 NO `?? 0` ON A MONEY FIELD — `CLAUDE.md`'s pack-is-a-census rule.
+             storedWagePence: typeof m.salary === 'number' ? m.salary : null,
++            clubId: club.id,
+           });
+         }
+       }
+@@ -1077,11 +1199,47 @@ export function pickStaffValuationSample(
+   return { staff: take('staff'), scouts: take('scouts') };
+ }
+ 
++/**
++ * The NPC income-anchored rate for one club and ability, injected rather than imported.
++ *
++ * 🔴 **INJECTED BECAUSE THE ARCHITECTURE FORBIDS THE IMPORT, and that boundary is load-bearing.**
++ * `npcStaffWagePence` lives in `@/engine/ClubWageScaleService`, and
++ * `economyDiagnostics.test.ts`'s *"it stays runnable OUTSIDE the app"* pins this module to the
++ * **economy and types layers only**. Its reason is recorded there and is the whole point of this
++ * file: the module once imported from `api/endpoints`, which pulls in react-native, so the CHECKS
++ * output *"could not be reproduced against a live config without a device, which is most of what
++ * it is FOR."* An engine import would re-break that silently.
++ *
++ * ⚠️ **So this is the ONE place the panel accepts a function instead of calling the real one**,
++ * and it is a deliberate exception to the rule stated at `judgeStaffValuation` — which imports
++ * `tierStaffWeeklyWagePence` directly, from the economy layer, exactly as it should. `ChecksTab`
++ * passes the real `npcStaffWagePence` closed over `worldStore`; a test passes a stub. **Nothing
++ * else may be injected**: a second injected rate would turn this panel into a model of the
++ * pricing path rather than a reading of it.
++ *
++ * Returns `undefined` when the club has no budget yet — a pre-bootstrap save, which is exactly
++ * when the band figure is still the live one.
++ */
++export type NpcStaffRateResolver = (
++  clubId: string,
++  ability: number,
++  economy: ResolvedEconomy,
++) => number | undefined;
++
+ /** What the band says about one sampled staff member or scout. Exported for the tests. */
+ export interface StaffValuationVerdict {
+   sample: StaffValuationSample;
+-  /** `tierStaffWeeklyWagePence(ability, economy)` — the band's own answer, or null. */
++  /** `tierStaffWeeklyWagePence(ability, economy)` — the BAND's answer, or null. */
+   expectedPence: number | null;
++  /**
++   * `npcStaffWagePence(club, ability, economy)` — the INCOME-ANCHORED NPC rate, or null when the
++   * club has no budget yet. **This is what actually wrote a non-scout NPC staff salary.**
++   */
++  npcAnchoredPence: number | null;
++  /** Which of the two above governs this row: what the game used to write it. */
++  governs: 'band' | 'npc-anchored';
++  /** `stored ÷ governing rate` — the ratio that means something. */
++  governedRatio: number | null;
+   /** The player wage at the same ability and tier, so the band's ratio is legible. */
+   asPlayerPence: number | null;
+   /** `staffMultiplier / playerMultiplier` for the band this ability lands in. */
+@@ -1099,14 +1257,46 @@ export interface StaffValuationVerdict {
+ /**
+  * Price one sampled staff member or scout through the game's own function.
+  *
+- * 🔴 **THE ONE IMPLEMENTATION.** `tierStaffWeeklyWagePence` is what prices a coach at world init
+- * and, since A24, a scout — so this panel cannot drift from the pricing path without the pricing
+- * path moving. Re-deriving the ratio by hand here, or calling anything else, would make the
++ * ## 🔴 TWO RATES, AND THE PANEL WAS REPORTING AGAINST THE WRONG ONE
++ *
++ * Corrected 2026-11-20, from a device CHECKS run on OTA 491 that read **1.00 for every sampled
++ * scout and 0.42–0.67 for every sampled staff member.** Neither figure was a defect in a wage;
++ * the 0.4x was a defect in this panel.
++ *
++ * **Every row this panel samples belongs to an NPC club** — it reads `worldStore.clubs`, and the
++ * player's own club lives in `clubStore`. Two different functions write those rows:
++ *
++ * | row | written at ingest by | then OVERWRITTEN by |
++ * |---|---|---|
++ * | `club.staff[]` (coach, chairman, DOF, facility manager…) | `resolveWorldStaffWagePence` → the band | 🔴 **`snapNpcStaffWages` at BOOTSTRAP** → `npcStaffWagePence`, the club's own income-anchored rate (`SeasonBudgetService.ts:633`), and `anchorNpcStaffWages` again at every transition |
++ * | `club.scouts[]` | `resolveScoutWagePence` → the band | **nothing.** Both of those functions iterate `club.staff` ONLY |
++ *
++ * So a staff row carries an income-derived figure and a scout row carries the band figure, and
++ * comparing both against the band made correct behaviour read as a 0.48. **A diagnostic that
++ * reports 0.48 for a correct wage is worse than no diagnostic, because somebody will chase it.**
++ *
++ * The ratio is not a constant for the same reason: `npcStaffWagePence` divides the club's own
++ * `wageReservationPence` across its roster in proportion to `ability^k`, so it moves with the
++ * club's income and its backroom's shape. Measured against the band on a synthetic £400,000
++ * reservation it ran 0.075–0.21; the device's real clubs produced 0.42–0.67. **Both are the
++ * mechanism working, not a multiplier.**
++ *
++ * This now prints BOTH rates and ratios against whichever GOVERNS the row.
++ *
++ * 🔴 **THE ONE IMPLEMENTATION, for each.** `tierStaffWeeklyWagePence` and `npcStaffWagePence` are
++ * the real pricing functions, imported rather than reimplemented, so this panel cannot drift from
++ * the pricing paths without the pricing paths moving. Re-deriving either by hand would make the
+  * instrument a second source for the quantity it is measuring.
++ *
++ * ⚠️ **It reports; it does not judge the split as correct.** That NPC scouts sit on the band while
++ * the staff beside them sit on an income-anchored rate is a real asymmetry — a scout costs
++ * 1.5x–2.4x a coach of the same ability at the same club, on the device rows above. Whether NPC
++ * scouts should be re-anchored is the owner's call and is NOT decided here.
+  */
+ export function judgeStaffValuation(
+   config: GameConfig,
+   sample: StaffValuationSample,
++  npcRate?: NpcStaffRateResolver,
+ ): StaffValuationVerdict {
+   const economy = resolveEconomy(config, sample.tier);
+   const tiers = economy.wageMultiplierTiers;
+@@ -1114,7 +1304,8 @@ export function judgeStaffValuation(
+ 
+   if (ability === null) {
+     return {
+-      sample, expectedPence: null, asPlayerPence: null, bandRatio: null, ratio: null,
++      sample, expectedPence: null, npcAnchoredPence: null, governs: 'band',
++      governedRatio: null, asPlayerPence: null, bandRatio: null, ratio: null,
+       bandMax: null, onCatchAll: false, model: economy.model, fallbackReason: economy.fallbackReason,
+     };
+   }
+@@ -1132,9 +1323,27 @@ export function judgeStaffValuation(
+   const expected = tierStaffWeeklyWagePence(ability, economy) ?? null;
+   const stored = sample.storedWagePence;
+ 
++  // The NPC income-anchored rate — null when the club has no budget yet, which is what a
++  // pre-bootstrap save looks like and is exactly when the band figure is still the live one.
++  const npcAnchored = npcRate && sample.clubId
++    ? npcRate(sample.clubId, ability, economy) ?? null
++    : null;
++
++  // ⚠️ A SCOUT is governed by the band; every other staff role by the NPC rate once a budget
++  // exists. That is not a style choice — it is which function last wrote the row. See the table
++  // in this function's docblock.
++  const governs: 'band' | 'npc-anchored' =
++    sample.role === 'scout' || npcAnchored === null ? 'band' : 'npc-anchored';
++  const governingPence = governs === 'band' ? expected : npcAnchored;
++
+   return {
+     sample,
+     expectedPence: expected,
++    npcAnchoredPence: npcAnchored,
++    governs,
++    governedRatio: stored !== null && governingPence !== null && governingPence > 0
++      ? stored / governingPence
++      : null,
+     asPlayerPence: asPlayer > 0 ? asPlayer : null,
+     bandRatio,
+     ratio: stored !== null && expected !== null && expected > 0 ? stored / expected : null,
+@@ -1164,11 +1373,35 @@ function staffValuationLines(v: StaffValuationVerdict): string {
+   const expectedText = v.expectedPence === null
+     ? `expected — (the band cannot price this tier: ${v.model}`
+       + `${v.fallbackReason === 'none' ? '' : `/${v.fallbackReason}`})`
+-    : `band says ${formatCurrency(v.expectedPence)}/wk`
+-      + (v.asPlayerPence === null ? '' : ` (a PLAYER of ${s.ability} here: ${formatCurrency(v.asPlayerPence)})`)
++    : `band ${formatCurrency(v.expectedPence)}/wk`
++      + (v.npcAnchoredPence === null
++        ? '  [no club budget yet — the band is still what wrote this]'
++        : `  npc-anchored ${formatCurrency(v.npcAnchoredPence)}/wk`)
+       + ` ${v.model}${v.fallbackReason === 'none' ? '' : ` (${v.fallbackReason})`}`;
+ 
+-  const verdict = v.ratio === null ? '' : ` → stored/band ${v.ratio.toFixed(2)}`;
++  // ⚠️ The ratio is against whichever rate GOVERNS the row — see `judgeStaffValuation`. Printing
++  // stored/band for a staff member whose salary was written by `npcStaffWagePence` is what made
++  // correct behaviour read as 0.48 on OTA 491.
++  const verdict = v.governedRatio === null
++    ? ''
++    : ` → stored/${v.governs} ${v.governedRatio.toFixed(2)}`
++      + (v.governs === 'npc-anchored' && v.ratio !== null
++        ? ` (stored/band ${v.ratio.toFixed(2)} — NOT the governing rate)`
++        : '')
++      // 🔴 A SCOUT OFF THE BAND MEANS SOMETHING SPECIFIC, and it is the one reading this panel
++      // can give that nothing else can. A scout's salary is written ONCE at world build from the
++      // config in hand and then NEVER re-priced (nothing re-anchors `club.scouts`), while this
++      // comparator resolves against the config the device holds NOW. `tierStaffWeeklyWagePence`
++      // is exactly linear in `wageScaleMicroPence` — measured EN/SC = 10.000 at every ability
++      // and tier — so a ratio at or near a round multiple is the config's scale having MOVED
++      // since the world was built, not a mispriced wage. A Scotland save on OTA 491 read 10.00
++      // on all four sampled scouts against 1.00 on all eight in England, and Scotland's scale is
++      // exactly one tenth of England's.
++      + (v.sample.role === 'scout' && v.governedRatio !== null
++        && (v.governedRatio > 1.05 || v.governedRatio < 0.95)
++        ? '  ⚠️ A SCOUT OFF THE BAND = STALE WRITE. Its salary was priced at world build against'
++          + ' a different config scale and is never re-priced; the ratio IS that scale change.'
++        : '');
+ 
+   return `${head}\n      ${bandText}\n      ${storedText} · ${expectedText}${verdict}`;
+ }
+@@ -1231,6 +1464,7 @@ function bandLadderCheck(config: GameConfig): EconomyCheck {
+ export function staffValuationChecks(
+   config: GameConfig | null,
+   sample: { staff: readonly StaffValuationSample[]; scouts: readonly StaffValuationSample[] },
++  npcRate?: NpcStaffRateResolver,
+ ): EconomyCheck[] {
+   if (!config) {
+     return [{
+@@ -1253,8 +1487,12 @@ export function staffValuationChecks(
+       continue;
+     }
+ 
+-    const verdicts = members.map((m) => judgeStaffValuation(config, m));
++    const verdicts = members.map((m) => judgeStaffValuation(config, m, npcRate));
+     const ratios = verdicts.map((v) => v.ratio).filter((r): r is number => r !== null);
++    // ⚠️ The status and the headline ratio now use the GOVERNING rate. Using stored/band for a
++    // staff row made every correct NPC wage read as a 0.4x and warn — see `judgeStaffValuation`.
++    const governed = verdicts.map((v) => v.governedRatio).filter((r): r is number => r !== null);
++    const anchored = verdicts.filter((v) => v.governs === 'npc-anchored');
+     const noWage = verdicts.filter((v) => v.sample.storedWagePence === null);
+     const unpriceable = verdicts.filter((v) => v.expectedPence === null);
+     const catchAll = verdicts.filter((v) => v.onCatchAll);
+@@ -1268,19 +1506,37 @@ export function staffValuationChecks(
+       // worth a warn are STRUCTURAL: a row with no wage at all, a tier the band cannot price,
+       // or a stored figure that disagrees with the band by more than rounding.
+       status: noWage.length > 0 || unpriceable.length > 0
+-        || ratios.some((r) => r < 0.99 || r > 1.01) ? 'warn' : 'pass',
++        || governed.some((r) => r < 0.99 || r > 1.01) ? 'warn' : 'pass',
+       detail: (priced.length === 0
+         ? 'the band could not price any sampled row'
+         : `band ${formatCurrencyShort(Math.min(...priced))}–${formatCurrencyShort(Math.max(...priced))}/wk`)
+-        + (ratios.length === 0 ? ' · nothing stored to compare'
+-          : ` · stored/band ${Math.min(...ratios).toFixed(2)}–${Math.max(...ratios).toFixed(2)}`)
++        + (governed.length === 0 ? ' · nothing stored to compare'
++          : ` · stored/governing ${Math.min(...governed).toFixed(2)}–${Math.max(...governed).toFixed(2)}`)
++        + (anchored.length > 0 ? ` · ${anchored.length} on the NPC income rate, not the band` : '')
+         + (noWage.length > 0 ? ` · ${noWage.length} with NO WAGE ON THE ROW` : '')
+         + (catchAll.length > 0 ? ` · ${catchAll.length} on the catch-all band` : ''),
+-      full: `What the band says a ${kind.toLowerCase().replace(/s$/, '')} of this ability should\n`
+-        + '    earn at this tier, against what the row actually carries. Since A24 this is the\n'
+-        + '    SAME function for both roles — `tierStaffWeeklyWagePence(ability, economy)`.\n'
++      full: 'What this row CARRIES, against the rate that actually WROTE it. ⚠️ Every row here\n'
++        + '    belongs to an NPC club (this samples `worldStore.clubs`; your own club is in\n'
++        + '    `clubStore`), and TWO different rates write them:\n'
++        + '      · `club.staff[]` — coach, chairman, DOF, facility manager — is band-priced at\n'
++        + '        ingest and then OVERWRITTEN by `npcStaffWagePence`, the club’s own\n'
++        + '        income-anchored rate, at bootstrap and at every season transition.\n'
++        + '      · `club.scouts[]` is band-priced at ingest and then left alone — both of those\n'
++        + '        functions iterate `club.staff` only.\n'
++        + '    So `stored/governing` is the number that means something; `stored/band` is printed\n'
++        + '    beside it for a staff row and is NOT a verdict. A previous version of this panel\n'
++        + '    compared everything to the band and reported 0.42–0.67 for correct wages.\n'
+         + '    ⚠️ Ability is `coachingAbility` for staff and the DERIVED `ability` for a scout,\n'
+         + '    never `experience` (career length, 4–34 on live config — owner ruling 2026-11-20).\n'
++        + '    ⚠️ NOT a judgement that the split is right: a scout on the band costs 1.5–2.4x a\n'
++        + '    coach of the same ability at the same club. Whether NPC scouts should be\n'
++        + '    re-anchored is open — see a24c-npc-rate-finding.md.\n'
++        + '    🔴 A SCOUT whose stored/band is NOT ~1.00 is a STALE WRITE, not a mispricing. A\n'
++        + '    scout is priced once at world build and never re-priced, while this comparator\n'
++        + '    uses the config the device holds NOW — and the band is exactly linear in\n'
++        + '    `wageScaleMicroPence`, so the ratio IS the scale change. Scotland read 10.00 on\n'
++        + '    every sampled scout where England read 1.00, and SC’s scale is EN’s / 10.\n'
++        + '    ⚠️ England reading 1.00 is therefore a FALSE PASS, not evidence of correctness.\n'
+         + `    ${verdicts.map((v) => staffValuationLines(v)).join('\n    ')}`,
+     });
+   }
