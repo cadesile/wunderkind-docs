@@ -1,4 +1,4 @@
-<!-- STATUS: 🏗️ IN PROGRESS — app committed, backend pending A26 (2026-11-20) -->
+<!-- STATUS: ✅ DEPLOYED TO DEV — OTA 488, 2026-11-20 -->
 
 # Deploy run, 2026-11-20 — A23 + A26 to dev
 
@@ -170,3 +170,61 @@ number and short SHA.
 - **Scouts carry a derived ability**, 70/30 experience to judgement mean. **No salary moves** —
   that is A24, still blocked behind part B.
 - CHECKS line confirming A23: `SC t4  divisor 12 · clubs 12 · home games 11`.
+
+
+---
+
+## ✅ DEPLOYED, 2026-11-20
+
+All three gate conditions passed before anything was pushed.
+
+| | result |
+|---|---|
+| **Backend suite**, combined tree | **3,257 tests**, 3 failures — the three proven pre-existing by A23's stash-and-rerun. Reconciles exactly: A23's 3,238 + 11 + 3 + 5 |
+| **App suite**, committed tree | **648 / 10,816 passed**, 10,819 collected, 3 skipped, `--listTests` 648, `tsc` zero errors |
+| **Economy gate** | England byte-identical to A23's recorded run. Scotland measured for the first time: A23's app half moves the matchday column only |
+
+### Commits
+
+| repo | work | commit |
+|---|---|---|
+| backend | A26 scout ability | `54525433` |
+| backend | A23 retire slots | `7ac99686` |
+| backend | **merged to `dev`** | **`d1cf0734`** |
+| app | A26 scout ability | `39b3c884` |
+| app | A23 retire slots (app half) | `4ea3c5be` |
+| app | **merged to `dev`** | **`fe4217f6`** |
+
+**OTA run 488**, head `fe4217f6`. The splash and debug header show the build number and short
+SHA — look for `488 fe4217f`.
+
+### On device, to confirm
+
+1. **A23** — CHECKS: `SC t4  divisor 12 · clubs 12 · home games 11`. This is the ONLY
+   confirmation Scotland's 14 → 12 landed; it is still outside gate coverage for a before/after.
+2. **A26** — scouts carry an ability, 1–100, distinct from experience. Dev box measured at
+   5,278 scouts spanning 11–48, none at the floor.
+3. **No salary should move.** If one has, that is a regression.
+4. Pack version 12 — every cached pack re-fetched on first launch.
+
+### ⚠️ Two things that are deployed but LATENT
+
+1. **A26's `SeasonBudgetService` fix does nothing today.** `anchorAmpStaffWages` early-returns
+   unless income anchoring is on, which derives from `wageModel === 'turnover'`, and the live
+   `economy_wage_model` is `legacy`. The corrected figure bites when anchoring is switched on —
+   the same release A24 lands. **It will read as a new bug if it surprises somebody.**
+2. **A23's TV change is backend-side.** The app gate reads the published `tvDeal`, so Scotland's
+   per-club TV only moves once a fresh world export is taken from this deploy.
+
+### 🔴 Found during this run, needs an owner ruling, NOT deployed as a fix
+
+**`ageGateFor` reads the `youth` and `senior` judgements, which no real scout carries.** All
+5,278 have the five-key set. So it has returned 0 for every scout since it was written, and
+**the age distinction in scouting accuracy has never happened.** A26 annotated it and left it
+alone, correctly — it is a simulation change. See `a26-scout-ability-report.md`.
+
+### Not verified
+
+No real save on dev, no forced v12 pack rebuild inspected, no browser check of the admin field,
+and no test persisting a `Scout` through Doctrine to prove the lifecycle subscriber fires
+(registration and `lint:container` are verified; the behaviour is not).
