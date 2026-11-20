@@ -1,6 +1,13 @@
 <!-- STATUS: 📋 OWNER RULING, BRIEF READY, NOT STARTED (2026-11-20) -->
 
-# A28 — the manager's opinion: add coaching ability at 70/30, and widen the noise
+# A28 — widen the manager's opinion noise, and strengthen the bond bias
+
+🔴 **SCOPE CHANGED 2026-11-20, owner: "ignore my 70/30 split, implement the rest."** The
+coaching-ability blend is **DROPPED**. `deriveErrorMargin` keeps its current inputs —
+`scoutingRange` and `consistency` — and its signature. Do not add `coachingAbility` to the
+rating path.
+
+**In scope: the noise width, and the bond bias.** Nothing else.
 
 **Owner ruling, 2026-11-20:**
 
@@ -14,7 +21,7 @@
 opinion **24** (+3). The scout's report on the same screen reads **21** — exact. Two different
 systems; this brief is the manager one.
 
-## ⚠️ Correction: the 70/30 is NOT implemented
+## Correction: the 70/30 was NOT implemented — kept as a record, now out of scope
 
 ```ts
 export function deriveErrorMargin(scoutingRange, consistency, rand): number {
@@ -36,8 +43,8 @@ read**, not two manager attributes. Easy to misremember as the 70/30.
 
 Also live, and not in the owner's model: `consistency` (1–20) tightens the variance by up to
 `CONSISTENCY_TIGHTEN = 0.5`, bond shifts the read by up to ±5 points, and morale below 50 drags
-it pessimistic by `0.12` per point. **Confirm these stay** — the ruling does not mention them
-and they are doing real work.
+it pessimistic by `0.12` per point. 🟢 **These all stay** — the owner's ruling touches the noise width and the bond
+only. Changing consistency, morale or the manager/facility blend is OUT OF SCOPE.
 
 ## 🔴 The trap: the manager and the scouts share ONE spread constant
 
@@ -58,16 +65,10 @@ tune it. Do that before anything else in this brief.
 
 ## The change
 
-**1. Accuracy from a 70/30 blend.**
-
-```
-managerAccuracy = 0.7 × scoutingRange + 0.3 × coachingAbility      // both 0–100
-spread          = MAX_MANAGER_NOISE_SPREAD × (1 − managerAccuracy / 100)
-```
-
-⚠️ `deriveErrorMargin` is exported and unit-tested; changing its signature means updating every
-caller and test. Take the blended figure as one argument rather than passing both abilities in,
-so the formula lives in one named function that can be tested on its own.
+**1. ~~Accuracy from a 70/30 blend.~~ DROPPED by the owner, 2026-11-20.** `scoutingRange`
+remains the only ability driving the manager's error, exactly as today. The investigation that
+produced this item is kept below under "Correction" because it records what the code actually
+does, which was not what anyone believed.
 
 **2. More noise.** Raise `MAX_MANAGER_NOISE_SPREAD` above 20. **Do not pick the number alone** —
 put a table in front of the owner first, because the current band is narrower than it looks:
