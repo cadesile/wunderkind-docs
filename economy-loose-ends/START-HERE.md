@@ -117,10 +117,9 @@ line, and as a guess where it reasons from symptoms.
 | `wunderkind-app` | `new-game-save` | nothing unpushed | `9bac0b18` is the tip as of the deploy |
 | `wunderkind-backend` | `development` | nothing unpushed | `c11c7f2d` is the tip as of the deploy |
 
-⚠️ **A session may be mid-flight.** `scout-reanchor` was briefed to re-anchor `club.scouts[]` the
-way `club.staff[]` already is, in both `SeasonBudgetService` passes (`:194` and `:632`) and on the
-AMP path. If it has committed, there is a `scout-reanchor-report.md` beside this file. **Check
-before assuming the scout defect is open.**
+✅ **`ec949536` landed** — a club's scouts are re-priced on its own income, like its coaches.
+660 suites / 11,070 passed against a self-measured 659 / 11,057. ⚠️ **It did NOT fix the player's
+own club, and it broke the CHECKS scout row. Read §4 item 2 before acting on either.**
 
 ### Verified on a device
 
@@ -136,29 +135,55 @@ before assuming the scout defect is open.**
 ## 4. Open items, in the order the PM would take them
 
 1. **§1 above.** Blocks Scottish testing and therefore tuning.
-2. **The scout wage split.** Owner has ruled the re-anchor; `scout-reanchor` is doing it. ⚠️ **The
+2. 🔴 **THE OWNER'S OWN SCOUT IS STILL £12,510/wk, AND THE RE-ANCHOR DID NOT FIX IT.**
+   `ec949536` landed: a club's scouts are re-priced on its own income, like its coaches. Measured
+   on the owner's exact shape — reproducing the device reading to the penny first (coaches
+   £868.44/wk, scout £12,509.76/wk, 84.2×) — the staff bill falls from **£16,432.08/wk, 3.87× the
+   reservation, to £2,388.11/wk, 0.56×**. Scout down 83.8%. **That is NPC clubs.**
+   ⚠️ **The player's own club is NOT fixed, deliberately and correctly.** The coaches read the band
+   to the penny, which proves no AMP re-anchor pass is running — `anchorAmpStaffWages` was retired
+   earlier the same day under the owner's own B1 ruling that **a staff salary is a contract**.
+   Adding an AMP pass back for scouts would reinstate exactly what that ruling retired, so the
+   session refused and fixed `ampStaffWagePence`'s SHAPE instead, which prices the next hire rather
+   than re-pricing a contract. **Under the ruling, the owner's scout moves at renewal.** If that is
+   not what the owner wants, it is a re-ruling, not a bug.
+   ⚠️ **The stale-write fix is therefore half true**: confirmed for NPC clubs, not for the
+   player's club.
+   ⚠️ **This BREAKS the CHECKS panel's scout row.** It ratios NPC scouts against the band, which is
+   no longer their governing rate — the identical defect the OTA 491 staff correction fixed for
+   coaches. The session deliberately left `economyDiagnostics.ts` and `ChecksTab.tsx` alone as
+   A29's territory. **Expect scout rows to read wrong until someone updates the comparator**, and do
+   not treat that as a pricing regression.
+   ⚠️ **Two unowned findings in the same family**, both traced in code and **not reproduced on a
+   device**: `computeNpcWageBill` also omits scouts, so NPC budgets and solvency verdicts exclude
+   them; and **a re-anchored salary does not survive a reload** — the world blob strips both rosters
+   while `seasonBudget` persists, so bootstrap skips the club and never re-snaps. The second is
+   pre-existing, hits coaches identically, and **bounds the real value of both re-anchor passes**.
+   Report: `scout-reanchor-report.md`.
+
+3. **The ability-proportional split.** ⚠️ **The
    fix bounds the bill but will not make scouts cheap** — `ClubWageScaleService` splits a club's
    reservation in proportion to ability, so a scout at ability ~22 among coaches at 2–7 still takes
    a large share. On the owner's own club the scout was **£12,510/wk of a £13,376 staff bill, 93.5%,
    84× a coach of the same star rating**, against a reservation of ~£4,249/wk. Whether
    ability-proportional splitting is right here is **calibration and unruled**.
-3. **Authored turnover vs modelled income disagree at the bottom of the pyramid, in BOTH countries.**
+4. **Authored turnover vs modelled income disagree at the bottom of the pyramid, in BOTH countries.**
    EN t8 modelled £1,303,092 against authored £215,000 — **606%**. Not a scaling bug; the same shape
    appears in Scotland. Owner's dial.
-4. **The band ceiling is an admin edit.** `wageMultiplierTiers` top row is bounded at `maxAbility`
+5. **The band ceiling is an admin edit.** `wageMultiplierTiers` top row is bounded at `maxAbility`
    60 where both codebases document a `null` catch-all; anything above resolves through a branch the
    backend's own docblock calls accidental. Restoring `null` is behaviour-identical. **Adding rows
    above 60 is calibration and unruled.**
-5. **The ladder is non-monotonic** — at ability 25 the staff/player ratio drops 20%, at 40 another
+6. **The ladder is non-monotonic** — at ability 25 the staff/player ratio drops 20%, at 40 another
    25%. Measured, owner's dial.
-6. **Eight suites assert wall clocks and a 659-suite run contends with itself.** Proven by the same
+7. **Eight suites assert wall clocks and a 659-suite run contends with itself.** Proven by the same
    commit producing both a failure and a clean run. Unowned.
-7. **`wunderkind_test` holds 98 leaked `league` rows**, giving one test a ~14% chance per run of a
+8. **`wunderkind_test` holds 98 leaked `league` rows**, giving one test a ~14% chance per run of a
    spurious error that misattributes itself. Cleanup proposed in `a25-ability-bands-report.md` §8.3
    and deliberately not performed — destructive against a shared database.
-8. **On dev, the async world-pack build does not run.** `app:worldpack:warm <CC>` works inline;
+9. **On dev, the async world-pack build does not run.** `app:worldpack:warm <CC>` works inline;
    the admin top-up reports success and writes nothing. See the standing notes.
-9. **CHECKS "COPY EVERYTHING" overflows the device clipboard.** Per-section copy works.
+10. **CHECKS "COPY EVERYTHING" overflows the device clipboard.** Per-section copy works.
 
 ---
 
