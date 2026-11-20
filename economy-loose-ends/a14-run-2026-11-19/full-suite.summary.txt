@@ -1,5 +1,0 @@
-Test Suites: 1 failed, 645 passed, 646 total
-Tests:       1 failed, 3 skipped, 10767 passed, 10771 total
-Snapshots:   0 total
-Time:        227.719 s
-JEST_EXIT=1

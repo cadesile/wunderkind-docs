@@ -1,8 +1,0 @@
-PASS src/__tests__/bootstrap/reactTree.test.ts
-PASS src/__tests__/engine/missionGemRoll.test.ts
-
-Test Suites: 647 passed, 647 total
-Tests:       3 skipped, 10802 passed, 10805 total
-Snapshots:   0 total
-Time:        325.378 s
-Ran all test suites.
