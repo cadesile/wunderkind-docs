@@ -62,15 +62,47 @@ the default"** — now written into the migration's docblock.
 databases **by hand**. The migration is correct for any fresh run; dev's schema matches it
 because someone made it match. Recorded so a future schema mismatch on dev is not a mystery.
 
+## ✅ APP HALF: GREEN, measured on the COMMITTED tree
+
+Run by the PM session after `39b3c884` (A26) and `4ea3c5be` (A23) were both in, so this is a
+clean-HEAD figure, not the working-tree one A26 had to report.
+
+```
+npx tsc --noEmit                 exit 0, zero errors
+Test Suites:  648 passed, 648 total
+Tests:        3 skipped, 10816 passed, 10819 total
+npx jest --listTests | wc -l     648
+```
+
+**Reconciles exactly** against A23's 647 / 10,802 / 10,805: +1 suite, +14 tests
+(`scoutAbility.test.ts` 13, plus one case in `bootstrap.test.ts`). Confirms A26's working-tree
+figure was right.
+
+### 🟢 England economy gate: byte-identical
+
+```
+$ diff a23-run-2026-11-19/variantGate-EN.AFTER.txt deploy-run-2026-11-20-gate-EN.txt
+   (empty)
+```
+
+Same invocation A23 used. A23's AFTER was itself byte-identical to its BEFORE, so **England is
+provably unmoved by A23 AND by A26.** Output kept as `deploy-run-2026-11-20-gate-EN.txt`.
+
+⚠️ My md5 (`a56bc740…`) does not match the hashes A26 quoted (`c5941b30…` / `aff1aacd…`); those
+came from its own invocation with different arguments, so the two are not comparable. **The
+diff against A23's recorded run is the proof, not the hash.**
+
+⚠️ **Scotland is still not gate-covered** — no SC-resolved config export exists. Unchanged from
+A23's report; the device CHECKS line is the confirmation.
+
 ## Verification gate — nothing is pushed until all of this passes
 
 1. Backend suite on the combined tree, `--filter '/^(?!.*AdminShellCoverage).*$/'` (a full run
    OOMs at ~183/3305). Expected **3,257** (was quoted as 3,249, then 3,252, as A26 added
    coverage — take the figure from its final report, not from here). Three failures are
    proven pre-existing (A23 stashed the whole change and re-ran to confirm).
-2. App suite: expected **648 / 10,816**, `--listTests` 648, `tsc --noEmit` clean. Already
-   measured by A26 on the working tree; **re-run now that both halves are committed**, because
-   that figure was taken with A23's files uncommitted.
+2. ✅ **DONE** — app suite 648 / 10,816, `--listTests` 648, `tsc` clean, England gate
+   byte-identical. See the section above.
 3. Economy gate measured and any movement explained. A26 proved in a throwaway worktree that
    the movement belongs to A23, not itself — HEAD `c5941b30…` and HEAD+A26 `c5941b30…` are
    byte-identical, the full tree is `aff1aacd…`.
