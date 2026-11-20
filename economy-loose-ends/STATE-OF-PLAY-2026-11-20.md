@@ -18,14 +18,35 @@ committed or named with the file that holds it.
 the wage delta, not the absolute bill, and the player / DOF-hiring / DOF-renewal paths all share
 one gate. Verified here: clean commit, full suite 647 / 10,802 green.
 
-## In flight when the session ended
+## In flight when the session ended — ⚠️ CHECK THIS BEFORE TOUCHING EITHER REPO
 
-🟡 **A23 (`a23-retire-slots`) was still RUNNING.** It held uncommitted work in all three repos:
-**10 app files, 18 backend files, 6 docs files** (its run logs under `a23-run-2026-11-19/`).
-**Check it finished and committed before doing anything else in either repo** — do not assume
-the trees are clean.
+🟡 **A23 (`a23-retire-slots`) was STILL RUNNING at 00:22 on 2026-11-20**, and its tree state was
+changing while this was being written. Do not assume anything below is still true — **verify
+first**.
 
-🟢 **A22 (`a22-staff-wages`) is idle and complete.** Its diagnosis and part A are both done and
+What was observable at handover:
+
+- Its report **exists and reads DONE**: `a23-retire-slots-report.md`. It says England's figures
+  are byte-identical before and after (proved by diff), Scotland moves 14 → 12 at every tier,
+  and — beyond the brief — **it measured all 25 countries, not just EN and SC**, which closes
+  an item the brief had left open.
+- 🔴 **Its own report says "Nothing committed — left in the working tree of both repos for
+  review."** So the work is NOT on a branch.
+- At 00:20 the app held **10 modified files**; minutes later the app tree was **clean** with the
+  head unmoved at `c73bf9a8`. **The app-side changes are therefore either reverted, stashed, or
+  mid-operation.** The session was live throughout, so this is most likely transient — but it
+  is unverified and it is the first thing to check.
+- The backend held **18 modified files** at handover, including a deleted
+  `EconomyAuthoredSizeDriftTest.php` and an added `EconomyDerivedSizeDriftTest.php`.
+
+**First actions tomorrow, in order:**
+1. Check whether A23 is still running, and let it finish if so.
+2. Read `a23-retire-slots-report.md` and its evidence in `a23-run-2026-11-19/`.
+3. `git status` and `git stash list` in BOTH repos before any other git command. Uncommitted
+   work is easy to destroy with a careless `checkout` or `stash`.
+4. Only then decide whether to commit it. ⚠️ **It has not been reviewed by the PM session.**
+
+🟢 **A22 (`a22-staff-wages`) is idle and complete.** Diagnosis and part A both done and
 recorded. It still holds the full context for part B; archive it only once part B is decided or
 re-briefed.
 

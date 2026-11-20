@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** ✅ A14 app half done. ⚠️ COMMITTED, NOT PUSHED, NOT DEPLOYED. **INERT until the backend publishes `fanBaseSharePercent`.**
+<!-- STATUS --> **STATUS:** ✅ A14 app half done. ✅ DEPLOYED (re-verified 2026-11-20: an ancestor of `origin/dev`). **INERT until the backend publishes `fanBaseSharePercent`.**
 
 ---
 

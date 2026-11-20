@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** ✅ A10 — wage scale calibrated on real ability. Landed `68561f93`+`b82540d7`. ⚠️ COMMITTED, NOT PUSHED, NOT DEPLOYED.
+<!-- STATUS --> **STATUS:** ✅ A10 — wage scale calibrated on real ability. Landed `68561f93`+`b82540d7`. ✅ DEPLOYED (re-verified 2026-11-20: an ancestor of `origin/dev`).
 
 ---
 

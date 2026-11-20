@@ -6,8 +6,8 @@ purpose** (owner's rule: nothing scratch-shaped inside `wunderkind-app` or `wund
 **Every file carries a `**STATUS:**` line at the top.** This index is the map; the status line on
 each file is the truth.
 
-> ⚠️ **This folder is UNTRACKED** in the `docs` git repo (`?? economy-loose-ends/`). Today's entire
-> record lives here and is not version-controlled. Worth a commit there if it should be durable.
+> 🟢 **Tracked and committed** in the `wunderkind-docs` repo as of 2026-11-19 — 190 files.
+> (This warning used to say the folder was untracked; that was true when written and is not now.)
 
 ---
 
@@ -15,18 +15,21 @@ each file is the truth.
 
 | file | what it is |
 |---|---|
+| **`STATE-OF-PLAY-2026-11-20.md`** | 🔴 **READ THIS FIRST.** Where everything stands at the end of the 2026-11-19 session: what shipped, what is committed but not deployed, what is sitting UNCOMMITTED in the working trees, the one open owner decision, and the six claims made that session which were later refuted. Written so a fresh agent needs nothing from that conversation. |
+| **`scotland-experiment-2026-11-19.md`** | The main findings file for the Scotland experiment — the longest single record of that session. Read the state-of-play first for the summary. |
 | **`next-work-plan.md`** | **The live queue, the review log, and every decision taken.** ~2,700 lines, newest sections at the bottom before Tranche D. Its **POST-SETTLE** section indexes all parked work. |
 | `agent-standing-notes.md` | Conventions every agent brief references. Read with any brief. |
 | `dev-test-checklist-2026-11-19.md` | What to test on dev after today's releases. |
 
 ---
 
-## 🔄 Active (agents running)
+## ✅ Finished this session (was: Active) — all sessions archived or idle
 
 | task | brief | state |
 |---|---|---|
 | **A11** — why Scotland holds 12 clubs, not 14 | `a11-scotland-12-vs-14-brief.md` → `a11-scotland-report.md` | ✅ ANSWERED (C): a full NPC-club regeneration replaced every EN/SC row twice without touching `slots`; NOT the worldpack rebuild. Diagnosis only, no code changed. PM: four plan corrections flagged in §7 |
 | **A14** — fan base from plot population (app half) | `a14-fanbase-catchment-brief.md` | app-only; backend half not yet written |
+| **A23** — retire `league.slots`, derive every division size | `a23-retire-slots.md` → `a23-retire-slots-report.md` | ✅ DONE, both repos, **uncommitted**. EN byte-identical (diff proved); SC 14 → 12 at every tier. ⚠️ **All 25 countries measured, 24 unchanged** — the "23 unchecked" item is closed, not deferred. ⚠️ **Two brief premises were wrong**, both corrected in the report §1 and §3.2 — in particular the app never read `slots`, so the CHECKS division-size row is still live and **A19 needs LESS re-scoping than its own note says** |
 
 ---
 
@@ -83,4 +86,4 @@ work; it still holds the go-live prerequisites.
 |---|---|
 | `dials/` | the gate-run harness — `patch.mjs`, `run.sh`, `runs/`. `cand-c-authorable` is the R2-state baseline. |
 | `pre-r2-exports/` | world exports from before R2 |
-| `r2-run-2026-11-18/`, `pack-economy-run-2026-11-18/`, `a10-run-2026-11-19/`, `a12-run-2026-11-19/` | verbatim run output kept with its task |
+| `r2-run-2026-11-18/`, `pack-economy-run-2026-11-18/`, `a10-run-2026-11-19/`, `a12-run-2026-11-19/`, `a23-run-2026-11-19/` | verbatim run output kept with its task |

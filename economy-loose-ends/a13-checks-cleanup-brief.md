@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** ✅ A13 — CHECKS report curated. Landed `ea92859a`. ⚠️ COMMITTED, NOT PUSHED, NOT DEPLOYED.
+<!-- STATUS --> **STATUS:** ✅ A13 — CHECKS report curated. Landed `ea92859a`. ✅ DEPLOYED (re-verified 2026-11-20: an ancestor of `origin/dev`).
 
 ---
 

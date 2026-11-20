@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** ✅ A18 — catchment share ladder published. Landed `8298cc60`. ⚠️ COMMITTED, NOT PUSHED, NOT DEPLOYED. 🔴 **§3 WAS ALREADY DONE — `populationSize` is already in the pack, so NO `WORLD_PACK_VERSION` BUMP was needed or made and nothing needs regenerating.** ⚠️ The expected uniform ×0.47–0.49 did NOT reproduce; the ~70:1 spread did. See `a18-fanbase-backend-report.md`.
+<!-- STATUS --> **STATUS:** ✅ A18 — catchment share ladder published. Landed `8298cc60`. ✅ DEPLOYED (re-verified 2026-11-20: an ancestor of `origin/dev`). 🔴 **§3 WAS ALREADY DONE — `populationSize` is already in the pack, so NO `WORLD_PACK_VERSION` BUMP was needed or made and nothing needs regenerating.** ⚠️ The expected uniform ×0.47–0.49 did NOT reproduce; the ~70:1 spread did. See `a18-fanbase-backend-report.md`.
 
 ---
 

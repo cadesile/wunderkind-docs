@@ -1,4 +1,4 @@
-<!-- STATUS: findings recorded 2026-11-19, two items CLOSED, two OPEN -->
+<!-- STATUS: 🟢 THE MAIN FINDINGS FILE for the 2026-11-19 Scotland experiment. Grew all session; read STATE-OF-PLAY-2026-11-20.md first for the summary. Contains: the starter-squad wage discrepancy (CLOSED, timing artefact), the ability-band fallback (CLOSED pending one backend-screen re-read), the sponsor pot (FIXED + DEPLOYED, and re-framed mid-session from mis-attribution to mis-sizing), the FUND YOUR CLUB flat GBP 12,000/wk stand-in (OPEN), the staff wage source (DIAGNOSED by A22, part A FIXED, parts B and C OPEN), the affordability gate (FIXED), and why slots was not dynamic (A23). ⚠️ Several claims in here were REFUTED later in the same file — always read to the end of a section before acting on its opening. -->
 
 # Scotland experiment — what the fresh save settled
 

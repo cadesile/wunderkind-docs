@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:**  🔄 ACTIVE — agent running as of 2026-11-19 18:30.
+<!-- STATUS --> **STATUS:**  ✅ CLOSED — agent finished 2026-11-19; see the matching report. Session archived.
 
 ---
 

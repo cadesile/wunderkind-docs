@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** ✅ A15. ⚠️ COMMITTED, NOT PUSHED. ⚠️ Its §0.1 corrects the brief's §4 premise and its §0.2 answers §3 with a fourth option the brief did not list — read both before trusting any earlier write-up of this chain.
+<!-- STATUS --> **STATUS:** ✅ A15. ✅ DEPLOYED (re-verified 2026-11-20: an ancestor of `origin/dev`). ⚠️ Its §0.1 corrects the brief's §4 premise and its §0.2 answers §3 with a fourth option the brief did not list — read both before trusting any earlier write-up of this chain.
 
 ---
 

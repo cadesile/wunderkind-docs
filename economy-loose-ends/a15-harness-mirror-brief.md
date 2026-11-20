@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** 📋 BRIEFED, NOT STARTED.
+<!-- STATUS --> **STATUS:** ✅ DONE — see `a15-harness-mirror-report.md`. DEPLOYED (ancestor of `origin/dev`). ⚠️ The report's §0.1 corrects this brief's premise — read it before reusing anything here.
 
 ---
 

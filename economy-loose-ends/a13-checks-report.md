@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** ✅ A13. ⚠️ COMMITTED, NOT DEPLOYED.
+<!-- STATUS --> **STATUS:** ✅ A13. ✅ DEPLOYED (re-verified 2026-11-20: an ancestor of `origin/dev`).
 
 ---
 

@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** ✅ A10. ⚠️ COMMITTED, NOT DEPLOYED. ⚠️ Its §0.1 corrected the brief’s formula — read that before trusting any earlier write-up of this chain.
+<!-- STATUS --> **STATUS:** ✅ A10. ✅ DEPLOYED (re-verified 2026-11-20: an ancestor of `origin/dev`). ⚠️ Its §0.1 corrected the brief’s formula — read that before trusting any earlier write-up of this chain.
 
 ---
 

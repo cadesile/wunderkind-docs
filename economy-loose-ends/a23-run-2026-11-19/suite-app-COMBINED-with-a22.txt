@@ -1,0 +1,8 @@
+PASS src/__tests__/economy/financialApproach.test.ts
+PASS src/__tests__/engine/npcRenewalReinstatement.test.ts (6.563 s)
+
+Test Suites: 647 passed, 647 total
+Tests:       3 skipped, 10802 passed, 10805 total
+Snapshots:   0 total
+Time:        529.964 s
+Ran all test suites.

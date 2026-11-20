@@ -1,4 +1,4 @@
-<!-- STATUS --> **STATUS:** ✅ A18 backend half done. ⚠️ **COMMITTED, NOT PUSHED, NOT DEPLOYED.** 🟢 **NO `WORLD_PACK_VERSION` BUMP — the brief asked for one and it was NOT needed. No pack regeneration.**
+<!-- STATUS --> **STATUS:** ✅ A18 backend half done. ✅ DEPLOYED (re-verified 2026-11-20: an ancestor of `origin/dev`). 🟢 **NO `WORLD_PACK_VERSION` BUMP — the brief asked for one and it was NOT needed. No pack regeneration.**
 
 ---
 
