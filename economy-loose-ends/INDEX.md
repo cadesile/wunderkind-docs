@@ -37,7 +37,7 @@ each file is the truth.
 
 | task | brief | state |
 |---|---|---|
-| **part B** — which pot pays for staff | **`part-b-resolved-budget-model.md`** | ✅ **RESOLVED 2026-11-20, owner ruling quoted.** Existing staff + players + maintenance committed from income; **new** staff and player wages from the DOF's pot. `anchorAmpStaffWages` goes. Step 1 already works this way — don't rebuild it. ⚠️ 3 sub-questions still open, listed in the file |
+| **part B** — which pot pays for staff | **`part-b-resolved-budget-model.md`** | ✅ **RESOLVED 2026-11-20, owner ruling quoted.** Existing staff + players + maintenance committed from income; **new** staff and player wages from the DOF's pot. `anchorAmpStaffWages` goes. Step 1 already works this way — don't rebuild it. ⚠️ 2 sub-questions still open (DOF card copy, scout ability), listed in the file |
 | **A24** — staff AND scout salaries priced from the wage band | `a24-staff-wage-bands.md` | 📋 Ruled on twice, diagnosis done, nothing built. **The band table stays** — my "retire the column" recommendation is overruled. 🔴 Scouts are a third, tier-blind pricing system the ruling retires. ⚠️ Needs part B's budget move first |
 | **part C** — the hiring gate tests the DOF pot, not the 25% share | `part-b-resolved-budget-model.md` | 🟢 **UNBLOCKED** by part B. The gate's delta fix is already committed at `c73bf9a8` (app, **not deployed**); this changes which budget it tests |
 | **A25** — staff ability bands are two flat globals | `a25-staff-ability-bands.md` | 🟡 **PARKED, unruled.** Was written as A24 against a wrong reading of the owner's ruling; the asymmetry is real, the decision is not taken |

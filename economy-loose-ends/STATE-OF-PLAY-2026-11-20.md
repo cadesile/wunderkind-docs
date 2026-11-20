@@ -116,11 +116,16 @@ The test for "existing" is **the moment the budget is created**, not the contrac
 
 ⚠️ **Three things the ruling does NOT settle — ask before building:**
 
-- **A recurring cost out of a one-off pot.** Step 3 is "one-off spending, from the balance"; a
-  wage is weekly. Does the DOF pot pay this season's remaining weeks, then the cost rolls into
-  Step 1? Same question for new PLAYER wages, which the ruling puts in the same pot.
+✅ **One of the three is now ruled too (2026-11-20): the DOF pot pays a new hire's REMAINING
+WEEKS OF THIS SEASON, then the cost rolls into Step 1 at the next budget.** Applies to new
+player wages as well. The sign-on fee stays a separate one-off charge — **two tests against one
+pot.** ⚠️ New question nobody has asked: does unspent remainder return to the pot when a
+contract ends or a player is sold mid-season?
+
+⚠️ **Still open:**
+
 - **The DOF card's copy** says transfer fees only — needs widening, via the i18n catalogue.
-- **Which scout number drives the band** — see A24.
+- **Which scout number drives the band** — see A24. My reading is `experience` as-is.
 
 ## Open, recorded, nothing started
 

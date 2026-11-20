@@ -1,4 +1,4 @@
-<!-- STATUS: ✅ OWNER RULING — PART B RESOLVED, NOTHING BUILT (2026-11-20) -->
+<!-- STATUS: ✅ OWNER RULING — PART B RESOLVED INCL. THE CHARGING MODEL. BUILDABLE. NOTHING BUILT (2026-11-20) -->
 
 # Part B resolved — which pot pays for staff
 
@@ -63,20 +63,33 @@ a hire is checked against.
 **3. A24 reverses.** I had recommended retiring the `Staff ×` column and deriving the ratio from
 `STAFF_WAGE_SHARE_BP`. **The owner wants the band table used.** See `a24-staff-wage-bands.md`.
 
-## ⚠️ Three things the ruling does not settle
+## ✅ How a recurring wage comes out of a one-off pot — RULED, 2026-11-20
 
-**1. A recurring cost out of a one-off pot.** Step 3 is described on screen as *"one-off
-spending, from the balance"*, and the DOF's card says transfer fees. A wage is a weekly promise,
-not a one-off. So: does the DOF pot pay the **remainder of this season's** wage at signing and
-the cost moves into Step 1 next season? Or does it reserve the full contract? `staffHireBudget`'s
-own docblock already names this — *"a hire costs two unlike things and one budget cannot answer
-for both"* — and it is the same question for new PLAYER wages, which the ruling puts in the same
-pot. **Ask before building.** My reading: the hire is charged the season's remaining weeks from
-the DOF pot and rolls into Step 1 at the next budget, because that is what makes "existing at
-budget creation" the clean test the ruling states. Unconfirmed.
+**Owner, asked directly, confirmed: the DOF's pot pays the new hire's REMAINING WEEKS OF THIS
+SEASON, and the cost then rolls into Step 1 at the next budget.**
 
-**2. The DOF card's copy.** It currently reads *"transfer fees and agent commission, and on the
+So a hire is charged `weeklySalary × weeksRemainingInSeason` against the DOF pot, once. At the
+next season budget that person is "already part of the club", so their full-season wage becomes
+a Step 1 committed cost like everybody else's. **This is what makes "existing at the moment the
+budget is created" the clean, self-consistent test the ruling states** — every contract enters
+through the DOF's pot and graduates to committed income exactly once.
+
+⚠️ **It applies to new PLAYER wages too**, which the ruling puts in the same pot — so this is
+not a staff-only mechanic and the transfer path must charge the same way.
+
+⚠️ **The sign-on FEE stays a separate, genuinely one-off charge.** `staffHireBudget`'s docblock
+is still right that *"a hire costs two unlike things"* — what changes is that both now come from
+the DOF's pot rather than the fee from allocatable balance and the salary from a 25% wage share.
+**Two tests against one pot**, not one test.
+
+⚠️ **Not yet decided: what happens to the pot mid-season when a contract ENDS or a player is
+sold.** Does the unspent remainder return to the DOF? Nobody has asked. Flagging it because the
+"charge the remaining weeks" model makes it a real question that the old model did not have.
+
+## ⚠️ Two things the ruling still does not settle
+
+**1. The DOF card's copy.** It currently reads *"transfer fees and agent commission, and on the
 signing-on fees for new contracts and renewals"* — no mention of wages, player or staff. If the
 pot's job widens, the copy has to say so, through the i18n catalogue.
 
-**3. Which scout ability drives the band.** See A24.
+**2. Which scout ability drives the band.** See A24.
