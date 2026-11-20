@@ -1,4 +1,4 @@
-<!-- STATUS: ✅ PHASE 1 BUILT, COMMITTED ON BOTH BRANCHES, NOT PUSHED (2026-11-20) -->
+<!-- STATUS: ✅ PHASE 1 COMPLETE — committed on both branches (app 39b3c884, backend 54525433), NOT pushed, NOT deployed (2026-11-20) -->
 
 # A26 phase 1 — report: scouts have a real `ability`, 1–100
 
@@ -344,7 +344,12 @@ at the site, because the old pairing was simply wrong rather than untuned.
 ### Backend — `vendor/bin/phpunit --filter '/^(?!.*AdminShellCoverage).*$/'`
 
 ```
-<<BACKEND_RESULT>>
+Tests: 3257, Assertions: 156378, Failures: 3, PHPUnit Deprecations: 1, PHPUnit Notices: 21, Skipped: 13.
+```
+
+**Zero errors, and the only three failures are the pre-existing ones.** 3,241 passing.
+
+```
 ```
 
 **Three failures are proven pre-existing**, and not by reading the assertions: A23's report
@@ -356,9 +361,17 @@ re-running on a clean tree earlier today —
 asserts a friendly's `narrativePayload` is non-empty; nothing in this change touches friendlies or
 narrative content.
 
-**The count reconciles exactly.** A23's measured tree was **3,238**; this change adds
-`ScoutAbilityCalculatorTest`'s **11** tests → **3,249**, which is what the run collects. The
-brief's stated 3,233 baseline predates A23's +5.
+**The count reconciles exactly**, which this repo's notes say to verify rather than assume:
+
+| | tests |
+|---|---|
+| A23's measured tree | 3,238 |
+| `ScoutAbilityCalculatorTest` (new) | +11 |
+| `ScoutGenerationServiceTest` (3 added) | +3 |
+| `ScoutAbilityPublishedTest` (new) | +5 |
+| **measured** | **3,257** ✓ |
+
+The brief's stated 3,233 baseline predates A23's +5.
 
 🔴 **`wunderkind_test` is not migration-tracked, and that is the third instance `environment.md`
 now records.** The first full run reported **20 errors and 5 failures**. The full attribution,
@@ -534,10 +547,33 @@ Two notes for the PM's reconciliation:
   **re-staged it** — its staged blob was byte-identical to the worktree, so A23's state is exactly
   as I found it. `src/Service/Economy/WageModelResolver.php` is **not** mine; left alone.
 
-### Backend `development` — `<<BACKEND_SHA>>`
+### Backend `development` — `54525433`
+
+22 files, +1,276 / −10.
 
 ```
-<<BACKEND_FILES>>
+.context/shared/last-sync.md                       |  32 ++++
+.context/stages/01_overview/output/environment.md  |  58 ++++++
+.context/stages/03_data/output/entities.md         |  35 +++-
+.context/stages/03_data/output/migrations.md       |  56 ++++++
+.context/stages/04_interfaces/output/services.md   |  48 +++++
+migrations/Version20261120100000.php               | 111 +++++++++++
+src/Command/BackfillScoutAbilitiesCommand.php      | 133 +++++++++++++
+src/Command/GenerateMarketDataCommand.php          |  10 +-
+src/Controller/Admin/ScoutCrudController.php       |  37 +++-
+src/Entity/Scout.php                               |  33 ++++
+.../ScoutAbilityLifecycleSubscriber.php            |  64 +++++++
+src/Repository/ScoutRepository.php                 |   8 +-
+src/Service/MarketDataService.php                  |   8 +
+src/Service/ScoutAbilityCalculator.php             | 210 +++++++++++++++++++++
+src/Service/ScoutGenerationService.php             |  22 ++-
+src/Service/WorldInitializationService.php         |  26 ++-
+src/Service/WorldPackSnapshotBuilder.php           |  12 ++
+tests/Service/ScoutAbilityCalculatorTest.php       | 205 ++++++++++++++++++++
+tests/Service/ScoutAbilityPublishedTest.php        | 116 ++++++++++++
+tests/Service/ScoutGenerationServiceTest.php       |  54 ++++++
+.../WorldInitializationTierPackAgentTest.php       |   6 +-
+.../Service/WorldPackClubGenerationServiceTest.php |   2 +
 ```
 
 ### App `new-game-save` — `39b3c884`
