@@ -87,6 +87,35 @@ rung 1, so changing rung 4 would measure as a no-op on the AMP staff screen.
 `a25-staff-ability-bands.md` and parked; the asymmetry it describes (staff ability is two flat
 globals against a per-country per-tier table for players) is real but unruled.
 
+## 🔴🔴 CORRECTION, 2026-11-20 — `incomeAnchoredWages` IS ON, and three documents said otherwise
+
+**Read this before anything else about staff wages.**
+
+`economyConfig.ts:187`: `incomeAnchoredWages: config.incomeAnchoredWages ?? (baseline?.wageModel
+=== 'turnover')`. The key is **absent** from the live payload and the baseline's `wageModel` is
+**`turnover`**, so it resolves **TRUE** at every tier. Income anchoring is **ON** on dev.
+
+Three claims to the contrary were made on 2026-11-20 and all are **WRONG**:
+
+| claim | where | status |
+|---|---|---|
+| *"the live `economy_wage_model` is `legacy`, so the snap early-returns"* | A26, and a comment it left in `SeasonBudgetService` | 🔴 wrong — the model is `turnover` |
+| *"`incomeAnchoredWages` is absent and defaults false, so the snap does not run"* | the PM session, in `b1-budget-model-implementation.md` | 🔴 wrong — absent DERIVES, it does not default |
+| *"this read decides nothing while the flag is off"* | `seasonBudgetService.test.ts` | 🔴 wrong — corrected in place by B1 |
+
+🔴 **The consequence that still needs acting on: A26's scout-ability change is LIVE on dev, not
+latent.** It shipped in OTA 488 on the strength of "no salary moves". **Check what it did to
+scout salaries on the owner's save.**
+
+> **The lesson, paid for three times in one day** — `bondDecayFloor` (app default 20 vs live 50),
+> `wageMultiplierTiers` (committed defaults vs the live admin table), and this one:
+> **never read a config value off a repo's default. Resolve it through the resolver the game
+> actually uses.** A default is a pre-sync fallback and says nothing about a synced box.
+
+Full write-up: `b1-FINDING-incomeAnchoredWages-is-ON.md`.
+
+---
+
 ## ✅ Part B is RESOLVED — the owner ruled on the budget model
 
 **Full ruling, quoted: `part-b-resolved-budget-model.md`. Read it before touching staff money.**

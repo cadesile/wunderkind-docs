@@ -27,7 +27,47 @@ signed, players and staff` + `MAINTENANCE £798,002` → `TOTAL COMMITTED £3,39
 £37,384,666 income`. Players, staff and maintenance, committed together, off the top. **That is
 the owner's model already on screen.** The work is Step 3 and the gate.
 
-## 🔴 READ THIS BEFORE YOU PLAN: the snap you are told to remove is ALREADY INERT
+## 🔴🔴 THIS SECTION WAS WRONG. The snap RUNS. Correction below, original kept beneath it.
+
+**Written by the PM session, corrected by B1 the same day, 2026-11-20.**
+
+```ts
+// economyConfig.ts:187 — the comment at the site says it outright
+// "Absent — today's state — derives."
+incomeAnchoredWages: config.incomeAnchoredWages ?? (baseline?.wageModel === 'turnover'),
+```
+
+**Absent does not mean false — absent DERIVES.** The live baseline's `wageModel` is `turnover`,
+so `incomeAnchoredWages` resolves **TRUE** at every tier. B1 proved it by resolving the very
+live fetch this brief cites through the real `resolveEconomy`.
+
+**My error, stated so it is not repeated:** I read `DEFAULT_GAME_CONFIG`'s documented
+*"Default false"* plus the key's absence from the payload, and concluded false. That default is
+the **pre-sync fallback** and never applies to a payload that synced. I even noted that
+`wageModel` IS `turnover` — which was the evidence AGAINST my conclusion, and I wrote it up as a
+caveat to it.
+
+> **The lesson, which this workstream has now paid for three times in one day** (`bondDecayFloor`
+> 20-vs-50, `wageMultiplierTiers` defaults-vs-live, and this): **never read a config value off a
+> repo's default. Resolve it through the resolver the game actually uses.**
+
+### What follows from the correction
+
+1. Removing the snap **is a live behaviour change on a new save.** A flat measurement is the
+   suspicious result, not the expected one.
+2. **A22's attribution STANDS.** The snap ran and wrote rung 1; nothing else needs hunting.
+3. 🔴 **A26 made the same wrong claim and shipped on it.** Its "no salary moves, the change is
+   latent" rested on *"the live wage model is legacy"* — it is `turnover`. **A26's scout-ability
+   change went out in OTA 488 and is LIVE, not latent.** Someone must check what it did to scout
+   salaries on the owner's save.
+4. Treat **every** "behind the flag, therefore inert" claim about income anchoring in this repo
+   as suspect until re-resolved.
+
+Full write-up: `b1-FINDING-incomeAnchoredWages-is-ON.md`.
+
+---
+
+## ~~ORIGINAL, WRONG — kept so the correction has something to correct~~
 
 `anchorAmpStaffWages` (`SeasonBudgetService.ts:456`, defined `:484`) is the thing the ruling
 retires. Its first statement is:
