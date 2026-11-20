@@ -171,3 +171,48 @@ update `07_synthesis/output/game-mechanics.md`, which documents this model.
 - **The bond distribution on the dev save** — the blocker for the bond half.
 - The new spread value.
 - Whether the owner wants the STAR display to move or only the number.
+
+---
+
+## ✅ OWNER RULING, 2026-11-20 — the drift is the model, not a side effect
+
+Put to the owner: widening the spread also widens week-to-week drift, and the stars may not move
+with the number. Answer:
+
+> *"This is expected. 1) players develop, 2) relationships evolve, so the rating will change and
+> the noise will make it change inconsistently. Which is the expected model. **Clarity comes
+> from facilities and abilities.** Regarding what the stars present, again, that is fine."*
+
+**Both flagged side effects are ACCEPTED as intended.** Do not add a smoothing mechanism, a
+slower-moving seed, or any second mechanism to separate "the manager is wrong" from "the
+manager changes his mind". The weekly re-draw is the design.
+
+### 🟢 The principle, and it is already implemented
+
+*Clarity comes from facilities and abilities.* An uncertain read is the default; a club buys its
+way to a reliable one. The model already works this way:
+
+- `deriveErrorMargin` — spread shrinks with `scoutingRange`, variance tightens with `consistency`
+- `deriveFacilityError` — suppressed by `clubScoutEffect / maxScoutEffect`
+
+🟢 **So widening the base spread does not fight the design, it sharpens it.** The wider the
+default error, the more a good manager and good scouting facilities are worth. That is an
+argument FOR the larger value, not against it.
+
+### Consequence for the numbers
+
+The drift was the only argument against `MAX_MANAGER_NOISE_SPREAD` **40**, and the owner has
+dismissed it. The star-visibility question was the only argument for stopping at 30, and the
+owner has dismissed that too.
+
+**Take 40.** Typical error 3.66 rating points at the live `DEFAULT_SCOUTING_RANGE` of 20,
+ceiling ±7.33, and the manager's read can now cross a half-star at a bottom-tier ceiling — which
+is what makes facilities and a better manager legible to the player.
+
+**`MAX_BOND_BIAS` 5 → 12**, symmetric, per the earlier ruling. First value at which the
+strongest realistic bond crosses a half-star at a mid-tier ceiling.
+
+⚠️ **Still true and not overruled:** `decayNeglectedBonds` floors every bond at 20, so a youth
+graduate's 50–60 settles at 20 and is worth `20/100 × 12 × 0.60` = **+1.44 points** in steady
+state. The headline ±7.2 is reachable only at a bond of 100, which nothing currently sustains.
+**That is a decay-floor question, not a bias question** — record it, do not fix it here.
