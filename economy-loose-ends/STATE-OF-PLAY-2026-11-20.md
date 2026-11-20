@@ -55,6 +55,20 @@ the PM session.
 committed at `c73bf9a8` and verified. It still holds the full context for part B; archive it
 only once part B is decided or re-briefed.
 
+## 🔴 Two owner rulings recorded late, NEITHER started
+
+**1. *"staff wage should come from dof budget, like players"*** (2026-11-19) — see the part B
+section below. **Half resolved**: there is no player equivalent of `anchorAmpStaffWages`, so the
+snap must go. **Unresolved**: which pot pays. Player WAGES do not come from the DOF budget
+either, so the phrase cannot be taken literally. **Ask before building.**
+
+**2. *"I would like staff bands to be derived like players"*** (2026-11-20) — recorded in
+`a24-staff-ability-bands.md`. Read as ABILITY bands: players have a per-country per-tier table
+(`StarterConfig::$leagueAbilityRanges`), staff have **two flat global integers**
+(`PoolConfig::$coachAbilityMin/Max`) plus a workaround that borrows the squad's player band.
+⚠️ **That reading is unconfirmed**, and the brief is not independent of part B — band and wage
+scale are one system.
+
 ## 🔴 The one decision blocking everything else
 
 **Part B: which source is authoritative for a staff wage?**
