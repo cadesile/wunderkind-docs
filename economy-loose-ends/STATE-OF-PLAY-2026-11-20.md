@@ -57,10 +57,10 @@ only once part B is decided or re-briefed.
 
 ## 🔴 Two owner rulings recorded late, NEITHER started
 
-**1. *"staff wage should come from dof budget, like players"*** (2026-11-19) — see the part B
-section below. **Half resolved**: there is no player equivalent of `anchorAmpStaffWages`, so the
-snap must go. **Unresolved**: which pot pays. Player WAGES do not come from the DOF budget
-either, so the phrase cannot be taken literally. **Ask before building.**
+**1. *"staff wage should come from dof budget, like players"*** (2026-11-19) — ✅ **RESOLVED
+2026-11-20** by the owner's full budget ruling. See the part B section below and
+`part-b-resolved-budget-model.md`. The snap goes; **new** staff come from the DOF pot while
+**existing** staff are committed from income alongside players and maintenance.
 
 **2. *"I would like staff bands to be derived like players"*** (2026-11-20) — **DISAMBIGUATED
 by the owner the same day: the WAGE MULTIPLIER TIERS, not ability bands.** Recorded in
@@ -74,41 +74,53 @@ live staff/player ratio also falls non-monotonically across the bands (0.500 / 0
 0.400), which by arithmetic gives a coach a ~20% pay CUT for crossing ability 25 — unverified
 on device, and probably masked today by part B's snap.
 
-⚠️ **A24 cannot be built before part B**: `anchorAmpStaffWages` overwrites rung 1 of the chain,
-so changing rung 4 would measure as a no-op on the AMP staff screen.
+✅ **Ruled on again the same day: the band table STAYS and becomes the pricing rule for staff
+and scouts.** My recommendation to retire the `Staff ×` column is **overruled** — do not
+re-propose it. 🔴 **Scouts are a third pricing system** (`fallbackScoutWeeklyWagePence`, a flat
+tier-blind £2,500-£7,000 line on `experience`, 4 sites + the backend's `ScoutWageCalculator`);
+the ruling retires it and makes scouts tier-aware for the first time.
+
+⚠️ **A24 still cannot be built before part B's budget move**: `anchorAmpStaffWages` overwrites
+rung 1, so changing rung 4 would measure as a no-op on the AMP staff screen.
 
 ⚠️ My first reading of this ruling — ABILITY bands — **was wrong**. That brief is demoted to
 `a25-staff-ability-bands.md` and parked; the asymmetry it describes (staff ability is two flat
 globals against a per-country per-tier table for players) is real but unruled.
 
-## 🔴 The one decision blocking everything else
+## ✅ Part B is RESOLVED — the owner ruled on the budget model
 
-**Part B: which source is authoritative for a staff wage?**
+**Full ruling, quoted: `part-b-resolved-budget-model.md`. Read it before touching staff money.**
 
-Two sources exist and the second silently overwrites the first:
+| | who pays | covers |
+|---|---|---|
+| **Step 1 — committed from income** | the main salary pot, off the balance | **existing** staff + **existing** players + facility maintenance |
+| **Step 2 — available to spend** | what Step 1 leaves | owner sets the share; rest is operating reserve |
+| **Step 3 — the DOF's pot** | the DOF budget | transfer fees, agent commission, signing-on fees, **new player wages, new staff wages** |
 
-- `tierStaffWeeklyWagePence` — the authored relativity, from `wageMultiplierTiers`
-  (staff/player 0.40x-0.67x). Applied at ingest.
-- `ampStaffWagePence` -> `clubWageScaleMicroPence` — a **budget-exhausting solver**, applied by
-  `anchorAmpStaffWages` (`SeasonBudgetService.ts:481`) on the first season budget, which snaps
-  over the first.
+The test for "existing" is **the moment the budget is created**, not the contract type.
 
-**Owner said, 2026-11-19: *"staff wage should come from dof budget, like players."*** ⚠️ **That
-instruction was NOT fully resolved and no work was started on it.** What was established before
-the session ended:
+🟢 **Step 1 already works this way on device** — `WAGES … players and staff` + `MAINTENANCE`
+→ `TOTAL COMMITTED`. Do not rebuild it. The work is Step 3 and pricing.
 
-- 🟢 **There is no player equivalent of `anchorAmpStaffWages`.** Players are never re-priced at
-  bootstrap — they keep the wage they were ingested with. Staff are the only ones snapped. So
-  *"like players"* unambiguously means **the snap must go**.
-- ⚠️ **The pot is NOT resolved.** Today staff wages sit in the wage reservation's 25% share and
-  players in the 75%; the **DOF budget is one-off spending only** (transfer fees, agent
-  commission, sign-on fees), so player WAGES do not come from it either. Two readings, different
-  work: (a) price staff from the authored scale as players are, or (b) budget staff salaries
-  against the DOF allocation instead of a separate 25% share. **Ask before building.**
+**What it overturns:**
 
-**Part C is blocked behind B:** while a budget-exhausting solver writes the wages, the hiring
-gate's allowance and the bill it tests are the same number, so hiring sits permanently within a
-few percent of its limit and refuses on rounding.
+1. 🔴 **`anchorAmpStaffWages` goes.** A staff salary is a CONTRACT agreed from the band, not a
+   figure re-solved each season from the budget that is supposed to be computed from it. The
+   snap is a circularity.
+2. 🔴 **The hiring gate tests the wrong pot.** `staffHireBudget.ts` checks a new salary against
+   `wageReservationPence × STAFF_WAGE_SHARE_BP / weeks`. Under the ruling a hire is the DOF's
+   pot. **Part C is unblocked.** `STAFF_WAGE_SHARE_BP` survives as a description of the
+   committed split, not as the allowance.
+3. 🔴 **A24 reverses.** I recommended retiring the `Staff ×` column; the owner keeps it and
+   makes it the pricing rule for staff **and scouts**.
+
+⚠️ **Three things the ruling does NOT settle — ask before building:**
+
+- **A recurring cost out of a one-off pot.** Step 3 is "one-off spending, from the balance"; a
+  wage is weekly. Does the DOF pot pay this season's remaining weeks, then the cost rolls into
+  Step 1? Same question for new PLAYER wages, which the ruling puts in the same pot.
+- **The DOF card's copy** says transfer fees only — needs widening, via the i18n catalogue.
+- **Which scout number drives the band** — see A24.
 
 ## Open, recorded, nothing started
 

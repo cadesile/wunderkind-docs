@@ -1,6 +1,12 @@
-<!-- STATUS: 📋 OWNER RULING RECORDED + DIAGNOSIS DONE, NOTHING BUILT (2026-11-20) -->
+<!-- STATUS: 📋 RULED ON TWICE, DIAGNOSIS DONE, NOTHING BUILT. UNBLOCKED BY PART B (2026-11-20) -->
 
-# A24 — Staff wages derived like players', not from the band ladder
+# A24 — Staff and scout salaries priced from the wage band
+
+⚠️ **This brief was rewritten twice on 2026-11-20. Read the ruling block below, not the title
+of any earlier version.** First reading (ability bands) was wrong and is parked at
+`a25-staff-ability-bands.md`. Second reading recommended RETIRING the `Staff ×` column; the
+owner's follow-up ruling **keeps it and makes it the rule**. The diagnosis in between stands —
+it is what made the ruling precise.
 
 **Owner ruling, 2026-11-20: *"I would like staff bands to be derived like players"*** — asked
 whether that meant ability bands or wage bands, the owner pointed at the **WAGE MULTIPLIER
@@ -63,37 +69,97 @@ first-week AMP figure and then be erased at the first season transition.
 **Order: part B first (does the snap go, and which pot pays), then A24.** Building A24 first
 would produce a change that measures as a no-op on the screen the owner is looking at.
 
-## What "derived like players" would mean concretely
+## ✅ The owner's ruling (2026-11-20, second pass)
 
-Two shapes, and this is a design decision, not a reading of the code:
+> *"In terms of the cost of staff and the expectations on salary, they should be using that wage
+> band… to calculate the estimated salary based on the staff ability. This should all be the same
+> for scouts as well. Scouts and staff should be essentially treated the same in terms of salary
+> and signing."*
 
-1. **Ratio from the budget share, not from an authored column.** `STAFF_WAGE_SHARE_BP` (25%)
-   already states what fraction of the wage bill is staff, and the backend's turnover path
-   already prices staff from it. Deriving the app's rung the same way makes the two agree and
-   retires the staff column outright. `packWages.ts:176-187` already argues the ratio lands at
-   ~23% against that 25% — so this is close to a no-op on the mid band *by construction*, and
-   removes the three cliffs.
-2. **Keep an authored staff relativity, but as one smooth factor rather than a band ladder.**
-   Preserves the owner's ability to say "staff are worth 0.5 of a player" without introducing
-   discontinuities.
+**The band table stays and becomes the pricing rule for staff AND scouts.** My earlier
+recommendation — derive the ratio from `STAFF_WAGE_SHARE_BP` and retire the column — is
+**overruled**. Recorded so it is not re-proposed.
 
-Shape 1 is what "derived like players" most literally describes and is the one I would take.
-Shape 2 is the smaller change and keeps a dial the owner currently has.
+Budget side: `part-b-resolved-budget-model.md`. Existing staff are committed from income;
+**new** staff and scout salaries come from the DOF's pot. That resolution is what unblocks this
+brief.
 
-**Either way the `Staff ×` column stops being read on the turnover path, so say in the change
-whether the admin column is being retired or left for `legacy` only** — leaving a live-looking
-admin field that nothing reads is the exact defect class this workstream exists to remove.
+## 🔴 Scouts are a THIRD pricing system, and the ruling retires it
+
+Not previously recorded. There are three ways a wage is priced today:
+
+| | priced by | tier-aware? | shape |
+|---|---|---|---|
+| **Players** | `turnoverWeeklyPence` — the authored tier curve | ✅ yes | smooth `ability^k` |
+| **Coaches** | `tierStaffWeeklyWagePence` — curve × band ratio | ✅ yes | smooth, with **3 cliffs** |
+| **Scouts** | `fallbackScoutWeeklyWagePence` — `PoolConfig.scoutWageMin/Max` | 🔴 **NO** | flat straight line, £2,500–£7,000 |
+
+A scout's wage is a linear interpolation on `experience` (0–100) across a **global** band. A
+tier-1 scout and a tier-8 scout of the same experience cost **exactly the same**. Nothing about
+the club, the country or the division enters it. The ruling ends that: scouts price like staff,
+so they become tier-aware for the first time.
+
+⚠️ **The site count is four, not one** — `useInitFlow.ts:457`, `market.ts:297`,
+`StaffPoachingService.ts:252`, plus the backend's `ScoutWageCalculator`. The app mirror is
+deliberately formula-identical to the backend so a backfilled scout and a generated one agree;
+**that parity has to be kept or deliberately broken in the same change**, not quietly dropped.
+
+⚠️ **`PoolConfig.scoutWageMin/Max` becomes dead admin config** once scouts price from the band.
+Say so explicitly in the change — a live-looking admin field nothing reads is the defect class
+this workstream exists to remove.
+
+## ❓ The one thing to ask before building: which scout number drives the band
+
+The band resolves on **ability**. Coaches have `coachingAbility`. Scouts have `experience`,
+documented as 0–100 — the same scale, but **not the same quantity**. Three options:
+
+1. **Feed `experience` into the band as-is.** Simplest; "scouts and staff treated the same"
+   most literally. A 60-experience scout costs what a 60-ability coach costs.
+2. **Give scouts an ability and price on that**, leaving experience as a scouting-effectiveness
+   stat. Cleanest conceptually, biggest change.
+3. **Map experience → an effective ability.** Avoids 2's schema work, adds a conversion nobody
+   will remember exists — and this codebase already has a rule against exactly that shape
+   ("potential is 0–100 in data, end to end. No conversion at any boundary").
+
+My reading is **option 1**, because the ruling says *treated the same* and both are 0–100.
+Option 3 I would argue against on the project's own stated rule.
+
+## ⚠️ The cliffs become the owner's decision, not a defect to fix quietly
+
+The three discontinuities above are a direct consequence of pricing from a band ladder, which is
+now the ruling. **The codebase already states the principle they violate**, in
+`staffWages.ts:46-50`, about scouts:
+
+> deterministic and monotonic on purpose … a non-monotonic wage would make "hire the better
+> scout" sometimes cheaper, which reads as a bug rather than a bargain
+
+Under this ruling scouts move ONTO the ladder that is non-monotonic — so that comment's warning
+becomes live for the role it was written about. **This is not a reason to overturn the ruling.**
+It is a reason to put one question to the owner with real numbers: at ability 24 → 25 a coach
+takes a ~20% pay cut for improving. Smoothing it needs only a monotonic staff ratio across the
+four rows (e.g. 0.40 / 0.45 / 0.50 / 0.55) — **an admin edit, not a code change**, which is the
+cheapest possible fix and keeps the owner's dial.
+
+⚠️ Still arithmetic off the admin screen, **not measured on device.** Confirm on a real save
+first — part B's snap may be masking it entirely today.
+
+## Order of work
+
+1. **Part B's budget move** — `anchorAmpStaffWages` out, DOF pot in. Without it this is a no-op.
+2. **A24 pricing** — staff and scouts from the band.
+3. **Part C** — the gate tests the DOF pot.
 
 ## Guards that will move
 
-- `packWages.ts`'s own docblock (`:176-187`) argues the current derivation at length. Rewrite
-  it, don't delete it — it records why the ratio was chosen.
-- `src/__tests__/economy/packIsACensus.test.ts` pins device-side pricing.
-- Anything asserting `tierStaffWeeklyWagePence` output. Check before changing:
-  `grep -rn "tierStaffWeeklyWagePence" src/`
+- `packWages.ts:176-187` argues the current derivation at length. **Rewrite it, don't delete
+  it** — it records why the ratio was chosen.
+- `staffWages.ts:20-56` — the scout docblock above, including the monotonicity claim.
+- `src/__tests__/economy/packIsACensus.test.ts`.
+- `grep -rn "tierStaffWeeklyWagePence\|fallbackScoutWeeklyWagePence" src/` before changing.
 
 ## Not yet established
 
-- Whether the backend's `legacy` staff path still runs anywhere live, which decides if the
-  column can be deleted rather than just unread.
-- The three cliffs above are arithmetic, not a device measurement.
+- Whether the backend's `legacy` staff path still runs anywhere live.
+- The three cliffs are arithmetic, not a device measurement.
+- Whether the backend's `ScoutWageCalculator` moves in the same change or the app diverges
+  first.
