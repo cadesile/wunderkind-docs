@@ -189,7 +189,7 @@ Constraints held: deterministic, monotonic in both inputs, clamped 1–100.
 
 | | |
 |---|---|
-| **Pool scouts cannot exceed ~48 ability.** `scoutExperienceMin/Max` caps the shared pool at experience 4–34, so the top of the 1–100 scale belongs to tier-1 club scouts (~90). If the market should offer elite scouts, that is a **config change, not a formula change** | owner decision, unasked |
+| 🔴 **Pool scouts cannot exceed ~48 ability — and the cause is a SEMANTICS mismatch in config, not a tuning choice.** See the section below. **Owner ruled 2026-11-20: not a problem now, do not fix in phase 1** | owner decision, **answered** |
 | **`ScoutWageCalculator` interpolates on `experience / 100`**, so a pool scout maxes at 34% of its wage band | carried into **A24** |
 | Whether anything outside the wage path should read `ability` later | the ruling says no, for now |
 
@@ -197,3 +197,59 @@ Constraints held: deterministic, monotonic in both inputs, clamped 1–100.
 
 - It listed the publish sites incompletely: **`MarketController.php:216`** is a fourth, besides
   `MarketDataService.php:119`.
+
+
+---
+
+## 🔴 `scoutExperienceMin/Max` is authored as YEARS against a field that is a 0–100 SCORE
+
+Found 2026-11-20, after the owner described the ceiling as *"20 years of experience"*. **This is
+a config/semantics mismatch, not a code defect** — but it fully explains the 34 ceiling, and it
+means the workaround the owner floated would be treating a symptom.
+
+**The field is a score, everywhere, by design:**
+
+- `PoolConfig.php:218-224` — *"Minimum/Maximum **experience score (0–100)** for generated
+  scouts"*, defaults **10 and 80**.
+- `ScoutGenerationService.php:51-52` — for a CLUB scout the same column is filled from
+  `league_ability_ranges`, an **ability band** (EN t1 = 40–90). Unambiguously a 0–100 score.
+- `staffWages.ts:39` — `EXPERIENCE_SCALE = 100`, and `ScoutWageCalculator` interpolates on
+  `experience / 100`.
+
+**But the live dev config is 4–34** (measured by the A26 session against the dev DB: all 5,278
+scouts fall in that window). ⚠️ *I have not re-read the live `pool_config` row myself — the
+range is inferred from the generated population.*
+
+**The internal contradiction that settles it.** `scoutAgeMin/Max` is **28–40**. A 28-year-old
+cannot have 34 years of career. So 4–34 cannot be years even on its own terms — it is a 0–100
+score band that was authored as though it were a career length.
+
+### What this means
+
+🟢 **The fix is an admin edit, not code.** Set `scoutExperienceMin/Max` back toward the
+documented 10–80 and pool scouts immediately span the ability scale — no formula change, no
+migration, no release.
+
+🔴 **The "double the experience" workaround would be the wrong fix.** `×2` on a 4–34 band gives
+8–68, which *looks* right, but it bakes a unit conversion into the derivation to compensate for
+a config value that is simply in the wrong units. That is the "two meanings for one quantity"
+shape this workstream exists to remove, and the next reader would have no way to know the ×2
+was a correction rather than a design choice.
+
+⚠️ **Same column, two differently-scaled authors** — a club scout's experience comes from an
+ability band (40–90 at EN t1) and a pool scout's from this global (4–34). That is live today,
+before A26 changes anything, and it is why a pool scout and a tier-1 club scout are not
+comparable on the number that A24 will price wages from.
+
+### Owner ruling, 2026-11-20
+
+> *"34, that's not really a problem. It will mean that scouts will get paid significantly less
+> than players… maybe we'll just implement an arbitrary doubling of experience… But we can worry
+> about that later. I think just making sure that the banding for scout salaries matches the
+> architecture used for players and staff will put us in a good position."*
+
+**Not fixed in phase 1. The priority is architectural consistency, not calibration** — the same
+correctness-before-tuning rule the owner set for the whole workstream.
+
+**When it is picked up**, put the config edit in front of the owner before the doubling: it is
+free, reversible, needs no release, and it removes the reason the doubling was being considered.
