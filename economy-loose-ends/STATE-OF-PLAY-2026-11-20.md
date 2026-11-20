@@ -62,12 +62,24 @@ section below. **Half resolved**: there is no player equivalent of `anchorAmpSta
 snap must go. **Unresolved**: which pot pays. Player WAGES do not come from the DOF budget
 either, so the phrase cannot be taken literally. **Ask before building.**
 
-**2. *"I would like staff bands to be derived like players"*** (2026-11-20) — recorded in
-`a24-staff-ability-bands.md`. Read as ABILITY bands: players have a per-country per-tier table
-(`StarterConfig::$leagueAbilityRanges`), staff have **two flat global integers**
-(`PoolConfig::$coachAbilityMin/Max`) plus a workaround that borrows the squad's player band.
-⚠️ **That reading is unconfirmed**, and the brief is not independent of part B — band and wage
-scale are one system.
+**2. *"I would like staff bands to be derived like players"*** (2026-11-20) — **DISAMBIGUATED
+by the owner the same day: the WAGE MULTIPLIER TIERS, not ability bands.** Recorded in
+`a24-staff-wage-bands.md`, with the diagnosis done and nothing built.
+
+The finding: under the `turnover` model the band ladder is **dead for players and live for
+staff**. `legacyMultiplier()` is never called on the app's player path, and the backend prices
+turnover staff from a budget share — so `tierStaffWeeklyWagePence` (`packWages.ts:205-209`) is
+the **only consumer of `wageMultiplierTiers` left on the turnover path in either repo**. The
+live staff/player ratio also falls non-monotonically across the bands (0.500 / 0.667 / 0.533 /
+0.400), which by arithmetic gives a coach a ~20% pay CUT for crossing ability 25 — unverified
+on device, and probably masked today by part B's snap.
+
+⚠️ **A24 cannot be built before part B**: `anchorAmpStaffWages` overwrites rung 1 of the chain,
+so changing rung 4 would measure as a no-op on the AMP staff screen.
+
+⚠️ My first reading of this ruling — ABILITY bands — **was wrong**. That brief is demoted to
+`a25-staff-ability-bands.md` and parked; the asymmetry it describes (staff ability is two flat
+globals against a per-country per-tier table for players) is real but unruled.
 
 ## 🔴 The one decision blocking everything else
 

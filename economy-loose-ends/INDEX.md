@@ -33,6 +33,16 @@ each file is the truth.
 
 ---
 
+## 📋 Open — ruled on, nothing built
+
+| task | brief | state |
+|---|---|---|
+| **part B** — which source is authoritative for a staff wage | `scotland-experiment-2026-11-19.md` | 🔴 **THE BLOCKER.** `anchorAmpStaffWages` overwrites every AMP staff salary from a budget solver. Half-ruled: the snap goes. Unruled: which pot pays — **ask the owner before building** |
+| **A24** — staff wages derived like players', not from the band ladder | `a24-staff-wage-bands.md` | 📋 Owner ruling + diagnosis done, nothing built. ⚠️ **Blocked behind part B** — changing rung 4 is a no-op while rung 1 is snapped |
+| **A25** — staff ability bands are two flat globals | `a25-staff-ability-bands.md` | 🟡 **PARKED, unruled.** Was written as A24 against a wrong reading of the owner's ruling; the asymmetry is real, the decision is not taken |
+
+---
+
 ## ⚠️ Committed but NOT deployed
 
 Both sit on their work branches, unpushed. **Neither is on dev.**

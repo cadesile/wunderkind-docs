@@ -1,12 +1,13 @@
-<!-- STATUS: 📋 OWNER RULING RECORDED, NOT STARTED, READING NEEDS CONFIRMING (2026-11-20) -->
+<!-- STATUS: 🟡 PARKED — NOT what the owner meant, but a real asymmetry worth keeping (2026-11-20) -->
 
-# A24 — Staff ability bands derived per country and tier, like players
+# A25 — Staff ability bands are two flat globals (parked)
 
-**Owner ruling, 2026-11-20: *"I would like staff bands to be derived like players."***
+⚠️ **This file was written as A24 against a WRONG reading of the owner's ruling.** Asked to
+disambiguate, the owner pointed at the **WAGE MULTIPLIER TIERS** admin screen — so *"staff bands
+derived like players"* meant the wage bands, and that brief is **`a24-staff-wage-bands.md`**.
 
-⚠️ **My reading, to confirm before anyone builds it:** *bands* = **ABILITY bands, not wage
-bands.** If the owner meant the wage multiplier bands, this brief is the wrong one — that is
-part B in `scotland-experiment-2026-11-19.md`.
+**Kept, demoted to A25, because the asymmetry below is real and nobody has ruled on it.** It is
+an observation awaiting a decision, not work anyone should start.
 
 ## The asymmetry, from source
 
