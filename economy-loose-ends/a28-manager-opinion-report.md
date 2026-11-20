@@ -189,3 +189,114 @@ behaviour untouched beyond the one decoupling step. Nothing pushed, merged or de
 `game-mechanics.md` gained **§7b**, which documents the manager's perception model — it had no
 entry at all before, and §7 covered the scouts only. That absence is a good part of why the two
 systems kept being confused for each other from source, including in this brief's own origin.
+
+---
+---
+
+# A28 part 2 — the owner's numbers, implemented
+
+**Ruling received 2026-11-20:** `MAX_MANAGER_NOISE_SPREAD` **20 → 40**, `MAX_BOND_BIAS`
+**5 → 12**, symmetric. Both done, plus the CHECKS line. Commit below; not pushed, not merged,
+not deployed.
+
+## What changed
+
+| | before | after |
+|---|---|---|
+| `MAX_MANAGER_NOISE_SPREAD` | 20 | **40** |
+| `MAX_BOND_BIAS` | 5 | **12** |
+| mean absolute error, range 20, measured over the real `leagueAbilityRanges` | 2.00 pts | **3.75 pts** |
+| max manager-term contribution, range 20 | ±3.66 | **±7.33** |
+| max week-to-week move, range 20 | 7.33 | **14.65** |
+| strongest possible bond | ±3.0 | **±7.2** |
+| settled youth-graduate bond (decay floor 20) | +0.60 | **+1.44** |
+
+`mapBondToBias` keeps its shape — one linear map over one constant, no asymmetric branch.
+`deriveErrorMargin` keeps its signature and inputs. The draw order and the shared
+current/potential error are untouched.
+
+**The owner's principle is in the docblock**, as asked — `MAX_MANAGER_NOISE_SPREAD`'s comment
+quotes *"clarity comes from facilities and abilities"* and spells out that `scoutingRange` and
+`deriveFacilityError` are the implemented counters, so a wider base band makes a good manager
+and good facilities worth **more**. It also carries both accepted side effects with an explicit
+**do not add smoothing, a slower-moving seed, or any second mechanism** — the weekly re-draw is
+the design. Same text in `game-mechanics.md` §7b.
+
+**Pinned:** two new assertions in `playerRatingEngine.test.ts` hold the constants at 40 and 12.
+Every other assertion in that file is symbolic and would have passed at any value, so a silent
+revert to the old numbers broke nothing before. The test comment says these are owner decisions,
+not refactorable.
+
+## 🔴 One new finding from the measurement: the floor makes the manager optimistic at the bottom
+
+Not previously recorded, and I'd want it on the register. `clampPerceived` floors the output at
+`PERCEIVED_MIN` 1, but the error is symmetric — so for a player whose true ability sits near the
+floor, the pessimistic half of the draw is truncated and the optimistic half is not. The mean
+read is biased **upward**, and widening the spread widens the bias. Measured at range 20,
+consistency 10, facilities 50%, 4,000 draws per cell, over the real `leagueAbilityRanges`:
+
+| tier (ability range) | true | S=20 clamped at 1 | S=20 bias | **S=40 clamped** | **S=40 bias** |
+|---|---|---|---|---|---|
+| 8 (2–7) | 2 | 36.3% | +0.57 | **44.0%** | **+1.42** |
+| 8 (2–7) | 5 | 4.7% | +0.01 | **23.4%** | **+0.37** |
+| 7 (5–10) | 5 | 4.9% | +0.00 | **23.1%** | **+0.36** |
+| 6 (10–15) | 10 | 0.0% | +0.03 | 0.1% | +0.06 |
+| 3 (20–40) and up | any | 0.0% | ~0 | 0.0% | ~0 |
+
+**Confined to tiers 7–8** — true ability under ~10 — and negligible from tier 6 up, so it does
+not touch the tier the +3 observation came from. It existed before A28; 40 makes it three to
+five times larger where it applies. **Not fixed** — the floor is deliberate (0 reads as "no
+data", not "very bad") and changing it is a distribution change at the bottom of the pyramid.
+Recorded in §7b.
+
+## ✅ The CHECKS line — added, and it was small
+
+`Debug → CHECKS → MANAGER PERCEPTION` (`managerPerceptionResults()` in `checksReport.ts`, ~90
+lines including the docblock, plus 4 lines of wiring in `ChecksTab`). Three rows:
+
+- **Manager judgement inputs** — `scoutingRange`, consistency, morale, and **explicitly flagged
+  when the range is the absent-field fallback.** That flag is the row's main job: the field is
+  never generated client-side, and the band at range 20 is 60% wider than at 50, so a reading
+  taken against the wrong row is wrong by more than the tuning was.
+- **Error band** — ±points at the bound and the mean, with the full arithmetic and the accepted
+  weekly drift figure in the clipboard copy.
+- **Manager↔player bonds** — row count, how many non-zero, range, mean, and what they are worth
+  in rating points. Counted by `staff_id`, matching what `PlayerRatingService` does, so an
+  excursion row filed as `staff_type: 'coach'` is included — correctly.
+
+`info` rows only, never `fail`: a save with no manager bonds is a young save, not a broken one.
+
+⚠️ **One thing I hardened beyond the ask.** `ChecksTab` awaits every section in sequence inside
+one `try`, so a throw in a new section silently costs every section after it — the database,
+pragma, sizing, pool and checkpoint passes. `findManager()` reads `coachStore`, which is not
+populated on every path (`PlayerRatingService` wraps the same call for exactly this reason), and
+the bond query touches the database. Both are now guarded and degrade to a `warn` row.
+`managerPerceptionCheck.test.ts` pins that it never throws in either direction.
+
+## Still open, recorded not acted on
+
+1. **The decay floor, not the bias, is what caps the bond term.** At `MAX_BOND_BIAS` 12 the
+   headline ±7.2 needs a bond of ±100 and nothing sustains one: a graduate seeded at 50–60
+   decays to `bondDecayFloor` **20** and sits there, worth **+1.44** — the same 20 the floor
+   hands a player the manager has never met. So a player the manager personally promoted and a
+   stranger differ by 1.44 points forever. Raising the bias scales that gap; it does not make it
+   mean anything. **Whether `bondDecayFloor` should apply to manager bonds at all is a decay
+   question and needs its own ruling.** In §7b as an OPEN item.
+2. **The manager is on every staff excursion, filed as a coach.** `ExcursionService` builds
+   `bondStaff` from `coachStore.coaches` with no role filter. Untouched, as instructed; in §7b
+   as an OPEN item for a ruling.
+3. **The real bond count on the owner's save** — still unmeasured by me (device SQLite), but the
+   CHECKS line now answers it in one tap.
+
+## Verification
+
+`npx tsc --noEmit` clean. `npm test` **650 suites / 10,829 passed** (10,832 collected, 3
+skipped), `npx jest --listTests | wc -l` = **650**. Against the 649 / 10,819 baseline from part 1
+that is **+1 suite / +10 tests** — `managerPerceptionCheck.test.ts` (8) plus the two constant
+assertions in `playerRatingEngine.test.ts`. Reconciles exactly. `CLAUDE.md` row updated.
+
+**No behavioural test needed changing to accommodate the new numbers** — every existing
+assertion in `playerRatingEngine.test.ts` and `PlayerRatingService.test.ts` was written
+symbolically against the constants, so all 52 passed unmodified at 40/12. That is a good sign
+about the original tests and worth noting: the tuning was a one-line change in each place
+because nothing had hardcoded the old values.
