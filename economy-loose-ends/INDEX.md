@@ -46,12 +46,43 @@ each file is the truth.
 
 ## ⚠️ Committed but NOT deployed
 
-Both sit on their work branches, unpushed. **Neither is on dev.**
+🔴 **CORRECTED 2026-11-20 — this table was STALE. A10 and A13 are BOTH already on dev.**
+Verified with `git merge-base --is-ancestor`: backend `68561f93` is an ancestor of `dev`
+(merge `0e35f196`), app `ea92859a` is an ancestor of `dev` (merge `e039d3ea`). Both local `dev`
+branches are level with `origin/dev` (0 ahead, 0 behind). The old table said neither was on dev;
+that was wrong and would have had somebody re-deploying work that already shipped.
 
-| task | commits | branch |
-|---|---|---|
-| **A10** — wage scale calibrated on real ability | `68561f93`, `b82540d7` | `development` |
-| **A13** — CHECKS report curated | `ea92859a` | `new-game-save` |
+**Actually awaiting deploy:**
+
+| task | commits | branch | state |
+|---|---|---|---|
+| **gate delta fix** | `c73bf9a8` | `new-game-save` | the only app commit not on `dev` |
+| **A23** — retire `slots` | — | both | ✅ PM-reviewed (`a23-pm-review.md`), **uncommitted**, waiting on A26 to clear the trees |
+| **A26** — scout ability | — | both | 🏗️ in progress |
+
+**Owner instruction, 2026-11-20: deploy to dev once A26 lands.** Sequence in
+`a23-pm-review.md` §4 and below.
+
+### The deploy sequence, when A26 reports
+
+1. A26 commits its own paths; confirm nothing of A23's was swept in (`git show --stat`).
+2. Commit A23's paths.
+3. Re-run BOTH suites on the combined tree — this is the first run where A23's figures can be
+   confirmed, and the first where A26's can. Backend baseline 3,233 (+5 from A23); app baseline
+   647 / 10,788 at `3569326b`, 10,802 with A22 + A23.
+4. `npx tsc --noEmit` clean; economy gate measured and any movement explained.
+5. Merge `development` → `dev` (backend) and `new-game-save` → `dev` (app). Push both.
+6. Report the OTA build number and short SHA
+   (`gh run list --workflow eas-update-dev.yml -L 3 --json number,headSha`) so the device can be
+   checked against it.
+
+⚠️ **What this deploy changes on the owner's dev box, to expect rather than discover:**
+
+- **Scotland moves 14 → 12** at every tier. TV, sponsor and prize per-club figures all rise
+  (SC t4 tvDeal £3,571,428.57 → £4,166,666.66). England does not move at all.
+- **`WORLD_PACK_VERSION` 11 → 12**, so every cached pack is invalidated and re-fetched.
+- **Staff renewals become possible again** — `c73bf9a8` judges a renewal on the wage delta.
+- The CHECKS line to confirm A23 on device: `SC t4  divisor 12 · clubs 12 · home games 11`.
 
 ---
 
