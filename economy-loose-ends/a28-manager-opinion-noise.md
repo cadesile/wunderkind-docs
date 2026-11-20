@@ -131,18 +131,14 @@ players have a non-zero manager bond, and how large. If the answer is "none", th
 whether a manager should build bonds at all, which is a different and larger question than the
 one asked. **Report that before changing the constant.**
 
-### ❓ Symmetric or not — needs one word from the owner
+### ✅ SYMMETRIC — owner confirmed, 2026-11-20
 
-*"reduced greater"* reads two ways, and they are different changes:
+Both directions grow equally. **`mapBondToBias` keeps its shape** — one linear map, one
+constant — and only `MAX_BOND_BIAS` moves. No asymmetric branch, and **do not add one**; the
+owner was asked directly and chose symmetric over a harsher negative.
 
-1. **Symmetric** — raise `MAX_BOND_BIAS`, so both directions grow equally. Simplest, and what
-   *"same in reverse"* suggests.
-2. **Asymmetric** — a negative bond bites harder than a positive one lifts, e.g. ±8 up and −12
-   down. Defensible: a falling-out is usually more vivid than a good relationship, and it makes
-   the mechanic feel sharper without inflating ratings across the squad.
-
-My reading is **symmetric** (option 1), because *"same in reverse"* is the clearer half of the
-sentence. **Ask before building** — it is one word and it changes the shape of the function.
+That keeps the function trivially testable and keeps the mechanic explainable to a player:
+a relationship is worth the same in both directions.
 
 ## Guards
 
@@ -170,7 +166,7 @@ update `07_synthesis/output/game-mechanics.md`, which documents this model.
 ## Not established
 
 - Whether consistency and morale stay as they are.
-- Whether the bond bias is symmetric or asymmetric (above).
+- ~~Symmetric or asymmetric~~ — ✅ ruled SYMMETRIC, 2026-11-20.
 - **The bond distribution on the dev save** — the blocker for the bond half.
 - The new spread value.
 - Whether the owner wants the STAR display to move or only the number.
