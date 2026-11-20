@@ -246,6 +246,7 @@ and no test persisting a `Scout` through Doctrine to prove the lifecycle subscri
 |---|---|---|
 | app | **`1ff6fd56`** — ✅ **OTA run 489, success** | A28 both parts, and the MANAGER PERCEPTION CHECKS row |
 | backend | **`52490221`** | the bond-decay-floor change |
+| backend | **`c7c32027`** (third push) | A26's `preUpdate` subscriber — `c05d54a7`, 3,264 tests |
 
 ⚠️ **The backend half is a formality on this box.** `bond_decay_floor` was already 20 in the dev
 DATABASE — the migration ran when it was written. Pushing stops `dev` and `development` drifting
