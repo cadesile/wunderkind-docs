@@ -310,3 +310,73 @@ reasons did not.** Recorded, not fixed.
 `bondDecayFloor` read from the synced config (expect **20**) and how many bond rows sit at or
 below it — the manager-bond count nobody could measure from source, because it exists only on
 the device.
+
+---
+
+## 🔴 Two operational traps found on 2026-11-20 — both cost real time
+
+### 1. `wunderkind_test` is not migration-tracked (fourth instance, above)
+
+### 2. A background wait loop that can never match, and the session looks busy forever
+
+**Symptom:** `archive_session` refuses with *"still has live work"* while the session itself
+honestly reports idle. Both statements are true.
+
+**Cause (A26, self-diagnosed):** `until grep -qE "…" out.txt; do sleep N; done` loops started as
+background tasks to wait on long backend runs. **The patterns could never match, so they looped
+forever.** Seven of them, spinning since 09:30.
+
+🔴 **Why the patterns could not match — the bit worth keeping.** PHPUnit colourises each FIELD
+of its summary line separately:
+
+```
+^[[37;41mTests: 3257^[[0m^[[37;41m, Assertions: 156378^[[0m^[[37;41m, Failures: 3^[[0m…
+```
+
+So `^Tests: ` fails (the line starts with an escape) **and** `Tests: [0-9]+, Assertions` fails
+too — there is `\e[0m\e[37;41m` between the `3257` and the comma. An unanchored pattern is NOT
+safe. Reading greps got away with it only where a `.*` happened to span the escapes.
+
+**Rules:**
+- Pass **`--colors=never`** to phpunit whenever the output will be machine-read, or strip ANSI
+  before matching.
+- **Never trust an unanchored grep against a colourised summary line.**
+- When a session will not archive and claims idle, check the process table:
+  `ps aux | grep "[s]leep"`. A stuck background task is invisible from inside the session.
+
+⚠️ **"Still has live work" and "I am idle" can BOTH be honest.** The session sees its own
+conversation state; the harness sees its processes. Do not assume a refusal means the session
+is lying or that the tool is wrong.
+
+---
+
+## 🟢 The scout `ability` subscriber — a test request that found a defect
+
+I asked A26 to close the one gap it had flagged: nothing proved
+`ScoutAbilityLifecycleSubscriber` actually fires, only that it was registered. I asked for an
+UPDATE case specifically, since generation-time tests never reach that path.
+
+**The UPDATE case could not pass as specified, and that was the finding.** The subscriber was
+`prePersist` ONLY, and the behaviour was *documented* as deliberate — an admin edit does not
+re-derive, with `app:backfill-scout-abilities --force` as the remedy.
+
+🔴 **But `ScoutCrudController` makes `experience` and `judgementsJson` EDITABLE while `ability`
+is read-only.** So an operator could move an input and leave the derived figure stale, with
+nothing recording that the two disagree. **Under A24 that is a wrong wage.** Expecting an
+operator to remember a command is not a mechanism.
+
+**Fixed:** a `preUpdate` hook. `ability` is now a true function of its inputs on every write, and
+the read-only intent is **enforced** rather than merely presented — an `ability` written by any
+route is corrected on flush.
+
+### The principle that came out of it, worth reusing
+
+`weeklySalary` was deliberately NOT given the same treatment: its admin help says it is *"set by
+hand here only to override one scout"*, so auto-recomputing it would destroy the override that
+is its purpose.
+
+> **The test is whether a field is an OVERRIDE or a DERIVATION — not whether it happens to be
+> derived at generation time.**
+
+✅ **Verified non-vacuous:** with the two listener attributes disabled, all 7 new tests fail.
+A26 checked that rather than assuming it, which is the whole point of adding them.
