@@ -329,7 +329,35 @@ Regenerate** — Regenerate calls `deleteUnclaimed()` and would destroy both goo
    pre-existing, hits coaches identically, and **bounds the real value of both re-anchor passes**.
    Report: `scout-reanchor-report.md`.
 
-3. **The ability-proportional split.** ⚠️ **The
+3. 🔴 **THE ABILITY-PROPORTIONAL SPLIT — REPRODUCED ON A FRESH EN SAVE, OTA 493, 2026-11-21 21:08,
+   AND "IT MOVES AT RENEWAL" IS EMPTY CONSOLATION.** The owner's own club, brand new save: 12
+   coaches · 1 scout · **£10,882/wk**, of which the scout is **£9,741 — 89.5% of the staff bill,
+   65× a coach the UI rates HIGHER (scout 3★ vs coach 4★ at £149).**
+
+   ⚠️ **This figure was written by the CURRENT code at world build, not inherited from an old
+   contract.** So item 2's consolation — *"under the B1 ruling the owner's scout moves at
+   renewal"* — **does not help: renewal and the next hire price through the same function and land
+   in the same place.** That consolation should not be repeated.
+
+   **The mechanism, verified in code.** `staffWagePence` (`ClubWageScaleService.ts:145`) is
+   `wage = scale × ability^k`, with `scale` solved so the whole roster fits the reservation — a
+   pure power-law split on RAW ability. `ampStaffWagePence`'s own docblock names this exact shape:
+   *"12 ability-3 coaches and one ability-21 scout at EN tier 8"*. ⚠️ **Derived from the screenshot,
+   not read from config:** `k ≈ 2.5`, which reconciles twice independently — scout/coach
+   `(21/4)^2.5 ≈ 65` against the observed 65.4×, and coach/coach `(4/2)^2.5 ≈ 5.7` against the
+   observed £149/£26 = 5.73.
+
+   🔴 **So the wage is ARITHMETICALLY CORRECT for the ability it is given. The defect is that
+   scouts and coaches are on DIFFERENT ABILITY SCALES and both are fed into one split.** A scout's
+   derived `ability` clusters 16–40 (`resolveScoutAbility` = `0.7×experience + 0.3×mean(judgements)`);
+   a tier-8 coach's `coachingAbility` is 2–4. The star rating is normalised per role, so the UI
+   says the scout is worse while the split says it is 65× better. **The two readings disagree
+   because they are measuring different things, and nothing in the code reconciles them.**
+
+   ✅ **The total is NOT over budget** — £10,882/wk × 46 ≈ £500k against a £2,060,039 staff budget.
+   A24's fix did bound the bill (3.87× the reservation → 0.56×). **The size is right; the
+   distribution is the open question.** Owner's call, and still calibration.
+4. **(superseded framing, kept for the measurement)** ⚠️ **The
    fix bounds the bill but will not make scouts cheap** — `ClubWageScaleService` splits a club's
    reservation in proportion to ability, so a scout at ability ~22 among coaches at 2–7 still takes
    a large share. On the owner's own club the scout was **£12,510/wk of a £13,376 staff bill, 93.5%,
