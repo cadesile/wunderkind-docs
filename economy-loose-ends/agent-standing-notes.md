@@ -84,6 +84,21 @@ it belongs in your report, not in the checks.
     when nothing priced off `ability`, which became a 65× wage distortion once something did.
   **The number was not wrong when it was written. The mechanism moved underneath it**, and a
   constant cannot notice that. A relationship can.
+- 🔴 **THE OWNER'S OWN CLUB BALANCE IS NOT A HEALTH SIGNAL, AND IS NOT COMPARABLE TO THE NPC
+  LADDER. Owner, 2026-11-21: *"the user can invest as much as they want when creating a club."***
+  The starting balance is **player-chosen at club creation**, so it carries no information about
+  whether the club or the economy is viable. **Do not read it as one, and do not raise it as an
+  anomaly** — the PM did exactly that tonight, on a fresh EN tier-8 save showing **£78,120,150**
+  against `npcStartingBalanceByTier` defaults of £5,000,000 at t1 and ~£20,000 at t8. It looked like
+  a 3,900× outlier or a pence/pounds fault. **It is neither; it is the feature.**
+  ⚠️ **The corollary is the part that matters, and it cuts the other way.** Because an arbitrarily
+  large balance hides a recurring deficit indefinitely, **a healthy-looking balance is not evidence
+  of a healthy economy.** Read solvency off the BUDGET panel instead — `surplus`,
+  `COMMITTED ÷ income`, `MAINTENANCE ÷ income`, `over-committed` — which are computed from recurring
+  money and are the figures that can actually fail. The same save read `surplus -£690,862` with
+  maintenance at **79% of income**, structurally loss-making, with roughly a century of runway
+  concealing it. **`over-committed: no` is a statement about the WAGE commitment only** and does not
+  mean the club breaks even.
 - **Believe the code over the brief.** If they disagree, say so explicitly in your report and do not
   silently comply. Briefs in this project have repeatedly contained a wrong premise; five agents
   have now caught one by checking.
