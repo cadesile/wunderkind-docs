@@ -56,6 +56,29 @@ it belongs in your report, not in the checks.
 - **Believe the code over the brief.** If they disagree, say so explicitly in your report and do not
   silently comply. Briefs in this project have repeatedly contained a wrong premise; five agents
   have now caught one by checking.
+- 🔴 **COUNT SUITES WITH `grep -c "__tests__"`, NOT `wc -l`.** Added 2026-11-21. `npx jest
+  --listTests` writes warning lines to the same stream, so `| wc -l` counts them as suites — it read
+  **668 against a real 663** for one session. The two agree on a quiet run (measured identical at
+  `4bebf8fc`), which is what makes it dangerous: it is right until it silently is not, and the whole
+  verification discipline here rests on the count meaning something. `| grep -c "__tests__"` is the
+  robust form. ⚠️ **It also would have diagnosed the nested-worktree doubling in one command**
+  instead of the round of confusion it caused. The `wc -l` spelling is in `CLAUDE.md` and in
+  `environment.md`'s "green-master bar"; both are PM-owned and not yet corrected.
+- ⚠️ **A THRESHOLD CAN ENCODE A DIFFERENT QUANTITY THAN THE ONE ITS UNITS SUGGEST, AND ARGUING FROM
+  THE UNITS WILL MISLEAD YOU.** The PM's own error, 2026-11-21, recorded because the reasoning
+  looked sound and was wrong in the dangerous direction. `LEGACY_TELL_BOTTOM_TIER_PENCE = 250_000`
+  is in pence, so I reasoned about money: Scotland's money is one tenth of England's, therefore the
+  check has an England-shaped *sensitivity floor* and can never fire there. **The economics were
+  right and the conclusion was backwards.** The constant is applied to the *bottom* tier, and
+  England's bottom tier is t8 (ability band 2–7) while Scotland's is t4 (band 15–35) — a mid-pyramid
+  division, because Scotland is four tiers deep. The ÷10 scaling is more than cancelled by the ×6.3
+  band difference, so a **correctly priced** Scottish save reads `LEGACY — FAIL` **always**. A false
+  alarm on correct data, not a missed alarm. **Ask what row the constant is applied TO before
+  reasoning about its units.**
+  🔴 **And the second-order cost is the transferable part: a violation that fails LOUDLY still went
+  a day unnoticed, because the failure was attributed to the right-looking cause** — the Scottish
+  `LEGACY — FAIL` was read as the config-block defect, which was real, was separately fixed, and did
+  not fix this row. **A loud failure next to a plausible culprit is not a diagnosed failure.**
 - **Measure the call graph, not the comments.** A comment is a claim, not a measurement. One agent
   reported a defect as far worse than it was because it read a comment saying a fallback fired
   "when fixtures aren't generated" instead of tracing whether that state was reachable.
@@ -66,6 +89,49 @@ it belongs in your report, not in the checks.
 - **`.context` status and review belong to the project-manager session.** Append one pass entry to
   `shared/last-sync.md` and correct stage text your change makes wrong. Do not restructure, prune,
   or delete a superseded section — **flag it in your report** so the PM can.
+- 🔴 **A STATUS MARKER LIKE `OPEN` OR `UNFIXED` IS A STRONGER INVITATION TO TRUST A LINE THAN
+  ORDINARY PROSE — AND IT CAN BE STALE IN A WAY PROSE CANNOT.** Added 2026-11-21, and it cost a
+  retraction. A passage in `economy-reference.md` §8 marked **`OPEN`** asserted that NPC scouts
+  sitting on the band was a *live, unfixed* defect. True at `9f46bf66`/`7b56c6c8`, **false from
+  `ec949536`**. `OPEN` claims not just a fact but that the fact is still current, so it reads as
+  pre-verified — which is how it travelled into a report written by the session that had just spent
+  a day proving that a comment is a claim. **Two failures of the same shape met: a marker
+  over-claiming its own currency, and a reader who marked provenance `[READ]` and treated that mark
+  as verification.** A citation records where you got a claim, never that it is true. **If a line
+  with a status marker is load-bearing for your conclusion, open the code it describes.**
+- ⚠️ **MOVING A SECTION IS NOT RE-VERIFYING IT, and a split pass is the worst case.** That `OPEN`
+  survived because §8 was moved **verbatim** during the `07_synthesis` split — at a commit whose
+  parent was `ec949536`, the very change that falsified it. A reorganisation's stated goal is
+  faithful preservation, so it is exactly when a stale marker is most likely carried across and
+  least likely re-read. **When you move text that asserts a live defect, re-check the defect or
+  demote the marker.**
+- ⚠️ **"NO RECENT COMMIT HAS TOUCHED IT" BOUNDS *RECENT* STALENESS AND NOTHING ELSE.** A
+  remediation sweep cross-referenced thirteen remaining `open`/`unfixed` claims against the files
+  the last twelve commits touched. **The rule holds: a claim that went stale long ago, in a file
+  nothing has touched since, passes that filter untouched — and a reorganisation pass preserves
+  exactly those.** So such a sweep is evidence that the recent window introduced no *new* staleness,
+  and **no evidence at all about older drift.** Use it, **say which direction it bounds** when you
+  report its result, and never read a clean sweep as "these claims are current". Treat the eleven
+  un-re-verified claims as un-re-verified, not as cleared.
+  🔴 **RETRACTED, 2026-11-21 — the example this entry originally gave was false, and I am the one
+  who put it here.** I wrote that the stale `OPEN` above *"would have passed that filter"* because
+  `ec949536` had fallen outside the twelve-commit window. **Measured, and it had not:**
+
+  ```
+  $ git rev-list --oneline ce08e566~12..ce08e566 | grep -n ec949536
+  6:ec949536 A club's scouts are re-priced on its own income, like its coaches
+  $ git show --name-only --format='' ec949536 | grep -c SeasonBudgetService
+  1
+  ```
+
+  `ec949536` was the **sixth commit inside** the window and `SeasonBudgetService.ts` was among the
+  50 touched files — **which is why those claims were the ones checked individually.** The sweep
+  found nothing *further*; the stale `OPEN` was caught by a retraction before the sweep ran, not
+  missed by it. **So this instance is NOT an example of the limitation.** The limitation is real;
+  this was not its evidence. ⚠️ **And note the shape of the error — a window boundary inferred from
+  the shape of an argument instead of being measured with one `git rev-list`. That is the same
+  failure as the `[READ]` citation two entries up, which is the point of keeping this retraction
+  visible rather than tidying it away.**
 - **Do not push and do not deploy**, ever, unless your brief says otherwise in those words.
 - **THE TEST BASELINE DEPENDS ON WHICH SUITE, AND THIS LINE USED TO GET IT WRONG.** Corrected
   2026-11-20 — it previously read *"the test baseline is three to five failures"* and cited the
@@ -248,6 +314,30 @@ it belongs in your report, not in the checks.
   and is NOT a regression in anything. The fix is log rotation, not a code change. As of
   2026-11-20 `var/log/` holds **3.8 GB `dev.log` + 2.0 GB `dev.log.2026-11-12.bak`** — not yet
   rotated, owner's call.
+  ⚠️ **NAME YOUR EXCLUSION SCOPE BESIDE ANY BACKEND COUNT.** Added 2026-11-21. B2's runs excluded
+  the **whole `AdminShellCoverageTest` class**, which is wider than `environment.md`'s `admin_logs`
+  filter — so its **3,307 at `3ff5a312` does NOT reconcile against the 3,366 at `c11c7f2d`**, and
+  treating the gap as drift would invent a 59-test discrepancy. A count is comparable only to one
+  taken with the same exclusions. **Quote the commit AND the filter.**
+  ⚠️ **AN ASSERTION COUNT IS NOT A BASELINE — the test count and the NAMED failures are.** Same
+  commit, same count, same three named failures, assertions moved **157,316 → 157,340**. That is
+  known item #4's documented instability (`environment.md` records 11/7/7 assertions on three tests
+  across consecutive clean runs). Do not read an assertion delta as a signal.
+- 🔴 **NEVER HAND A PEER A LIST PRODUCED BY `head`, `tail` OR ANY TRUNCATION — AND NEVER ACT ON ONE
+  AS IF IT WERE COMPLETE.** The PM's error, 2026-11-21, and it nearly shipped a broken commit. I
+  read a working tree with `git status --porcelain | head -8`, then sent those eight paths to the
+  session that owned them as though they were the whole change. **It was twelve.** The four I
+  dropped were `WorldPackSetTopUpService.php`, the admin twig template and both new test files — so
+  had that session staged exactly what I sent, the commit would have held **a controller returning
+  409 with no UI able to render it and no tests at all.** It staged by explicit path from its own
+  `git status`, caught the gap, and told me.
+  **Two rules out of it.** Writing: pipe to `wc -l` first, and quote the full list or say
+  explicitly that it is truncated — **a truncated list reads exactly like a complete one**, which is
+  the same defect as a test run that silently collects fewer files. Reading: **the author of a
+  change enumerates its paths, never the coordinator.** This is the fourth instance in one evening
+  of the same shape — something inferred, handed to or from a coordinator, and acted on as a
+  measurement — and the first where the coordinator was the one inferring, from truncated output
+  rather than from a citation or an argument.
 - 🔴 **"REBUILD THE WORLD PACK CACHE" DOES NOT REBUILD CLAIMED SETS, AND A TESTER HAS CLAIMED THEM
   ALL.** Found 2026-11-20 after an afternoon of device readings that contradicted each other.
   `admin_worldpack_delete_country` calls `deleteUnclaimed($country)` — **claimed sets are spared by
@@ -264,7 +354,34 @@ it belongs in your report, not in the checks.
   class. A no-op that reports success is worse than a refusal, and this one silently invalidated
   about three hours of device testing. **A `MIXED` or `STALE` version indicator is a gate, not a
   footnote — read it before any number underneath it.**
-- 🔴 **ON DEV, THE ASYNC WORLD-PACK BUILD DOES NOT RUN — USE THE INLINE COMMAND.** Established
+- 🔴 ⚠️ **THIS ENTRY IS WRONG AND IS CORRECTED HERE — 2026-11-21, by measurement.** The async
+  world-pack build **DOES run on dev.** B2 observed a complete version-14 Scottish set built end to
+  end by the async path (`ready_at 2026-11-21 18:51:10`), with `messenger` queues at 0 and the
+  consumer running every other minute. **What is actually broken is the REPORTING, not the build:**
+  the admin TOP UP button can answer *"already at target"* while writing nothing. That is the half
+  that cost the three hours, and it is still live on the running stack — the fix needs an image
+  build and is not deployed.
+  **So the instruction below is inverted: you do not need the inline command to get a pack.** What
+  you must not do is trust the admin top-up's success message, or press **Regenerate** to "get a
+  clean one" — that calls `deleteUnclaimed()` and would destroy good unclaimed sets to rebuild from
+  scratch for no gain. It is also what erased the evidence B2 went looking for. **Read the pack
+  version indicator regardless**; a `MIXED`/`STALE` reading is still a gate.
+  ⚠️ **Three places still say otherwise and are NOT yet corrected** — this entry's original text
+  below, `wunderkind-app/.context/stages/07_synthesis/output/architecture-notes.md`'s *"Keeping the
+  buffer stocked"* bullet, and `wunderkind-backend/.context/stages/01_overview/output/deployment.md:152`.
+  The two `.context` files are PM-owned and left alone while B2 has uncommitted work in that repo.
+  **Trap #1 above — that a rebuild spares CLAIMED sets — is unaffected and stands.**
+  🔴 **One consequence worth carrying: any dev DEVICE reading taken before 2026-11-21 carries a
+  weaker guarantee than whoever recorded it assumed**, including one whose pack indicator read
+  clean, because a top-up could report success while writing nothing. Marked by B2 as INFERRED from
+  the mechanism, not observed — the rows that would prove it were deleted by the 19:41 Regenerate on
+  2026-11-20. A diagnosis resting on a code measurement at a named commit is unaffected; one resting
+  on a device figure should be re-weighed.
+
+  ---
+
+  **SUPERSEDED TEXT, kept because its three disproved theories still save time:**
+  **ON DEV, THE ASYNC WORLD-PACK BUILD DOES NOT RUN — USE THE INLINE COMMAND.** Established
   2026-11-20 by elimination, after three wrong theories (orphan cache rows, claimed-set deadlock,
   crond down — all disproved). **What is true:** the write path stamps `WORLD_PACK_VERSION`
   correctly; `deficit()` is version-aware so stale sets never block a top-up; `crond` IS running

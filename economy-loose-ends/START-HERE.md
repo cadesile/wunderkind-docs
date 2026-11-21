@@ -10,6 +10,78 @@ the five "1/10" mechanisms (§8b) and the owner's rulings (§9) and is still wor
 **This is the one thing between the owner and tuning.** It is briefed in full here so you can start
 without re-deriving anything.
 
+✅ **FIXED 2026-11-21 by A30 — `92e90755`, NOT YET PUSHED.** Brief:
+`a30-scotland-squad-pricing.md`; report and the live EN/SC/no-country config capture are committed
+as `01ad91d` (PM-verified: 5 files, 717 insertions, that session's two paths only).
+
+**The cause, measured through the real guard and the real ingest site.** `ensureGameConfigStored` —
+the strict gate `useInitFlow`'s `ensureConfigOrFail()` runs before any world is built — decided
+whether to re-fetch `GET /api/game-config?country=` by testing `isCountryResolved(stored.config)`, a
+predicate that asks *"was this block resolved against **a** country"*. **England's stored block
+passes that for a Scottish save.** So on a device that had already built an English save, the gate
+short-circuited, **performed no fetch at all**, and the whole Scottish world was priced on England's
+ladder: `fetchGameConfig called: 0`, block staying `EN · tierCount 8`, NPC ratio **10.000**,
+founder's squad **10.030** (the extra 0.030 is `startingLeagueTier`'s `Math.min(8, count)` cap
+reading England's depth — tiers-flexible violation 2, still unfixed). Fix: the guard now compares the
+block's own country against the one being built, via a new `economyBlockCountry(config)` that
+`isCountryResolved` is defined in terms of so the two cannot drift. 663 suites / 11,147 tests, zero
+failures, `tsc` clean, both pre-existing states byte-identical.
+
+🔴 **THE OWNER NEEDS A *NEW* SCOTTISH SAVE BEFORE ANY TUNING.** The fix changes what gets written,
+not what was already written. Every existing Scottish save stays wrong for its whole life, because
+nothing reprices a world-build figure.
+
+### 🔴 The one measurement that can falsify A30 — and how to read it
+
+A30 is complete from its own end and has named the check that would disprove it. **On a build
+carrying `92e90755`, create a NEW Scottish save and read Debug → CHECKS row 1.**
+
+| it reads | means |
+|---|---|
+| **`club SC · block SC — AGREE`** | the fix holds |
+| **`club SC · block EN — DISAGREE`** | the guard was bypassed by a path A30 did not find — **send it back to A30**, which has offered to take it |
+| **`AGREE` but valuations still out of band** | the cause is downstream of the config and **A30's diagnosis is incomplete** |
+
+That third row is the valuable one: it is the outcome A30 cannot rule out from code alone, and it is
+why this is a falsification rather than a confirmation.
+
+**Nothing needs preparing** — see the clean-pack note in §3. **Do not press admin TOP UP or
+Regenerate** to prepare it; both warnings are in §3 and the second one destroys the good packs.
+
+🔴 **CRITICAL — ON A BUILD WITHOUT A31'S FIX, `Squad pricing model` WILL READ `LEGACY — FAIL` ON A
+CORRECTLY PRICED SCOTTISH SAVE. THAT IS NOT A30'S DEFECT RECURRING.** A31 measured it through the
+real `fingerprintWorldPack`: a correct SC bottom tier reads `meanWagePence 321,041` against the
+250,000 threshold, so `pricing = 'legacy'` and the row fails. **Always, not sometimes.** If you test
+A30's fix without A31's, expect row 1 to read `AGREE` **and** the pricing-model row to read `FAIL`,
+and read only row 1. A31 fixed the threshold in `925d40a5`.
+
+⚠️ **I had this exactly backwards and it is worth knowing why**, because the reasoning looked sound.
+I predicted a *sensitivity floor* — that for a country scaled below England the check could never
+fire. The economics were right (SC t4's mean is 321,041 against EN t4's 3,210,417, ratio exactly
+10.000) but **the threshold does not encode a money scale, it encodes a PYRAMID DEPTH.** England's
+bottom tier is t8, ability band 2–7. Scotland's bottom tier is t4, band 15–35 — a *mid-pyramid*
+division, because Scotland is only four tiers deep. The ÷10 country scaling is more than cancelled
+by the ×6.3 band difference. **So it is a fifth live violation of the owner's "tiers are flexible"
+ruling**, and the only one sitting inside an economy constant rather than an index or array length.
+A false alarm on correct data, not a missed alarm.
+
+⚠️ **Two more things will read wrong, and neither is a regression.**
+1. **The CHECKS scout row**, on any build without `925d40a5` — it ratios NPC scouts against the
+   band, which is no longer their governing rate. ✅ **Fixed by A31.** On a fresh Scottish save with
+   `incomeAnchoredWages` on, the corrected row reads **`stored/npc-anchored 1.00`** — exactly 1.00
+   at bootstrap, since `snapNpcStaffWages` snaps rather than mean-reverting — with `stored/band` ~10
+   printed beside it and marked explicitly as not a verdict. 🔴 **`10.00` is NO LONGER the expected
+   reading; anyone reconciling against it will read the first honest output as a regression.**
+2. **Scottish clubs read insolvent**, because facilities and upkeep are out of scope by the owner's
+   own ruling.
+
+⚠️ **My own `fallbackReason` lead was WRONG and is recorded here so nobody re-runs it.** I sent A30
+to read `resolveEconomy`'s `fallbackReason`, reasoning that the panel's `LEGACY` must be a resolver
+read. It measured `fallbackReason: 'none'` and `model: turnover` throughout. **The panel's `LEGACY`
+is not a resolver read at all** — it is a fixed 250,000-pence threshold on the stored bottom-tier
+mean wage (`worldPackDiagnostics.ts:30`), so a Scottish squad priced on England's money crossed an
+England-calibrated threshold. That threshold is now A31's (§4 of its brief).
+
 ### What was measured, on a device, on a clean pack
 
 A Scottish save on `Pack version: 14` — **single version, no `MIXED`**, so this is not the stale-pack
@@ -40,11 +112,27 @@ In the same Scottish dump:
 | written where | reads |
 |---|---|
 | **Staff** — re-anchored on device from club income (`npcStaffWagePence`) | `stored/npc-anchored 1.00` ✅ |
-| **Scouts** — written at world build, never re-anchored | `stored/band 10.00` ❌ |
+| **Scouts** — written at world build, ~~never re-anchored~~ ⚠️ see below | `stored/band 10.00` ❌ |
 | **Players** — written at world build, never re-priced | `~10×` ❌ |
 
 **Everything re-anchored on the device is correct. Everything written once at world-build time
 carries the wrong country's scale.** One defect, three symptoms.
+
+⚠️ **The SCOUTS row above is stale and its `10.00` is no longer safe to lean on.** "Never
+re-anchored" was true before `ec949536`; since then **both NPC re-anchor passes DO price scouts** —
+`anchorNpcStaffWages` and `snapNpcStaffWages` each call `anchorScouts(...)` and return
+`{ staff, scouts }` (`SeasonBudgetService.ts:207, 215, 250, 257, 699`). The scout figure in the dump
+is a **world-build ingest** price, taken before any bootstrap or transition pass, so it is not
+evidence about re-anchoring either way — and it may itself be **A31's broken comparator** rather
+than a clean stale-write reading. **The cause and the fix never rested on it**; they rest on the
+config measurement (`fetchGameConfig called: 0`, block `EN`, 10.000 / 10.030). The conclusion holds;
+this row's reasoning does not.
+
+⚠️ **And the governing rate is conditional.** `snapNpcStaffWages:701` returns `null` on
+`!economy.incomeAnchoredWages`, so with that flag off the band **does** still govern at bootstrap,
+while `anchorNpcStaffWages` is deliberately ungated. **Nothing measured so far settles whether the
+scout half honours that flag the way the staff half does.** A31 inherits it open — do not encode
+either answer.
 
 ### Where to start looking
 
@@ -110,18 +198,98 @@ line, and as a guess where it reasons from symptoms.
 
 ## 3. State of the world
 
-**Deployed to dev** (OTA **492** / backend **286**, both green): everything below.
+🟢 **DEPLOYED TO DEV 2026-11-21 20:33 — OTA **493** (app `e4cd7ced`, run 44946913660) / backend
+**287** (`f0aaa125`, run 44946888119). BOTH GREEN, confirmed.** Carries A30's config-block guard (`92e90755`), A31's comparator and legacy-threshold
+fix (`925d40a5`) and B2's top-up refusal (`3ff5a312`). Work branches pushed: app `new-game-save`
+→ `97ed9e00`, backend `development` → `3ff5a312`. Both merges were clean; the deploy path is
+`new-game-save` → `dev` and `development` → `dev`, which is what OTA 492 did.
+
+✅ **NO WORLD DATA IS INVALIDATED. `WORLD_PACK_VERSION` STAYS 14 — DO NOT REGENERATE.** Verified:
+the constant lives at `WorldInitializationService.php:277` and that file is not in the deploy diff;
+B2's four references to it are all reads passed to `countReadyUnclaimed`, not a bump. No migration in
+either repo (the only matches were `migrations.md` and `drizzle-migration-status.md`, both docs).
+Nothing touches pack content or serialization — B2's changes are stocking, reaping and reporting.
+**The two complete unclaimed v14 Scottish sets remain valid.** The design reason is the standing one:
+the pack is a census and carries no money, so economy authoring stopped being a cache invalidation
+at v11.
+
+⚠️ **What IS invalid is every existing Scottish SAVE.** The fix changes what gets written at world
+build, and nothing reprices a world-build figure, so a save already built on England's block stays
+wrong for its whole life. Fresh saves only.
+
+⚠️ **Expect the admin TOP UP button to start REFUSING.** B2's fix makes it reject a top-up that
+would write nothing instead of answering "already at target" — a 409 where there used to be false
+success. That is the fix working, not a break.
+
+✅ **POST-DEPLOY STATE VERIFIED ON DEV, 20:48 — B2, read-only, nothing pressed and no save created.**
+- **Both Scottish sets survived**: `01a1ff72…` and `01a1fab3…`, `ready`, `payload_version 14`,
+  `tier_count 4`, `claimed_at` null. `sc_tier_payload_rows = 8`, `sc_claimable = 2`, EN ready 2.
+  **Stronger than my reading of the code:** `WorldPackSetRepository::findBuildingBefore()` filters
+  `s.status = :building`, so a `ready` row cannot match the reap's selection, and the reap only ever
+  calls `markFailed()` — **no path in that change deletes a set row at all.** Two tests pin it.
+- **Consumers alive, queues clear.** ⚠️ Method worth copying: `ps aux` was sampled every 15s rather
+  than once, because these are cron-paced workers that exit at `--time-limit=50` — **a single
+  snapshot catches an empty instant and reads as "no consumer running"**, which B2's first snapshot
+  did. Cron unbroken on the new image, every other minute.
+- 🟢 **THE IMAGE WAS REBUILT, so none of B2's change is inert** — `ImageCreated 20:34:59`,
+  container started `20:36:18`, and the deployed `/usr/local/bin/worldpackset-consume.sh` carries no
+  `-q`. The whole admin surface is fixed, not half of it.
+
+⚠️ **One live piece has never executed, and it is not a fault.** The maintain sweep is hourly at
+`:20` and the container started at 20:36, so **its first unattended run is 21:20 UTC** — that is
+when the reap, the new `0/2 claimable (+2 building)` Stock column and the non-zero exit are first
+exercised. Both countries are at target, so a clean sweep with `reaped 0` is expected.
+`/var/log/worldpack-maintain-cron.log` does not exist until then. Marked INFERRED from the crontab
+and container start time; nobody has watched it.
+
+---
+
+**Previously deployed to dev** (OTA **492** / backend **286**, both green): everything below.
 
 | repo | branch | ahead of `dev` | notes |
 |---|---|---|---|
 | `wunderkind-app` | `new-game-save` | nothing unpushed | `9bac0b18` is the tip as of the deploy |
 | `wunderkind-backend` | `development` | nothing unpushed | `c11c7f2d` is the tip as of the deploy |
 
+⚠️ **THE TABLE ABOVE IS LAST NIGHT'S AND IS NOW STALE — corrected by the PM session, 2026-11-21
+18:40.** Measured, not inferred:
+
+| repo | branch | tip now | vs `origin` |
+|---|---|---|---|
+| `wunderkind-app` | `new-game-save` | **`b0d4c2fc`** | **2 commits UNPUSHED** |
+| `wunderkind-backend` | `development` | **`d731db22`** | in sync |
+
+- App: `328a7287` (*"An NPC club can no longer name a 14-year-old, and one constant caps both injury
+  ceilings"*, 18:35 today) and `b0d4c2fc` (*"`.context` stops being an append-only diary, and a test
+  keeps it that way"*, 18:36 today) landed **after** this file was written. **Neither is in the OTA
+  492 deploy**, and neither is pushed. `b0d4c2fc` changes the `.context` rules and adds a guard —
+  read it before touching `.context`.
+- Backend: `d731db22` (*"Bring `.context` into line with the day's five commits"*) sits above the
+  `c11c7f2d` named above. Both are pushed.
+- 🔴 **A session was writing `wunderkind-app` while this correction was made** — `Frontend context
+  implementation review`, the author of those two commits. Anyone measuring the app repo needs a
+  detached worktree at a named commit and a handshake before a full suite run.
+
 ✅ **`ec949536` landed** — a club's scouts are re-priced on its own income, like its coaches.
 660 suites / 11,070 passed against a self-measured 659 / 11,057. ⚠️ **It did NOT fix the player's
 own club, and it broke the CHECKS scout row. Read §4 item 2 before acting on either.**
 
 ### Verified on a device
+
+⚠️ **RE-WEIGH EVERYTHING IN THIS SUBSECTION — 2026-11-21.** Every reading below was taken on dev on
+2026-11-20, and on that day the admin world-pack top-up could report success while writing nothing.
+So a save's pack may have been staler than the person recording it believed, **including where the
+version indicator read clean.** Marked by B2 as inferred from the mechanism rather than observed;
+the rows that would have proved it were deleted by that evening's Regenerate. **A finding resting on
+a code measurement at a named commit is unaffected — A30's is, and it says so. A finding resting on
+a device figure alone is now weaker evidence than it looks.** Nothing below is withdrawn; it needs
+re-confirming on a fresh save before anything is built on it.
+
+✅ **A clean Scottish pack is available now, so that re-confirmation is cheap.** Two complete,
+unclaimed, version-14 Scottish sets are on dev (`sc_tier_payload_rows = 8`, 4 tiers × 2 sets), one
+of them built end to end by the async path today. A fresh save claims one and the per-init dispatch
+restocks within ~2 minutes. **Nothing needs preparing: do not use the admin top-up, and do not press
+Regenerate** — Regenerate calls `deleteUnclaimed()` and would destroy both good sets.
 
 - **DOF pot carries and balances.** `opening 209,030,788 · committed 175,860 · pot 208,962,474 ·
   next rebalance 208,854,928 — CARRIED`, ten refundable entries, ledger FITS. The next rebalance
