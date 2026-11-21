@@ -53,6 +53,37 @@ it belongs in your report, not in the checks.
 
 ## 3. The rules that apply to every task
 
+- 🔴 **MECHANISM FIRST, NUMBERS FROM OBSERVED DATA LATER. Owner, 2026-11-21: *"this should be the
+  development mantra."*** It is the general form of the standing *correctness before calibration*
+  rule, and it is the first thing to apply to any economy or simulation task.
+  **What it means in practice:**
+  - **Build the relationship, then let the number be authored.** Ship the mechanism with a neutral
+    default drawn from an existing authored source, and make the value admin-editable — so the
+    later calibration is a **data edit, not a code change, an agent and a deploy.** If tuning your
+    work later requires another release, you have not finished it.
+  - **Make it observable before it is tuned.** A number the owner cannot see the consequences of
+    cannot be ruled on. If the decision needs a figure only a device can show, it goes on the CHECKS
+    tab as a *relationship* — see §1 — not into a report nobody reads twice.
+  - **Do not ask the owner for a number you have not shown them the curve for.** Report the outcome
+    as a function of the input across the plausible range, at both ends of the pyramid, and let them
+    read their own answer off it.
+  🔴 **WHY, AND IT IS THE PATTERN BEHIND MOST OF 2026-11-21's DEFECTS: a hardcoded number is a
+  frozen measurement.** It was right once, in one country, at one tier count, under one set of
+  callers — and it goes on being quietly wrong long after the thing it described has moved. Every
+  one of these was a constant standing where a relationship belonged:
+  - `LEGACY_TELL_BOTTOM_TIER_PENCE = 250_000` — an England-calibrated absolute that made a
+    **correctly priced** Scottish save read `LEGACY — FAIL` always. Fixed by becoming a ratio
+    against the modelled rate, which needs no country term at all.
+  - `VALUATION_SAMPLE_TIERS = [1, 3, 5, 8]` — two of four samples can never match on a four-tier
+    country, so the Scottish dump silently sampled half of what England's did.
+  - `UPKEEP_TIER_FACTOR`, an eight-element array: a ninth tier inherits 1.0 and upkeep stops
+    scaling, with no error.
+  - The staff band ceiling authored at `maxAbility 60` where both codebases document a `null`
+    catch-all, so the ladder goes flat across the top.
+  - The scout's **0.3 × flat judgement mean ≈ 18-point ability floor** — a weighting ruled sound
+    when nothing priced off `ability`, which became a 65× wage distortion once something did.
+  **The number was not wrong when it was written. The mechanism moved underneath it**, and a
+  constant cannot notice that. A relationship can.
 - **Believe the code over the brief.** If they disagree, say so explicitly in your report and do not
   silently comply. Briefs in this project have repeatedly contained a wrong premise; five agents
   have now caught one by checking.
