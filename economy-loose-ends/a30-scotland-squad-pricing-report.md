@@ -422,8 +422,24 @@ stale claim sits *inside the very module whose comparator it misdescribes*. So: 
 `[READ]` is still only a claim — the mark records where I got it, not that it is true.** It fooled
 the session that had just spent a day proving "a comment is a claim, not a measurement", in a report
 whose own §8.2 records the same lesson catching me once already. Caught by the PM session, which
-measured it; `economy-reference.md:1497-1511` and `economyDiagnostics.ts:1305-1306` are stale and
-are A31's to fix.
+measured it.
+
+⚠️ **Updated 2026-11-21 — part of this was not my error, and the mechanism is worth more than the
+apportionment.** The passage I cited was marked **`OPEN`** in `economy-reference.md`: it recorded
+the scouts-on-the-band gap as a live, unfixed defect. That was true of `9f46bf66`/`7b56c6c8` and
+**false from `ec949536`**, where `anchorScouts` began being called from both NPC paths — transition
+at `SeasonBudgetService.ts:257`, bootstrap at `:705`. Its author (session `e9c44b`) has since fixed
+the entry in **`f5f3e1de`**, and reported why it survived: `§8` was **moved verbatim** during the
+`07_synthesis` split rather than re-read, at a commit whose parent was `ec949536` itself. **Moving a
+section is not re-verifying it.**
+
+🔴 **So the transferable lesson is sharper than "stale prose".** `OPEN` is a *stronger
+invitation to trust a line than ordinary prose* — it asserts not just a fact but that the fact is
+still live — and that is why this one travelled into a report by a session that had spent the day
+proving comments are claims. Two defects of the same shape met: a marker that over-claimed its own
+currency, and a reader who marked its provenance `[READ]` and took that as verification.
+**`economy-reference.md:1497-1511` is fixed as of `f5f3e1de`. The panel's own docblock
+(`economyDiagnostics.ts:1305-1306`) describes the comparator A31 owns and is that session's.**
 
 ⚠️ **The live subtlety, which is an open measurement and must not be hardcoded either way.**
 `snapNpcStaffWages` (`:699-701`) returns `null` on `!economy.incomeAnchoredWages`, so **with that
