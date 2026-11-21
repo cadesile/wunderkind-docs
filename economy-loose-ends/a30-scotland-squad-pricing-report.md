@@ -648,6 +648,26 @@ its rotation at `b0d4c2fc` and my appended entry below it, header untouched, new
    of band, the cause is downstream of the config and A30's diagnosis is incomplete. **That is the
    one measurement that could falsify this report**, and it is now one line on the panel rather
    than a prose request.
+
+   ✅ **And as of this evening nothing needs preparing to take it.** [MEASURED by the backend
+   session `0d443d`, 19:29:55 UTC 2026-11-21, reported to me — **not my measurement**]: dev holds
+   **two complete unclaimed v14 Scottish sets** (`01a1fab3…`, `01a1ff72…`, 4 tiers each,
+   `sc_tier_payload_rows = 8`, `worldpackset` queue 0). A fresh save claims one and the queue
+   restocks in ~2 minutes.
+
+   🔴 **Do NOT press admin TOP UP or Regenerate to prepare it**, per that session: its
+   `deficit()` fix is **not deployed**, so TOP UP can still report *"already at target"* while
+   writing nothing, and Regenerate calls `deleteUnclaimed()` — which would destroy both good sets
+   to rebuild from scratch for no gain. **Still read the pack version indicator before any number
+   underneath it**; v14 is current and a `MIXED`/`STALE` reading remains a gate.
+
+   ⚠️ **One consequence of that same undeployed defect, which cuts the other way and is mine to
+   flag:** a top-up that reports success while writing nothing means *"pack version 14, single, no
+   `MIXED`"* was a **weaker guarantee when it was taken than its wording suggests**. It does not
+   touch A30 — §2's cause rests on a code measurement at a named commit, not on the device dump —
+   but any **other** dev device reading this workstream has banked before that fix deploys deserves
+   the same scepticism. That session has recorded it in its own report §6 as `[INFERRED from the
+   mechanism]`, which is the right epistemic mark for it.
 3. **A `CLAUDE.md` / `environment.md` branch row, measured and yours to add:**
    `new-game-save` — **663 suites / 11,147 tests**, 2026-11-21, at `92e90755`. 11,150 collected,
    3 skipped, zero failures, `--listTests` 663, 118.9 s, `tsc` clean, **measured in a detached
