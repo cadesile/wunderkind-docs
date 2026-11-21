@@ -742,6 +742,135 @@ expected output is a clean sweep with `reaped 0`.
 
 ---
 
+## 6d. 🟢 FIRST REAL-TRAFFIC EXERCISE — the owner's England save restocked itself
+
+**Outcome 1 of the three: RESTOCKED.** Read-only pass at 21:08 UTC, 2026-11-21. Nothing pressed,
+nothing claimed, no save created. **This is the first time this path has run on real traffic on
+the new image** — everything earlier in this report rests on deficits I created by hand.
+
+### The sequence, from rows that persist
+
+```
+$ docker exec postgres-dev psql -U wunderkind -d wunderkind -c "select id, status, payload_version, tier_count, generated_at, ready_at, claimed_at, claimed_by_club_id is not null as has_club from world_pack_set where country='EN' order by generated_at desc limit 10;"
+                  id                  | status  | payload_version | tier_count |    generated_at     |      ready_at       |     claimed_at      | has_club 
+--------------------------------------+---------+-----------------+------------+---------------------+---------------------+---------------------+----------
+ 01a1ffed-48f9-7e5d-8262-7a9bf0f923fb | ready   |              14 |          8 | 2026-11-21 21:05:03 | 2026-11-21 21:05:19 |                     | f
+ 01a1ffe5-3d28-797f-8933-5799bfb76931 | claimed |              14 |          8 | 2026-11-21 20:56:15 | 2026-11-21 20:57:21 | 2026-11-21 21:04:32 | t
+ 01a1ffe5-3d78-7aeb-9c1d-5a273ccaad1e | ready   |              14 |          8 | 2026-11-21 20:56:15 | 2026-11-21 20:58:10 |                     | f
+
+$ ... "select count(*) as en_claimable from world_pack_set where country='EN' and status='ready' and payload_version=14 and claimed_by_club_id is null and starter_pack_json is not null;"
+ en_claimable = 2
+$ ... "select count(*) as en_building_last30 from ... status='building' and generated_at >= now() - interval '30 minutes';"
+ en_building_last30 = 0
+$ ... "select id, status, error_message from world_pack_set where country in ('EN','SC') and status='failed';"
+(0 rows)
+
+$ docker exec postgres-dev psql -U wunderkind -d wunderkind -c "select c.id, c.name, c.country, c.world_pack_set_id is not null as has_set, c.created_at from club c order by c.created_at desc limit 5;"
+                  id                  |          name          | country | has_set |     created_at      
+--------------------------------------+------------------------+---------+---------+---------------------
+ 01a1ffec-b711-77b7-8d02-4ccaf166c00a | Burnham-on-Sea Stanley | EN      | t       | 2026-11-21 21:04:25
+```
+
+| 21:04:25 | the owner's club `Burnham-on-Sea Stanley` is created, holding a set |
+| 21:04:32 | set `01a1ffe5-3d28…` goes **claimed** — 7s later |
+| 21:05:03 | set `01a1ffed-48f9…` is **generated** — 31s after the claim, nobody having pressed anything |
+| 21:05:19 | it reaches **ready**, v14, 8 tiers — a full England in **16 seconds** |
+| now | EN back to **2 claimable**, 0 building, 0 failed, queue empty |
+
+### What I observed directly, and what I am reconstructing
+
+The PM asked for this split and it matters here, because the time-sensitive half was indeed gone.
+
+**OBSERVED directly** — every row above, and this corroboration: the cron log holds a
+`worldpackset` consumer run spanning 21:05:00 → 21:05:51, and the new set's `generated_at` of
+**21:05:03 falls three seconds inside that worker's life**:
+
+```
+$ docker exec wunderkind-dev tail -24 /var/log/worldpackset-consume-cron.log
+[2026-11-21T21:05:51Z] === worldpackset-consume done ===
+[2026-11-21T21:07:00Z] === worldpackset-consume start ===
+ [OK] Consuming messages from transport "worldpackset".
+ // Re-run the command with a -vv option to see logs about consumed messages.
+[2026-11-21T21:07:51Z] === worldpackset-consume done ===
+```
+
+**RECONSTRUCTED, not observed** — the queue row itself. The Doctrine transport deletes a message
+on ack, and `select max(id) from messenger_messages` returns **24**, the 2026-09-20 FCM row, so
+nothing of the message survives:
+
+```
+ id | queue_name |     created_at      |    available_at     | delivered_at 
+----+------------+---------------------+---------------------+--------------
+ 24 | failed     | 2026-09-20 08:51:00 | 2026-09-20 08:51:00 | 
+ max_msg_id = 24
+```
+
+**[INFERRED]** that a `TopUpWorldPackSetMessage` existed between 21:04:32 and 21:05:03. It is a
+strong inference — a set built 31 seconds after a claim, inside a consumer's window, with no
+admin action — but it is an inference, and the consumer does not log per-message without `-vv`,
+so I did not watch it drain. Anyone wanting that observed rather than deduced needs to be
+watching `messenger_messages` at the moment of a claim.
+
+### ⚠️ My own §6c "sets intact" line is now historical — read this before quoting it
+
+The two England sets I verified intact at 20:48 (`01a1facc-687a…` and `01a1ff79-e9a3…`) are
+**gone**, replaced by the pair generated at **20:56:15**. **[INFERRED]** that was an admin
+Regenerate: two sets created in the same second with staggered `ready_at` (20:57:21 and
+20:58:10) is the orchestrator's signature, where `app:worldpack:warm` builds sequentially and
+would show the second `generated_at` after the first's `ready_at`. Regenerate calls
+`deleteUnclaimed()`, so replacing them is correct behaviour and nothing was lost.
+
+**But it means the owner's save claimed one of the 20:56 pair, not one of the sets §6c
+describes.** Nobody should read that line as describing the world the device is actually
+playing.
+
+### ⚠️ AND A CORRECTION TO SOMETHING I CLAIMED — one of my three channels does not work as I said
+
+I told the PM, and wrote in the commit message, that `world_pack_set.topup.starved` reaches
+`prod.log` at WARNING. **That is wrong, and I am correcting it rather than leaving it to be
+discovered.** `config/packages/monolog.yaml`'s prod handler is `fingers_crossed` with
+`action_level: error`, so a WARNING only fills the buffer and is discarded unless an ERROR
+follows it. **[MEASURED from config, not observed]** — and consistent with what I found here:
+
+```
+$ docker exec wunderkind-dev ls -la /var/www/html/var/log/
+-rw-r--r--    1 www-data www-data    248118 Nov 21 21:08 prod.deprecations.log
+```
+
+**There is no `prod.log` at all since the 20:36 container start** — which is itself the useful
+reading, because it means no ERROR-level event has occurred on this image.
+
+What survives the correction, and what does not:
+
+- ✅ **The reap DOES reach prod.log.** It goes through `markFailed()`, which logs at ERROR, and
+  ERROR is what flushes the buffer. The loudest half is intact.
+- ✅ **The starved case is still loud in the two channels that matter operationally** — the
+  `409` with the figures to whoever pressed the button, and the sweep's `$io->error()` plus
+  non-zero exit, which the cron wrapper writes as `FAILED (exit 1)` into
+  `worldpack-maintain-cron.log`.
+- ❌ **A starved country with no reap leaves nothing in prod.log.** So "the three outcomes are
+  distinguishable" still holds, but by rows and the cron log rather than by that logline.
+
+**Worth a follow-up, owner's call, not done here:** promote `world_pack_set.topup.starved` from
+WARNING to ERROR, so the one state the whole change exists to make visible is visible in the
+application log too. One word, but it changes what prod.log contains, so it is not mine to slip
+in after a deploy has been verified.
+
+### The 21:20 maintain sweep is STILL PENDING, correctly
+
+```
+$ docker exec wunderkind-dev ls -la /var/log/worldpack-maintain-cron.log
+MAINTAIN LOG STILL ABSENT
+```
+
+The pass was taken at 21:08 and the crontab entry is `20 * * * *`, so 21:20 had not yet come
+round. Unchanged from §6c: that remains the one live path never yet exercised, and both
+countries are at target, so a clean sweep with `reaped 0` is what to expect.
+
+Host load throughout: `21:08:40 up 239 days, load average: 0.10, 0.18, 0.23`.
+
+---
+
 ## 7. FLAGGED, NOT EDITED
 
 1. **`agent-standing-notes.md`**, the 🔴 "ON DEV, THE ASYNC WORLD-PACK BUILD DOES NOT RUN"
