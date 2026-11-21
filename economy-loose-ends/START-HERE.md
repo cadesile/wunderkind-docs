@@ -222,7 +222,21 @@ would write nothing instead of answering "already at target" — a 409 where the
 success. That is the fix working, not a break.
 
 ✅ **POST-DEPLOY STATE VERIFIED ON DEV, 20:48 — B2, read-only, nothing pressed and no save created.**
-- **Both Scottish sets survived**: `01a1ff72…` and `01a1fab3…`, `ready`, `payload_version 14`,
+- ⚠️ **SUPERSEDED 22:05 — those two sets no longer exist, and naming them is why this line aged
+  badly.** The owner's ~20:56 Regenerate was **NOT England-scoped**: measured from the run rows, it
+  ran `EN [1..8]` and `SC [1,2,3,4]` two seconds apart, both `completed`, and `startRun()` clears a
+  country's unclaimed sets first. ✅ **Scotland is stocked and needs nothing prepared: 2 claimable
+  at v14, 4 tiers, `sc_tier_payload_rows = 8`, zero failed, zero building, queue clean.**
+  🟢 **And the replacements are BETTER than what they replaced** — they were generated at 20:56:17
+  by the **deployed** container (started 20:36:18 from the 20:34:59 image), whereas the sets this
+  line named were built at 18:51 on the *previous* image. **A Scottish save taken now exercises
+  backend 287 / `f0aaa125` end to end instead of reading a pack its predecessor built.** The
+  guidance stands; only the identifiers in it were stale.
+- 🔴 **THE RULE THIS COST: SET IDS ON DEV ARE NOT DURABLE REFERENCES.** Any Regenerate, in either
+  country, replaces every unclaimed set in its scope. **Guidance that names ids ages badly;
+  guidance phrased as "N claimable at version V" does not.** Twice in one evening a reading went
+  stale within the hour, and both times it was the identifiers that rotted rather than the claim.
+- **(the superseded reading, 20:48)** both Scottish sets `ready`, `payload_version 14`,
   `tier_count 4`, `claimed_at` null. `sc_tier_payload_rows = 8`, `sc_claimable = 2`, EN ready 2.
   **Stronger than my reading of the code:** `WorldPackSetRepository::findBuildingBefore()` filters
   `s.status = :building`, so a `ready` row cannot match the reap's selection, and the reap only ever
@@ -290,6 +304,18 @@ unclaimed, version-14 Scottish sets are on dev (`sc_tier_payload_rows = 8`, 4 ti
 of them built end to end by the async path today. A fresh save claims one and the per-init dispatch
 restocks within ~2 minutes. **Nothing needs preparing: do not use the admin top-up, and do not press
 Regenerate** — Regenerate calls `deleteUnclaimed()` and would destroy both good sets.
+
+⚠️ **THAT WARNING HAS LARGELY EXPIRED — CORRECTED 2026-11-21 22:00, and the owner pressed
+Regenerate at ~20:56 with no harm done.** It was written when the async build was believed dead, so
+destroying a set meant losing it. **On the new image a set rebuilds in seconds**, measured on real
+traffic: the owner's England save claimed at 21:04:32 and a full **8-tier England was `ready` by
+21:05:19 — 16 seconds**, unattended. Scotland is four tiers, so faster.
+
+**What is still true, and all that is still true:** `deleteUnclaimed()` spares CLAIMED sets, so a
+save already in progress is safe; there is a brief window while sets rebuild, so read the pack
+version indicator rather than starting a save the instant you press it; and the admin **TOP UP**
+button's success message remains the unreliable one on any stack older than backend 287. **The
+reason not to press Regenerate was "nothing will rebuild it". That reason is gone.**
 
 - **DOF pot carries and balances.** `opening 209,030,788 · committed 175,860 · pot 208,962,474 ·
   next rebalance 208,854,928 — CARRIED`, ten refundable entries, ledger FITS. The next rebalance

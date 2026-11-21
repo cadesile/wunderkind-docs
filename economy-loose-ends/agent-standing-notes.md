@@ -323,6 +323,18 @@ it belongs in your report, not in the checks.
   commit, same count, same three named failures, assertions moved **157,316 → 157,340**. That is
   known item #4's documented instability (`environment.md` records 11/7/7 assertions on three tests
   across consecutive clean runs). Do not read an assertion delta as a signal.
+- 🔴 **WRITE GUIDANCE AS AN INVARIANT, NOT AS AN IDENTIFIER — VOLATILE IDS ROT INSIDE AN HOUR.**
+  Added 2026-11-21 after it happened twice in one evening. START-HERE told the owner two specific
+  world-pack sets were safe and named them, `01a1fab3…` and `01a1ff72…`. One admin Regenerate later
+  both were gone — `startRun()` clears a country's unclaimed sets first — and the advice read as
+  wrong when **the substance of it was still exactly right**: Scotland was still 2 claimable at v14
+  with 8 payload rows and nothing needed preparing. **"2 claimable at version 14" survives a
+  rebuild; "`01a1fab3…` is fine" does not.** The same applies to run ids, container ids, queue rows
+  and anything else the system recreates on its own schedule — and the cost is not just staleness,
+  it is that a reader cannot tell a rotted identifier from a real regression.
+  ⚠️ **Corollary, and the reason this is worth a line of its own:** when such a reading does go
+  stale, **supersede it in place and say what is still true**, rather than deleting it. The
+  superseded text is how the next reader tells "this changed" from "this was wrong".
 - 🔴 **NEVER HAND A PEER A LIST PRODUCED BY `head`, `tail` OR ANY TRUNCATION — AND NEVER ACT ON ONE
   AS IF IT WERE COMPLETE.** The PM's error, 2026-11-21, and it nearly shipped a broken commit. I
   read a working tree with `git status --porcelain | head -8`, then sent those eight paths to the
