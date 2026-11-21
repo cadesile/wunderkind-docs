@@ -1569,3 +1569,102 @@ worked. Staged by explicit path throughout, so it is untouched and still theirs.
 
 🔴 **Still the owner's:** the dial's value (shipped ×1.00, deferred to observation by their own
 ruling) and the 70/30 weights (untouched). **Nothing was taken.**
+
+---
+
+# PART FOUR — the panel's own prose, superseded in place
+
+🔴 **My own text, falsified by my own fix within hours.** The blocks below were written in
+`a4e784fe` while A32 was still an investigation and asserted the flat judgement floor as
+**present fact**; `f1f3145b` made them false. Two of the four are rendered on device, and the
+owner was about to read Scottish output through them.
+
+⚠️ **The sharpest part is not that the prose went stale — it is that one block contradicted its
+own data three lines below it.** The docblock said *"EN t8: 2.10 + 15.75 = 17.85 against a
+coach's 3 (88.2%)"* while the row it sits above printed `t8 · coaches 2–3 · scouts 3–4`. 🔵 That
+is this workstream's governing defect pointed at a diagnostic: **a comment is a claim, and a
+claim next to its own refuting measurement is worse than a claim alone**, because the reader has
+to decide which half to believe.
+
+## 31. What changed, block by block
+
+🟢 **Zero executable change. No threshold, no comparator, no status logic touched** — verified:
+
+```
+$ git diff -U0 src/economy/economyDiagnostics.ts | grep -E "^[-+]" | grep -vE "^[-+]{3}" \
+    | grep -vE "^[-+]\s*(\*|//)" | grep -vE "^[-+]\s*\+ '" | grep -vE "^[-+]\s*$"
+NONE — comments and rendered strings only
+```
+
+🔵 **Superseded in place, never rewritten or deleted.** The standing note is explicit that the
+superseded text is how the next reader tells *"this changed"* from *"this was wrong"*, so each
+block now opens with what is true after `f1f3145b` and keeps the original measurement beneath an
+explicit **PRE-FIX / NOT CURRENT** heading naming the commit.
+
+| block | what it asserted as current | now |
+|---|---|---|
+| `judgeStaffValuation` docblock (~:1439) | *"a scout takes most of the bill — £9,740.57/wk of a £10,881.71 staff bill, **89.5%, and 65.6×** … **Whether that is right is the owner's call** (unruled as of 2026-11-21 at `3ff5a312`)"* | ✅ ruled and fixed by `f1f3145b`; figures kept and labelled PRE-FIX; what remains the owner's is **the band's value**, not the split |
+| same docblock (~:1452) | *"**Both paths amplify the same cause**, which **is** the flat `0.3 × mean(judgements)` term"* | *"which **was** … removed for club scouts by `f1f3145b`, and still live for the untiered shared pool"* |
+| `scoutAbilityVsCoachBandCheck` docblock (~:1672) | header *"── **IT IS FAILING NOW**, AND THE MECHANISM IS MEASURED ──"*, then the 15.75 / 45.15 / 17.85 / 88.2% derivation in the present tense | header *"── ✅ **IT WAS FAILING, AND `f1f3145b` FIXED IT** ──"* + the measured after-state (t8 2–4 against coaches 2–4), then the same derivation under *"THE PRE-FIX STATE, KEPT DELIBERATELY … **Do not read any figure below as current**"* |
+| 🔴 same docblock (~:1697) | *"It reports; it does not pick the lever … a t8 scout's displayed accuracy **is 53% today and 3% if banded**"* | **the opposite is now true** — the owner ruled for banding, so **3% is the live figure at t8 and 53% is the superseded one**; the quality cost is the ruling working, not a hypothesis |
+| rendered row text (~:1818) | *"🔴 WHY IT FAILS AT THE BOTTOM AND NOT THE TOP … judgements are **NOT** [banded] … `0.3 × mean` **is** a FLAT ~15.75 points at every tier"* | *"✅ WHAT IS TRUE NOW (f1f3145b) …"*, the pool caveat, then *"Judgements **USED TO** roll … **DO NOT READ THOSE AS CURRENT**"* |
+| rendered valuation text (~:2093) | *"the FLAT JUDGEMENT TERM … **is** ~15.75 points at EVERY tier, so a t8 scout **rates** 18 … On the owner's own fresh club: £9,740.57 of a £10,881.71 bill, 89.5%"* | *"✅ THE FLAT JUDGEMENT TERM **IS GONE** for a club scout …"* + the band-value hand-off, then the same figures under *"⚠️ PRE-FIX … **NOT CURRENT**"* |
+
+🟢 **One claim in the last block survives and is kept**, because it is still true and was the
+Part-One correction: that reading was priced by the **band** and not by the reservation split,
+since a fresh save has no season budget. Re-tensed to *"That was priced by the BAND … That half
+is still true of a fresh save."*
+
+## 32. The owner's device reading, and what it corroborates
+
+🔵 **Reported to me as measured on the owner's live England save, OTA 494 — their measurement,
+not mine:** the scout is **£149/wk of a £2,119 bill, 7.0%, and 1.00× a 4★ coach.**
+
+🟡 **It corroborates the model exactly, which is worth saying.** £149/wk is
+`tierStaffWeeklyWagePence(4, EN t8)` = **£148.56** to the penny — so that scout rolled **ability
+4**, the top of the t8 staff band, and is priced identically to an ability-4 coach. 🟢 My modelled
+figures were £72.37 at ability 3 and £148.56 at ability 4 (§17.5), and 6.0% on a 12-coach shape;
+their 7.0% differs only because their new club's coach mix is not the same twelve. ⚠️ **The two
+measurements are of different clubs and should not be averaged** — what they agree on is the
+mechanism: a t8 scout now lands inside 2–4 and is paid what a coach of the same rating is paid.
+
+## 33. Scope held
+
+🔴 **The judgement row's thresholds and comparator are untouched, as asked.** The concern raised
+with me — that comparing a scout's error band to the *coach ability span* may be the wrong
+comparator when the question is whether a scout can rank **players** — is noted and **not acted
+on**. ⚠️ I think it is a fair objection and worth its own pass: the coach span is a proxy for
+"the level of this division", and the honest denominator would be the spread of **player**
+ability at that tier. That needs the player sample, which this function does not receive. **A
+later conversation, not this change.**
+
+## 34. Verification, Part Four
+
+🟢 **Full app suite, at `d777e468` + this change:**
+
+```
+Test Suites: 663 passed, 663 total
+Tests:       3 skipped, 11181 passed, 11184 total
+Time:        86.193 s
+EXIT=0
+```
+
+🟡 **11,181 — identical to `d777e468`**, which is what a strings-only change must produce. 🟢 The
+four suites that read the panel directly were run first and separately:
+`staffValuationChecks` + `economyDiagnostics` **55 passed**, then `checksReportCopy` +
+`contextDocSync` **57 passed**. 🟢 `npx tsc --noEmit` clean.
+
+🟢 **`.context` entry kept short and the cap checked rather than assumed:**
+
+```
+entry bytes: 1368
+total 1580891 cap 1583911 headroom 3020   → within cap
+```
+
+🔵 `contextDocSync` 49/49, so the footprint and dated-correction ratchets both still pass.
+⚠️ **Headroom is now ~3.0 KB.** The next entry of normal length will not fit, and the baseline
+may only shrink. That remains the PM's Phase 2 call — stated again here because it is now one
+pass away from blocking a session's ability to record its own work.
+
+🟢 **Commit `13419ec5`** on `new-game-save`, parent `d777e468` — two paths, staged by explicit
+path: `src/economy/economyDiagnostics.ts`, `.context/shared/last-sync.md`. **Nothing pushed.**
