@@ -796,7 +796,9 @@ outside the band its own coaches come from"*. Four paths, staged by explicit pat
 `src/economy/economyDiagnostics.ts`, `src/utils/scoutAbility.ts`,
 `src/__tests__/economy/staffValuationChecks.test.ts`, `.context/shared/last-sync.md`.
 
-🟢 **Both trees clean after committing** (`git status --porcelain | wc -l` → 0 in each).
+🟢 **Docs `7d18927`** — this report, committed by explicit path in `wunderkind-docs`.
+
+🟢 **All three trees clean after committing** (`git status --porcelain | wc -l` → 0 in each).
 🔵 **Nothing pushed. Nothing deployed. No worktree created in either repository.**
 
 ⚠️ **Both commits carry the report's own epistemic discipline into their messages**, including the
