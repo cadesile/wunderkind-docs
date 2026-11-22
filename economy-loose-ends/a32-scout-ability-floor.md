@@ -159,6 +159,27 @@ already contain half of your answer.**
 - **Correctness before calibration.** You may fix a mechanism; you may not pick a balance number.
   **If the honest fix needs an authored value, measure what it would take and bring the number to
   the owner rather than choosing it.**
+- ✅ **RULED 2026-11-21 — BUMP `WORLD_PACK_VERSION` TO 15.** The owner has granted it, so the "do
+  not bump it unasked" line below is satisfied. **[MEASURED] one site:**
+  `WorldInitializationService.php:277`; every other backend reference reads the constant and the app
+  asserts no version at all. 🔴 **The bump and the generator change MUST land in one commit and one
+  deploy** — bump first and every country rebuilds at v15 carrying the OLD scouts while the version
+  claims they are current; generator first and new v14 sets sit beside old v14 sets, so two scout
+  populations share one version and the indicator cannot tell them apart, which is worse than
+  `MIXED` because `MIXED` at least warns. **Precedent: v12 was bumped for the same class of change**
+  (`types/world.ts:336-340` — *"v12 forces a rebuild"*). The money rule is not in the way: money was
+  moved OFF the pack so authoring it stops invalidating caches, while ability and judgements are
+  census data and legitimately in it. **After the deploy the pack indicator should read `15`,
+  single, no `MIXED`** — say so in the report, so the owner knows what success looks like.
+- ⚠️ **Band where there is a tier; leave the pool alone.** Club scouts have a country and tier;
+  shared-pool scouts have neither, which is exactly why `PoolConfig::$scoutExperienceMin/Max` was
+  left untouched *"by ruling"*. Mirror that for judgements rather than inventing a new position, and
+  if you disagree say so explicitly instead of quietly extending the band.
+- ⚠️ **Check for a backfill and its ORDER.** Scout rows in the database are a different population
+  from scouts baked into a pack. `BackfillPersonalitiesCommand.php:46` documents the hazard
+  verbatim — *"Run this BEFORE bumping `WorldInitializationService::WORLD_PACK_VERSION`"* — and
+  `ScoutAbilityLifecycleSubscriber` recomputes on lifecycle events. Answer explicitly whether one is
+  needed and when it runs.
 - 🔴 **Scout `ability` is PUBLISHED IN THE WORLD PACK** (`WorldScout.ability`, resolved at ingest
   through `resolveScoutAbility`). **Changing the derivation changes pack content**, so existing
   packs carry old abilities. Say explicitly in your report whether this needs a world-pack

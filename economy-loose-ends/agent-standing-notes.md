@@ -457,3 +457,59 @@ it belongs in your report, not in the checks.
   **Deployment, for whoever needs it next:** Hetzner, ssh `wunderkind.site`, containers
   `wunderkind-dev` / `wunderkind-prod`, compose files under `/mnt/volume-wkf/wunderkind/{dev,prod}`,
   runbook `docs/deploy/hetzner.md`.
+
+---
+
+- **A GATE ROW IS READ FIRST, NOT IN ORDER.** Established 2026-11-22, at the cost of a whole device
+  payload. The CHECKS panel's `Pack version` row read `MIXED: 14, 15` — a world assembled across a
+  backend deploy, so its scout rows were measuring two generators at once and its wage comparators
+  sat on an unknown blend. The PM read the panel top to bottom, drew conclusions from the valuation
+  and scout sections, and only then reached the row that invalidated all of them.
+  🔴 **The row even said it was advisory** — *"nothing gates behaviour on it"* — which is exactly
+  backwards as a reason to read it late: a state nothing gates on is a state every number below it
+  can be wrong in, silently. **Find the rows that qualify the whole report and read those first.**
+  The general form: before trusting a panel, ask which of its rows describe the *measurement* rather
+  than the *subject*.
+
+- **A HYPOTHESIS ABOUT A CAUSE IS WORTH LESS THAN A LINE NUMBER, AND KNOW YOUR OWN RATE.** Measured
+  over 2026-11-21/22: this PM's verification of committed code was reliable; its hypotheses about
+  causes were wrong roughly **one in four** — NPC player re-anchoring (disproved by a type
+  signature), promise conditions gating payment (disproved by `types/promise.ts`), a
+  `sumNpcInvestorIncome` double-count (disproved by a default parameter), and an inverted premise
+  that reached an agent's brief. Every one *sounded* mechanical and specific.
+  ⚠️ **The tell is not confidence, it is whether you cited a line.** State which of your claims are
+  cited and which are inferred, in the same breath, every time — and when a reader asks for one
+  measurement that would discriminate, name it rather than arguing the hypothesis.
+
+- **CORRECT A BRIEF'S PREMISE BY STOPPING THE SESSION, NOT BY SENDING A CLARIFICATION.** 2026-11-22:
+  the PM briefed A34 that investor income was "missing from the player's club"; the owner corrected
+  it — the AMP club *starts without investors*, so the asymmetry ran the other way entirely. The
+  session was stopped mid-turn (`stop_session`), told to hold and make no edits, and re-briefed from
+  scratch. A clarification layered onto a wrong brief leaves the agent reconciling two framings and
+  usually keeps the first. ⚠️ **Tell it explicitly not to revert** — an agent told its premise was
+  wrong will otherwise undo work that may still be good, and work it did not author.
+
+- **AN INCIDENTAL EQUALITY MAKES A WRONG READER LOOK CORRECT.** `HireScreen.tsx:220-224` reads
+  `(item.data as MarketScout).experience` for every market scout, under the comment *"Both already
+  0–100"*. For poachable NPC staff that is harmless, because `:103` assigns the same
+  `coachingAbility` to `experience`, `ability` AND all seven judgements. For the generated
+  free-agent pool at `:245` it is simply the wrong field — `experience` is career length, 4–34,
+  against a standing owner ruling that a scout's ability is the derived `ability` and **never**
+  `experience`. The symptom on device: two scouts both displaying "4" at £27 and £149.
+  🔴 **The lesson is about multi-source lists.** When one reader serves rows from several producers,
+  a field that happens to agree on the path you tested proves nothing about the others. **Enumerate
+  the producers** (`grep -n "kind: 'scout'"` found them in seconds), do not reason from one.
+
+- **A FIELD CAN BE READ BEFORE ITS ONLY WRITER RUNS, INSIDE ONE FUNCTION.** The 2026-11-22
+  zero-income defect: `performSeasonTransition` calls `setNpcSeasonBudgets` at `:5081`, which reads
+  `club.weeklyIncome`; the sole writer of that field is a refresh pass at `:5419`, ~340 lines later
+  in the same call. First transition reads `undefined` ⇒ `?? 0` ⇒ every NPC club's season budget
+  records zero income; every later transition reads a season-stale value.
+  🔴 **`?? 0` on a field that another pass populates is the whole defect.** The project already has
+  a binding rule that `?? 0` on a money field read off a payload is a defect rather than a default;
+  this is the same rule one layer in — **a default that silences an ordering bug is worse than a
+  crash**, because zero income looks like a poor club rather than a broken pass. When you find a
+  `?? 0`, find the writer and check it ran.
+  ⚠️ **It was found from a pasted JSON payload, not a test**, because every unit test constructs a
+  club that already has the field. An ordering dependency inside one function is invisible to tests
+  that do not run the whole function in order.
