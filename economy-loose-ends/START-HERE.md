@@ -175,7 +175,7 @@ from symptoms.** Every §1 claim above cites a line and was checked.
 
 | repo | branch | head | note |
 |---|---|---|---|
-| `wunderkind-app` | `new-game-save` | `48b19c34` | A33's parachute fix |
+| `wunderkind-app` | `new-game-save` | `9fbbf74a` | A33's parachute fix + A34's NPC investor seed |
 | `wunderkind-backend` | `development` | `5f1aff4f` | world-pack rebuild reporting |
 | `wunderkind-docs` | `master` | this commit | 17+ commits of reports and briefs |
 
@@ -203,21 +203,28 @@ pushing; the owner does it.
 ## 4. Open items, in the order the PM would take them
 
 1. 🔴 **The zero-income defect — §1.** Everything else is smaller.
-2. 🔴 **A34 — the NPC investor lump.** The owner's ruling, verbatim: *"NPC clubs that start with
-   investors should receive that lump sum at game start."* The AMP `Investor`
-   (`src/types/market.ts:178`) carries `investmentAmount` in pence **and** `seasonalPaymentPence`.
-   The NPC `NpcInvestorContract` (`src/types/world.ts:91`) carries only the seasonal payment —
-   **there is no investment-amount field at all.** So an NPC seeded with two investors at
-   `equityTaken: 20` each has given away 40% of itself and received nothing. The lump is not paid
-   late; it was never modelled. NPC investors are seeded on device at world build
-   (`src/stores/worldStore.ts:642`, `generateNpcInvestorContracts`) — correct, since the pack
-   carries no money. Reuse the AMP derivation rather than authoring a new number, store the amount
-   on the contract as optional for backward compatibility (the `equityTaken` pattern,
-   `world.ts:103-112`), and show the per-tier starting-balance curve before anyone rules on it.
-   **A34 had uncommitted work in `economyDiagnostics.ts`, `worldStore.ts` and a new
-   `worldStore.investorSeed.test.ts` when the session was wound down — check
-   `a34-investor-asymmetry-readonly-finding.md` for what it established and whether that work
-   landed.**
+2. ✅ **A34 — NPC investor seed money. DONE, `9fbbf74a`, pushed, NOT deployed.** The owner's
+   ruling: *"NPC clubs that start with investors should receive that lump sum at game start."*
+   Reports: `a34-npc-investor-seed-report.md` and `a34-investor-asymmetry-readonly-finding.md`;
+   curve evidence in `evidence/a34-investor-seed-curve.py`.
+   🔴 **The PM's framing of this was WRONG and A34 corrected it — do not reinstate it.** The brief
+   claimed `investmentAmount` and `seasonalPaymentPence` were two different quantities and that a
+   separate investment lump had never been modelled for NPCs. **They are the same number.**
+   `GameLoop.ts:4486-4488` sets both from one variable; `market.ts:189` labels the field
+   *"kept for backward compat"*. There is no second "investment" figure anywhere in the model, for
+   NPCs or for the player. A34 therefore did **not** add an `investmentAmount` field to
+   `NpcInvestorContract` — that would have created a parallel definition of a value already held.
+   **The real asymmetry** was that the AMP club is credited its seasonal payment the moment the
+   player accepts (`InboxResponseHandlers.ts:120-126`, booked as season 1's payment) while NPCs
+   were credited nothing at world build. The fix mirrors that: each NPC is credited the sum of its
+   generated contracts at seed time.
+   ⚠️ **TWO THINGS LEFT OPEN BY A34, both needing the owner.** (a) It reports tier separation now
+   widens *too* sharply at the top — a median tier-1 club opens at roughly double its previous
+   effective wealth; the curve is in its §3 and is calibration, which is parked. (b) It observed
+   that the AMP side may pay a 3-season contract one time fewer than the NPC side
+   (`PromiseOutcomeService.ts:291-299`), did not touch either, and flagged that if the AMP count is
+   wrong it is a separate defect in the player's favour.
+   Tiers 4–8 generate no investors at all, so only tiers 1–3 move; pinned by the new test.
 3. **The hire screen displays the wrong field for scouts.** `src/screens/office/HireScreen.tsx:220-224`
    — `getAbility` reads `(item.data as MarketScout).experience`, and the comment above it
    (*"Both already 0–100"*) is false for one of the two sources. It is safe for poachable NPC staff
