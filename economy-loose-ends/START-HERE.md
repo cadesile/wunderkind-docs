@@ -59,6 +59,34 @@ Nothing writes `weeklyIncome` at world build — `:5419` is its **only** writer 
 - **Every later transition:** the budget reads the value written one transition ago, so NPC income
   is permanently one season stale.
 
+### ✅ CONFIRMED PYRAMID-WIDE — three clubs, three tiers, one control
+
+Three world-club payloads captured 2026-11-22, all with `"incomePence": 0`, `"wageSharePence": 0`,
+`wageReservationPence == wageFloorPence` and `"overCommitted": true`:
+
+| club | tier | `weeklyIncome` | reconciles as |
+|---|---|---|---|
+| Birmingham Forest | 1 | 278,905,163 | sponsors 34,320,231 + investors 244,584,932 ✅ |
+| Derby Forest | 3 | 129,482,029 | sponsors 3,971,815 + investors 125,510,214 ✅ |
+| Ormskirk Wednesday | 7 | 45,766 | **no investors at all** — equals its one sponsor exactly ✅ |
+
+🔵 **Ormskirk is the control that rules out the investor question as the cause.** It has
+`"investors": []`, so the only input is a single sponsor at `weeklyPaymentPence: 45766` — and its
+`weeklyIncome` is exactly that. The field is computed correctly at every tier, with and without
+investors. It simply never reaches a budget.
+
+### 🔴 It probably disables NPC STAFF ANCHORING too — check this first
+
+In the same payload, **all eight sampled staff rows read `stored/band 1.00` with
+`stored/npc-anchored` between 1.16 and 1.46**, each flagged *"OFF ITS OWN ANCHORED RATE"*. An
+earlier save on the same build read 1.01–1.05 with the band *not* governing.
+
+These clubs **have** season budgets, so `npcStaffWagePence` should be the governing rate. The
+likely chain: `incomePence: 0` ⇒ the budget yields no anchored rate ⇒ `anchorNpcStaffWages` leaves
+every row at its band price. **Unverified — the PM inferred it from the two payloads and did not
+read `anchorNpcStaffWages`'s null path.** If it holds, the zero-income defect is the root of both
+symptoms and fixing it closes the staff drift for free.
+
 ### Why the field itself is NOT the bug
 
 `weeklyIncome: 278905163` on that club reproduces `:5419`'s formula exactly:
@@ -212,6 +240,22 @@ pushing; the owner does it.
    facilities do not express tier at all — a second, player-visible route to "tier accuracy is
    off", and it feeds upkeep (that club reserves only £1.59M of maintenance for a season).
    **Not investigated. Start at whatever seeds `facilities` in `worldStore`'s world build.**
+   ⚠️ **Sharpened 2026-11-22 by a third payload.** Tier COUNT does scale — Ormskirk Wednesday (t7)
+   carries only 8 facility keys, the rest absent rather than zero, while t1 and t3 carry all 22. So
+   the defect is not "facilities ignore tier" but **within-key zeros at the top**: Ormskirk (t7) has
+   `training_pitch: 1` and `physio_clinic: 1`, while Birmingham (t1) has `training_pitch: 0` and
+   Derby (t3) has `training_pitch: 0` and `scouting_center: 0`. A tier-7 club has a training pitch
+   that the champion does not. Whatever rolls a level for a key that EXISTS appears to have no tier
+   floor, even though the key set does.
+
+13. **One extreme valuation outlier, worth its own look.** `t3 · Beeston Albion · Tobias Quirk DEF`,
+    CA 4: **stored £8.00/wk against expected £303.69 — ratio 0.03.** Every other sub-band outlier in
+    that payload sits between 0.39 and 1.21; this is an order of magnitude below the next worst. For
+    comparison, the same CA 4 at t8 (`Swinton Rangers · Charlie Northumberland`) stored £314 against
+    expected £297 and passed. So it is not a tier-scaling artefact — two clubs, same ability, 39×
+    apart in what was written. ⚠️ `£8.00/wk` is close enough to a floor to be worth checking against
+    `packWages`'s fallback chain (`ABSOLUTE_FLOOR_PENCE`, the scholarship wage) before assuming the
+    curve produced it.
 6. **The player-valuation comparator is only valid pre-transition.** `economyDiagnostics.ts:975`
    resolves `expected` at the club's current tier via `resolveEconomy(config, sample.tier)`, but
    nothing re-prices a squad when a club changes tier — `SeasonTransitionService` has no wage term.
