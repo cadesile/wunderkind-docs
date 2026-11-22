@@ -303,7 +303,12 @@ non-monotonic wage-multiplier ladder; the band ceiling authored at 60 against a 
 - **One writer per file per repository.** Stage by explicit path. **Never restore or commit a path
   you did not author.** The PM broke a near-miss version of this once and it is recorded in
   `agent-standing-notes.md`.
-- **Reports and evidence live outside both repos**, here, verbatim — not summarised.
+- **Reports and evidence live out of the two CODE repos**, here in `wunderkind-docs`, verbatim —
+  not summarised. ⚠️ `wunderkind-docs` is itself a git repo with a remote; "outside both repos" was
+  always loose wording for "not in `wunderkind-app` or `wunderkind-backend`". The old
+  `WunderkindFactory/docs/economy-loose-ends` path was a **symlink** into this folder from a stale
+  second clone of this same remote; that clone was consolidated away on 2026-11-22 and the path is
+  gone. Historical reports and `context-archive/` still quote it, deliberately.
 - **Never raise `contextDocSync.baseline.json` caps** to make a commit pass. They may only shrink.
 - **This app's test baseline is ZERO failures on an idle machine.** The backend's documented three-
   to-five is a *different repository's* and has caused real regressions to be dismissed here.

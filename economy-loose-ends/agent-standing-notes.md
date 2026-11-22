@@ -129,9 +129,17 @@ it belongs in your report, not in the checks.
   reported a defect as far worse than it was because it read a comment saying a fallback fired
   "when fixtures aren't generated" instead of tracing whether that state was reachable.
 - **Documented local conventions beat a brief that contradicts them.**
-- **Nothing scratch-shaped inside either repository.** Reports and evidence go in
-  `/Users/courtneyadesile/Documents/WunderkindFactory/docs/economy-loose-ends/`; throwaway work in
-  your own scratchpad. Paste commands and output **verbatim**.
+- **Nothing scratch-shaped inside either CODE repository.** Reports and evidence go in
+  `/Users/courtneyadesile/Documents/WunderkindFactory/wunderkind-docs/economy-loose-ends/`;
+  throwaway work in your own scratchpad. Paste commands and output **verbatim**.
+  ⚠️ **Path corrected 2026-11-22, and the old wording was wrong twice over.** It read
+  `.../WunderkindFactory/docs/economy-loose-ends/` and called that folder "outside both repos".
+  `wunderkind-docs` IS a git repository with a GitHub remote — it is simply not one of the two
+  *code* repositories, which is the distinction that matters. And `docs/` was a stale second clone
+  of that same remote, with `docs/economy-loose-ends` a **symlink** back into it, so the two paths
+  were always one folder. That clone was consolidated away on 2026-11-22 and **the old path no
+  longer exists.** Older reports and `context-archive/` still quote it; that is deliberate, since
+  they record what was true when written.
 - **`.context` status and review belong to the project-manager session.** Append one pass entry to
   `shared/last-sync.md` and correct stage text your change makes wrong. Do not restructure, prune,
   or delete a superseded section — **flag it in your report** so the PM can.
