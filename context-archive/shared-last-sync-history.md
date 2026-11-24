@@ -5660,3 +5660,458 @@ That is most of what the documented "three to five failures" baseline has been.
 
 ---
 
+---
+
+<!-- Rotated out of wunderkind-app/.context/shared/last-sync.md on 2026-11-23, verbatim. -->
+
+## 2026-11-20 — Documentation pass: `.context` brought in line with the day's economy work (app `new-game-save`)
+
+**Documentation only. No application code was touched and no test suite was run** — nothing in this
+pass can affect one. Base: `9bac0b18`, the branch HEAD.
+
+A documentation-only pass over the seven app commits of 2026-11-20 (`b8ee4594`, `930fcde7`,
+`9f46bf66`, `598ff158`, `4113d326`, `ac71159b`, `7b56c6c8`, `9bac0b18`). ⚠️ **`7b56c6c8` and
+`b8ee4594` had no `.context` entry of any kind** — neither commit touched a stage or this file — so
+the staff/scout CHECKS comparator and the player-valuation panel were undocumented until now.
+
+**Written:**
+
+- **`03_data/output/state.md`** — a new section for **the DOF's pot ledger**, the three persisted
+  `ClubState` fields (`dofWageCommitmentPence`, `dofWageCommitmentPeriodWeek`,
+  **`dofWageCommitments[]`**) and why they are all-or-none on `pickClubState`'s allowlist. ⚠️ **The
+  brief said two fields; there are three.** `dofWageCommitments[]` landed with the refund in
+  `9bac0b18` and is in the allowlist. Placed beside the 2026-09-29 "explicit destructure allowlist"
+  correction, which it is the clearest live example of.
+- **`02_architecture/output/structure.md`** — `src/engine/ampYouthRelease.ts` as a new module in the
+  `src/engine/` breakdown, and the architectural rule it creates: **user-club code calls the
+  wrapper; only NPC paths call `youthRepository.releaseYouthPlayer` directly**, enforced by a
+  caller-registry test plus a `GameLoop.ts` call-count pin of **2**. Verified against the tree:
+  three user-club callers (`app/player/[id].tsx`, `InboxResponseHandlers`, `YouthPromotionService`)
+  and exactly two NPC calls in `GameLoop.ts`.
+- **`07_synthesis/output/game-mechanics.md`** — the file marked *read before changing any
+  simulation behaviour*, and the largest gap. Three changes:
+  - the **"Not decided: whether an unspent remainder returns to the pot"** note is **replaced** by
+    the ruling and both halves of the mechanism — the carried ledger (`598ff158`) and the refund on
+    departure (`9bac0b18`): the arithmetic, the departure week deliberately not refunded, the
+    `lastWeekOwed = createdWeek + span − 1` algebra that makes refund and graduation abut, the five
+    store choke points plus the academy module, idempotency-by-entries, what is deliberately not a
+    departure, and the two things that remain untrue. The only ⚠️ **removal** in this pass, and it
+    is a superseded statement of fact, not a section;
+  - the budget table's `transfer` row now says the DOF's player renewal charges **the sign-on fee
+    AND the wage delta** (`4113d326`);
+  - new sections for **staff and scout wages priced from the wage band on `ability`** (`9f46bf66`,
+    with `ac71159b`'s 15.6× `experience` error and the three measured pay-cut cliffs) and for
+    **the CHECKS comparator reading the governing rate** (`7b56c6c8`).
+- **`05_ui/output/patterns.md`** — a new section for **Debug → CHECKS**: that `ChecksTab.tsx` is a
+  renderer owning no row, the report's section list with the three new economy panels, and the
+  panels' three shipped conventions (`warn` at worst, no `?? 0` on money, three screen rows with
+  the table in the clipboard).
+- **`01_overview/output/environment.md`** — the `new-game-save` green-master row moved to
+  **659 / 11,057 at `9bac0b18`**, which reconciles exactly against the 657 / 10,992 it replaces
+  (`7b56c6c8` +4 tests no suite, `9bac0b18` +2 suites / +61). ⚠️ **Quoted from
+  `dof-pot-refund-report.md` §6's confirmation run and LABELLED as not measured by this pass** — a
+  documentation pass must not run a suite and must not present someone else's figure as its own.
+  The eighth load-sensitive suite is recorded on the row. **The PM's own edits to that file — the
+  test-baseline correction and the load-sensitivity rules — were read first and are untouched.**
+
+**Found already correct, and worth saying so:**
+
+- **`03_data/output/state.md`'s `flushClubStateToDB()` count is right at 71** and already carries
+  the note that it had drifted by six. Re-measured: `grep -c 'flushClubStateToDB()'` on
+  `src/stores/clubStore.ts` returns **71** at HEAD and **70** at `ac71159b`, exactly as that note
+  claims. The count was kept rather than removed — the paragraph documents a *mechanism* that is
+  correct at any count, and the note now says so in place.
+- `9f46bf66`'s own `03_data/output/schema.md` and `04_interfaces/output/routes.md` entries.
+
+🔴 **A finding, and it corrects the record in three places at once: the DOF's automatic PLAYER
+renewal is `GameLoop` §14a, "Auto-renew contracts".** `game-mechanics.md`'s budget table said
+**§14c**; `4113d326`'s commit message and both its report and `dof-pot-refund-report.md`'s draw-site
+table say **§14b**. **There is no §14b in `GameLoop.ts`** — the markers run 14a, 14c, 14d, 14d-ii,
+14e, 14e2, 14f — and **§14c is the STAFF renewal**, which is the other half of the same ruling and
+the thing the player path was being made symmetric with. So the two documents disagreed *and* both
+were wrong, in a way that points a reader at the sibling path. Corrected in `game-mechanics.md`
+with the discrepancy named; the reports are outside both repos and were left alone.
+
+**`CLAUDE.md` re-mirrored** (gitignored, one-way `.context/` → mirror): its `new-game-save` branch
+row read 651 / 10,865 — **two measurements behind**, because the PM's `ac71159b` edit updated the
+owner and not the mirror, which is the same reverse-direction drift that row's own history records.
+It now carries 659 / 11,057 with the same provenance caveat.
+
+**Report:** `/Users/courtneyadesile/Documents/WunderkindFactory/docs/economy-loose-ends/ctx-app-report.md`
+
+## 2026-11-20 — Scouts re-anchored to the club's own income rate (app `new-game-save`)
+
+**Change:** `9bac0b18`(→`22443e24`) + this commit. `src/engine/ClubWageScaleService.ts`,
+`src/engine/SeasonBudgetService.ts`, `src/__tests__/engine/scoutReanchor.test.ts` (new),
+`src/__tests__/engine/seasonBudgetService.test.ts` (registry entry).
+
+**The defect:** a club carries `staff: WorldStaff[]` **and** `scouts?: WorldScout[]` as two
+separate arrays, and three sites were spelled `club.staff` — both re-anchor passes
+(`snapNpcStaffWages` at bootstrap, `anchorNpcStaffWages` at every transition) and, not in the
+brief, **the ability shape the staff reservation is divided across** (`npcStaffWagePence` and
+`ampStaffWagePence`). So a scout was band-priced at ingest and never re-priced again, while every
+coach was priced against a denominator that omitted it.
+
+**Measured through `resolveEconomy` over the live EN payload**, on the owner's own shape (12
+ability-3 coaches, one ability-21 scout, tier 8, £195,464/season staff reservation = £4,249.22/wk).
+The band reproduces the owner's device reading to the penny first — coaches £868.44/wk, scout
+**£12,509.76/wk**, 84.2× a same-star coach — then: bill **£16,432.08/wk = 3.87× the reservation**
+→ **£2,388.11/wk = 0.56×**; scout £12,509.76 → £2,030.63 (−83.8%). The scout's *share* rises 76.1%
+→ 85.0%, which is the ability-proportional split and deliberately untouched.
+
+🔴 **A brief premise corrected, and the code was right.** The brief said `club.staff[]` is
+"overwritten by `npcStaffWagePence`" and asked for the AMP club to be covered the same way. That
+is true of NPC clubs and **false of the AMP club** — the owner's coaches read £868.44/wk, the
+*band* figure exactly, which an anchored pass would not produce. **`anchorAmpStaffWages` was
+retired earlier the same day under the B1 ruling** (a staff salary is a contract; a committed cost
+may not be re-derived from the budget computed from it — `deriveClubBudget` floors the reservation
+at `projectedWagePence`), and its retirement docblock is still in `SeasonBudgetService.ts`. So an
+AMP re-anchor pass was **not** added. The only AMP re-price path is the DOF renewal
+(`GameLoop.ts:5906-5907`), where `ac71159b` already covers scouts. What *was* fixed on the AMP
+side is `ampStaffWagePence`'s shape, which re-prices no existing contract — only what the next
+hire costs — so it sits inside the ruling.
+
+⚠️ **Consequence: this does NOT fix the £12,510 scout on the owner's own club.** Under the ruling
+that figure is a contract and moves only at renewal, mean-reverting. The fix reaches NPC clubs and
+new saves.
+
+**Stale writes:** confirmed fixed for NPC clubs (a pass that re-reads config at every transition
+cannot carry a dead scale — pinned by a test that scales the country's money between two
+transitions); **not** fixed for the AMP club, whose scouts are not re-anchored at all.
+
+**Tests:** 13, every one naming `scouts` explicitly, **mutation-tested in both directions** (3
+fail if the shape drops scouts, 6 if the passes do). ⚠️ Three cases passed *vacuously* on the first
+run — a zero-income fixture made every anchored rate `undefined` and `toBe(expected)` passed as
+`undefined === undefined`. Caught only by mutating. Guarded now with
+`expect(expected).toBeGreaterThan(0)`. **A cross-source assertion against a function that returns
+`undefined` on a bad fixture is a test that cannot fail.**
+
+**Counts (measured, not quoted):** baseline at `9bac0b18` **659 / 11,057** (533.6 s, zero
+failures); with the change **660 / 11,070** (239.5 s, zero failures). ✅ Reconciles exactly, +1
+suite / +13 tests. `npx tsc --noEmit` clean, re-run on `22443e24` + change (that commit is
+`.context/` markdown only — `grep -cE '\.tsx?$'` over its file list returns 0 — so the suite
+cannot see it). **The first changed run failed on the `seasonBudget` reader registry**, exactly as
+the standing notes warn: a `ClubBudget` fixture in a test registers as a code reference.
+`scoutReanchor.test.ts` is now on that list with its reason.
+
+**⚠️ FOR THE PM — `environment.md` NOT touched.** Its green-master row was committed by the
+documentation pass minutes earlier and that file is not mine to edit. The new figure for the row
+is **660 / 11,070, `--listTests` 660, 3 skipped, measured at `9bac0b18` + this change on an
+8-core machine at load 6.3**.
+
+**⚠️ FOR THE PM — three things flagged, not fixed, each in another session's scope or needing its
+own measurement:**
+
+1. 🔴 **The CHECKS panel's scout row will now misreport.**
+   `economyDiagnostics.pickStaffValuationSample` samples NPC clubs' `club.scouts` and
+   `judgeStaffValuation` ratios each against the **band** — which is no longer the governing rate
+   for a re-anchored NPC scout. **This is the OTA 491 defect, for scouts**; the staff version is
+   already recorded in `staffValuationChecks.test.ts` ("0.42–0.67 for correct wages on England and
+   3.65–4.75 on Scotland"). The fix is the same: route the scout row through the injected
+   `NpcStaffRateResolver` the staff row already uses, band only when no budget resolves.
+   `economyDiagnostics.ts` / `ChecksTab.tsx` are A29's files and were not touched.
+2. **`computeNpcWageBill` (`npcFinances.ts:64`) still omits scouts** — a fourth site with the same
+   spelling. So an NPC club's projected wage bill, its budget floor and its solvency verdict all
+   exclude scout wages, which are now a re-anchored nonzero cost. Changes every NPC budget in the
+   pyramid; needs its own measurement.
+3. 🔴 **A re-anchored NPC salary does not survive a reload, and this is PRE-EXISTING for coaches
+   too.** Traced in code, **not reproduced on a device** — epistemic status stated deliberately.
+   Both passes write through `worldStore.updateClub`, whose only flush is `upsertClubs`, and
+   `worldClubRepository.stripClubDataForBlob` deletes `players`, `staff` **and** `scouts` before
+   writing the blob (canonical in `staff` + `staff_club`). Those tables are written only at ingest
+   (`worldStore.ts:726`, `useInitFlow.ts:1132`); nothing in the flush path touches them. Meanwhile
+   `seasonBudget` *is* in the blob, so on reload `bootstrapSeasonBudgets` skips the club as
+   already-budgeted and never re-snaps. **Net: NPC staff and scout wages are income-anchored
+   in-session and back on the band after every reload.** This bounds the real-world value of both
+   passes and is the highest-value item this task turned up. Unowned.
+
+**Report:** `/Users/courtneyadesile/Documents/WunderkindFactory/docs/economy-loose-ends/scout-reanchor-report.md`
+
+## 2026-11-20 — `.context` correctness + a CI ratchet (app `new-game-save`)
+
+**Change:** `ec949536` + this pass. Acts on the read-only audit in
+`wunderkind-docs/context-review/context-review-agy.md` (scored the tree 5.5/10); scope and the
+deferred half are in `wunderkind-docs/context-review/context-refresh.md`.
+
+**Stages touched:** `01_overview`, `03_data`, `04_interfaces`, `06_documentation`, `07_synthesis`,
+plus the router, five stage contracts, `shared/last-sync.md`, `shared/token-savings.md` and the
+`CLAUDE.md` mirror.
+
+**The seven factual errors fixed, all re-verified against live code rather than taken from the
+audit** (two of the audit's own numbers were wrong — `drawDofContractCharge` has 7 call sites, not
+6, and ticket elasticity is live but *conditional*):
+
+- `game-mechanics.md` said "there is NO price term in attendance". There is:
+  `src/economy/ticketElasticity.ts`, `e^(−k(r−1))` at `k = 0.75`, applied inside the fill at
+  `matchdayIncome.ts:309-331`, gated on `ticketPriceElasticity ?? wageModel === 'turnover'`.
+- It said nothing writes `worldClub.facilities` after world init. Two paths do:
+  `GameLoop.ts:2274` and `NpcRescueService.ts:196`.
+- It gave `setBudgetAllocation` as `balance × pct/100`. It is `floor(allocatableBalancePence ×
+  scaled pct/100)`, with a reserve-floor scale, the season's guaranteed costs deducted, and the
+  carried DOF wage commitment subtracted from the transfer pot alone.
+- It sourced NPC ticket prices from `recommendPricing`. They come from `advisedTicketPricePence`
+  on the club's own tier; only FOOD still uses `recommendPricing`.
+- `services.md` described `dofHireCharge.ts` with 2 exports and a 3-field return. It has 3
+  exported functions and 5 fields, and the two extra fields exist because a product cannot be
+  un-multiplied at refund time. Its §14a/§14c renewal attributions were swapped.
+- `migrations.md` said "fourteen migrations, `0000`–`0013`". There are 22. Its `0007`/`0008`
+  recovery claim was wrong (both are pure `DROP INDEX`; `extractMigrationStatements` matches three
+  CREATE/ALTER-ADD shapes and bails on anything else), `0015` sat above `0014`, `0014`'s closing
+  paragraph had been pasted onto `0016`, and `0017`/`0018` had no sections. All fixed.
+- `state.md` said 56 stores / 7 of 65 persisting. It is 68 files / 66 stores / 9 `persist()`. Its
+  section presenting the four `0015`-dropped tournament tables as live, written by a repository
+  that no longer exists, is gone.
+
+**Also:** the ported-repository count unified at **46/47** across five documents — it read 45/46 in
+all of them, the SECOND time that count has drifted across the same set (`drizzle-migration-status.md`
+register item 28 records the first). `TYPE` is a seven-step scale, not five, and three steps set
+line height equal to size, not one. `index.md` no longer claims `src/db/drizzle/README.md` is
+"never a query layer". `environment.md` now documents the source-map upload that actually runs
+(`eas update` uploads nothing — the token on that step was the silent-skip) and the Node 22/20.19.6
+split between OTA and build workflows.
+
+**`last-sync.md`: 429 KB / 5,836 lines / 112 passes → 33 KB / 4 passes.** The three-bullet header
+the staleness check reads was missing entirely (the first `- **Commit:**` sat at line 150), so the
+check had been skipping silently. Older passes are verbatim in
+`wunderkind-docs/context-archive/shared-last-sync-history.md`; all 112 are accounted for. Pass
+ordinals dropped — hand-maintained, branch-relative, duplicated on every merge, read by nothing.
+`.context/` total: **1.93 MB → 1.55 MB**.
+
+**The `CLAUDE.md` mirror regained 10 binding rules** it had never carried (tournament rollout,
+eleven-available-bodies, the availability predicate, fortnightly NPC injury decrement,
+EMERGENCY vs CRITICAL, the rotation bypass, the per-(club, position) backoff,
+`clearEmergencyCooldowns()` placement, `npcSquadBand`, the `league_ability_ranges` outlier) plus
+the two 2026-11-20 test warnings. `environment.md` had been admitting the reverse-direction drift
+in its own text ("the A28 rows are recorded in `CLAUDE.md` and are not reproduced here"); both rows
+are now in the owner.
+
+**New: `src/__tests__/db/contextDocSync.test.ts`** (+1 suite, 46 tests) — the companion to
+`schemaDocSync.test.ts`, which is the only reason `schema.md`'s table names never drifted. The
+branch measures **661 suites / 11,116 tests** at `ec949536` + this pass, zero failures, reconciling
+exactly (+1 suite / +13 tests from `ec949536`'s `scoutReanchor.test.ts`, +1 / +46 from this guard).
+It pins
+the `last-sync.md` header and that its SHA resolves, stage-title parity, no `.DS_Store`, one
+anchor per mirrored binding rule, a footprint ratchet, dead-path resolution across the repo and
+the parent workspace, and a no-new-dated-corrections ratchet. Baselines in
+`contextDocSync.baseline.json` **may only shrink**. Every assertion was mutation-tested: each one
+was made to fail on purpose before being trusted.
+
+**Two invariants written into `.context/CONTEXT.md`:** edit current-state files in place (history
+goes to git or the archive — stacking dated "Correction:" paragraphs beneath wrong sentences is
+what let almost every error above survive), and name symbols and test files rather than hand-typed
+counts.
+
+**Deferred, with the reasoning in `context-refresh.md`:** the size problem itself.
+`game-mechanics.md` (229 KB), `services.md` (193 KB), `patterns.md` (191 KB), `current-focus.md`
+(109 KB) and `architecture-notes.md` (99 KB) are untouched as structures, and the coverage holes
+(`src/economy/`, DB locking/hydration, the AMP-vs-NPC matrix, 55+ missing request triggers) are
+still open.
+
+## 2026-11-20 — `07_synthesis` split: simulation vs economy, and two artefacts that did not exist (app `new-game-save`)
+
+**Change:** `ec949536` + this pass. Phase 2.1 of
+`wunderkind-docs/context-review/context-refresh.md`, the half deferred by the correctness pass
+earlier the same day.
+
+**Stages touched:** `07_synthesis` (all of it), plus the router, the `07_synthesis` stage contract,
+`shared/token-savings.md`, `01_overview/output/tribal-knowledge.md` (a BINDING rule), the
+`CLAUDE.md` mirror, and the cross-references in seven other output files.
+
+**`game-mechanics.md` (229 KB / 3,098 lines) → two single-subject files, and a 1.8 KB redirect
+stub.** `§8`/`§12`/`§13` became **`economy-reference.md`** (158 KB); `§0`–`§7b`, `§9`–`§11` became
+**`simulation-rules.md`** (128 KB). **Section numbers were deliberately NOT renumbered** — ~45
+source-code comments and a dozen `.context/` documents cite `game-mechanics.md §N`, and those
+citations still resolve through the stub, which is why the stub exists rather than a rename.
+Sections were MOVED, not rewritten: the ICM contract treats human-authored content as
+authoritative, so the split is structural and the prose inside each section is untouched.
+
+**Two artefacts the audit asked for, neither of which existed anywhere:**
+
+- **`§A` — the AMP-vs-NPC divergence matrix** (`simulation-rules.md`). 50+ rows: for each
+  quantity, how it works for the player's club, how it works for an NPC, where the asymmetry is
+  enforced, and **whether anyone chose it**. `SelectionService.ts` and `ResultsEngine.ts` — the XI
+  picker and the match engine — had **zero mentions** in `.context/` before this. §A.6 collects the
+  **nine artefacts**: NPC morale discarded at the sim boundary (`morale: 50` hardcoded), the NPC
+  fanbase cap never binding, an NPC earning £0 on an away week, ~~investor income never credited to
+  NPC cash~~ (**withdrawn — that claim was wrong, it IS credited as a season lump; see the
+  following pass**), two unrelated manager-ability formulas, the
+  u16 academy floor being AMP-only, condition recovery gated by the 2-week tick, two
+  implementations of the 30% injury ceiling, and the known-wrong `NPC_HOME_GAMES_PER_SEASON = 23`.
+  None is fixed; several change balance, so none should be tidied without a ruling.
+- **`§E` — the `src/economy/` constants table, module index and contradiction register**
+  (`economy-reference.md`). 35 files, the #2 non-test commit hotspot, **33 of which were documented
+  nowhere**. Nine live contradictions, the sharpest being that **`economyConfig.tierRowFor` reads
+  the tier table by `tiers[tier - 1]` while `perTierEconomy.tierRow` reads it by
+  `.find(r => r.tier === …)` — and `perTierEconomy`'s own comment forbids exactly the index
+  arithmetic the other module uses.** They agree only while the published array is dense, 1-based
+  and ordered, and `resolveEconomy` has ~20 callers. Also **three dead modules**
+  (`relegationClause.ts`, `newSaveEconomyGuard.ts`, `budgetView.ts`) and one dead export
+  (`financialApproach.headroomMultiple`), two of them with live prose describing them in the
+  present tense.
+
+🔴 **A BINDING rule was narrowed, owner first then mirror.** "Perception decides WHO plays, never
+HOW WELL they play" is **not exactly true**, and the loose wording hid a real path: perception sets
+matchday squad MEMBERSHIP (`CohesionEngine.computeMatchdaySquad`, `perceived = clubType === 'amp'`
+at `:84-91`), membership determines COHESION (counted over exactly that 18), and
+`ResultsEngine.calculateDominance:393-399` multiplies the whole team score by the cohesion
+modifiers. The rule now reads **"perception decides WHO plays. It never scales a chosen player's
+contribution"** — which IS exactly true, and is enforced by signature (`calculateScore(player)`
+takes no `perceived` parameter; `ResultsEngine` does not import `playerRatingStore`). ⚠️ **This is
+not a defect to go and fix** — `CohesionEngine.ts:81-83` argues correctly that the matchday squad
+must be the one the club would actually name. **It is an owner's call.**
+
+**`current-focus.md` 109 KB → 9 KB**, and it is now an INDEX of open work rather than a changelog.
+It had a verbatim 45-line duplicate of its own opening, a `2026-11-15` section spliced in below
+September's, and **zero coverage of the A12–A28/B1 economy workstream that was this branch's actual
+live work**. It now names the five open threads — country scaling (which blocks the deploy),
+unverified-on-device B1/A27, new-game-setup v3, the parked items, and the unowned defects — and
+points at `wunderkind-docs/economy-loose-ends/HANDOVER-2026-11-20-EOD.md`, which owns that effort,
+rather than rebuilding its index. The old contents are verbatim in the archive.
+
+**`architecture-notes.md`: five factual drifts fixed, one section archived, and ~600 lines flagged
+rather than cut.** The i18n catalogue is **5,029** entries, not "~2,600"; `withLang()` has **four**
+call sites, not three (it missed `tournamentHttp.ts`, which wraps *every* tournament path — the
+largest body of server-rendered text in the app); `zustandStorage` is used by **8** stores and
+**`authStore` is not one of them** (it passes `createSecureAuthStorage`, so "it calls `persist()`"
+does not imply "it is in `store_state`"); and its two stale "deliberately excluded" claims are
+corrected — `assessYouthPlayer` **was** made tier-relative on 2026-11-10 after the absolute
+threshold meant the bottom half of the pyramid released 100% of its academy intake by arithmetic,
+and `npcContractRenewalEngine`'s suspected identical bug **was** real and fixed the same day.
+⚠️ The ~600-line boot/crash diary is **flagged for triage, not cut**: it mixes live invariants with
+spent narrative, and one subsection states CURRENT behaviour while sitting below the stale sections
+it corrects, so archiving by line count would have deleted load-bearing rules.
+
+**Measurements.** `.context/` **1,930,071 B → 1,519,604 B** (482,517 → 379,901 est. tokens,
+**−21%**) across both of today's passes, **while gaining ~30 KB of new reference**. `07_synthesis`
+is no longer the largest stage (103k tokens, down from 114k); `05_ui` is, and `patterns.md`
+(194 KB) is now the largest single file in the tree. The `contextDocSync` ratchet tightened with
+it: per-file cap 240,489 → 204,051 B, total cap 1,627,131 → 1,595,534 B, and
+`knownMissingPaths` **shrank 40 → 38** — four external citations were qualified
+(`wunderkind-backend/…`, `../docs/…`) rather than added to the allowlist, which is the discipline
+that list exists to enforce.
+
+**Still deferred:** `services.md` (193 KB) and `patterns.md` (194 KB) as structures, the
+`03_data` DB-runtime doc, `controllers.md`'s 55+ missing request triggers, and
+`architecture-notes.md`'s boot-diary triage.
+
+## 2026-11-20 — Two owner rulings recorded, and a direction correction (app `new-game-save`)
+
+**Change:** `ec949536` + this pass. Documentation only; no code touched.
+
+**Stages touched:** `01_overview` (two BINDING rules), `07_synthesis` (§A.1 rewritten, the artefact
+triage), the `CLAUDE.md` mirror, and `src/__tests__/db/contextDocSync.test.ts` (two new
+mirror-parity anchors).
+
+✅ **RULING 1 — the cohesion path is accepted; its WEIGHT is what to monitor.** Owner, on being
+shown the perception→cohesion→performance chain: *"cohesion and bonds influence manager team
+selection, which is true but its weight needs to be monitored."* So it is not a defect and not to
+be removed. The live lever is `getCohesionMatchModifiers` (`passAccuracyMultiplier`,
+`errorRateMultiplier`, `cardRiskBonus`).
+
+⚠️ **A correction carried with that ruling, because the DIRECTION is the opposite of the obvious
+reading.** **Cohesion and bonds do NOT enter team selection.** `SelectionService` has no cohesion or
+bond term at all — `scoreFrom` is `ability × conditionFactor × moraleFactor`, verified by reading
+it. The live chain is **selection (on perceived ability) → who is in the matchday 18 → cohesion
+counted over exactly that 18 → cohesion multiplies match performance and card risk**. Cohesion is
+an OUTPUT of selection and an INPUT to performance, never an input to selection. **If cohesion
+influencing selection is the intended design, it is not implemented** — that is a new term inside
+`selectionScore`, not a weight to tune, and which of the two is meant should be settled before
+anyone monitors the weight of a term that does not exist. `simulation-rules.md` §A.1 now opens with
+a diagram of the chain, because the first write-up buried the direction and was misread.
+
+✅ **RULING 2, and it is a new BINDING rule — "TIERS ARE FLEXIBLE: no code may be written around a
+fixed number of tiers."** Owner's words. A country publishes its own `tierCount` and its own
+`tiers[]`; England is eight deep and Scotland is not, so any constant, array length, loop bound or
+index encoding "8" is a defect whether or not it currently misbehaves. **Read a tier row by its own
+`tier` field, never by position.** Four live violations recorded, none fixed:
+
+1. 🔴 `economyConfig.tierRowFor` reads the table by **index** (`tiers[tier - 1]`) — exactly what
+   `perTierEconomy`'s own comment forbids. Highest risk of the four: `resolveEconomy` has ~20
+   production callers, and a sparse or reordered `tiers[]` would silently misprice a whole division
+   rather than return null.
+2. `startingLeagueTier` reads the published `tierCount` and then throws it away —
+   `Math.min(8, count)` caps at England's depth.
+3. `UPKEEP_TIER_FACTOR` is an eight-element array clamped with `Math.min(tier, length)`, so a ninth
+   tier silently inherits tier 8's factor of 1.0 and upkeep stops scaling.
+4. `VALUATION_SAMPLE_TIERS = [1, 3, 5, 8]` hardcodes the CHECKS sampling tiers, so a four-tier
+   country can never match two of the four samples.
+
+Three of the four **fail silently**, which is why none was found until the ability bands were read
+country by country.
+
+**The nine AMP-vs-NPC artefacts are now triaged** in `current-focus.md` §5b (they remain owned by
+`simulation-rules.md` §A.6): three to fix on sight (investor income never reaching NPC cash, the
+AMP-only u16 academy floor, the duplicated 30% injury ceiling), two to resolve inside the
+country-scaling work (NPCs earning £0 on an away week, the known-wrong
+`NPC_HOME_GAMES_PER_SEASON = 23`), **two needing an owner ruling because each changes match
+balance** (whether an NPC's morale should affect its results at all — it is modelled then discarded
+— and what an NPC manager's ability should be worth, since the AMP default of 70 beats every NPC's
+ceiling of 60), and two to leave.
+
+**Both rulings are now pinned by `contextDocSync.test.ts`'s mirror-parity anchors** (48 assertions,
+up from 46), so neither can drop out of `CLAUDE.md` silently.
+
+## 2026-11-20 — Two AMP-vs-NPC parity defects fixed, and one "defect" withdrawn (app `new-game-save`)
+
+**Change:** `ec949536` + this pass. `src/engine/SimulationService.ts`, `src/engine/GameLoop.ts`,
+`src/__tests__/engine/ampNpcSelectionParity.test.ts` (new). Acts on the triage in
+`current-focus.md` §5b.
+
+**Stages touched:** `07_synthesis` (§A.5 matrix, §A.6, `current-focus.md`).
+
+✅ **The academy age floor is now ONE rule, applied to the AMP club and both NPC paths.**
+`SimulationService.academyCover(squad, eligibilityAge, gameDate)` replaces three hand-rolled
+filters. It was AMP-only before — a literal `age >= 16` on the user's squad and **nothing** on
+either NPC path — and `selectFormationRows` reaches the academy whenever a senior squad cannot
+produce eleven, so **an NPC club carrying a 14-year-old could have him named in the XI** while the
+player's club could not. The eligibility age now comes from config
+(`youthFirstTeamEligibilityAge`, default 16) rather than a literal, so it moves with the backend.
+
+⚠️ **The trap in that fix, and why it is DOB-derived.** `mapWorldPlayerToPlayer` sets
+`age: 20, // Approximate` on **every** NPC player. An `age >= 16` filter on the NPC paths — the
+obvious fix, and the one the artefact's own description implied — would therefore have passed the
+entire academy while reading like a working floor: green tests, no behaviour change, defect intact.
+The helper derives age from `dateOfBirth` against the single `gameDate` anchor via
+`isUnderFirstTeamAge`, the predicate twelve other sites already use, which reads an unknown DOB as
+a SENIOR (matching the AMP filter it replaces). **`player.age` on an NPC player is 20 regardless;
+nothing may branch on it.** That hardcode is itself a latent defect and is left recorded, not
+fixed.
+
+✅ **The 30%-injured ceiling is now one exported constant, `MAX_INJURED_SQUAD_SHARE`.** It was a
+bare `0.3` in §3b beside a local `NPC_MAX_INJURED_SHARE` in §3d whose comment said it "mirrors the
+AMP squad's cap" — a parity maintained by comment. The two denominators (`players.length` /
+`recovered.length`) are the same population, the whole squad before the eligibility filter, so the
+parity was real and only the constant was duplicated.
+
+**Both pinned by `src/__tests__/engine/ampNpcSelectionParity.test.ts`** (+1 suite / 12 tests),
+written to prove the SHARED MECHANISM rather than to assert two values are equal — which they were
+before the fix and which would have passed either way, the same reasoning
+`managerNoiseDecoupling.test.ts` applies to the noise dials. **All three structural assertions were
+mutation-tested**: reverting one NPC path to the bare filter fails 3, making the floor read `.age`
+again fails 1, giving the NPC ceiling its own literal back fails 2.
+
+🔴 **WITHDRAWN — "investor income never moves NPC cash" was WRONG, and the correction is the more
+useful finding.** Investor money **is** credited: `SeasonTransitionService.ts:4536-4574` adds
+`investorIncome` directly onto `npcClub.balance` as a season lump, gated on `seasonsRemaining > 0`
+**and** the promise condition being met. So `computeNpcWeeklyFinances` omitting it is correct (the
+cash is seasonal, not weekly) and `sumNpcInvestorIncome`'s weekly amortisation is correct (it
+exists so the solvency verdict can compare seasonal income against weekly outgoings, exactly as
+its docblock says). **No fix was made, and the planned one would have double-credited every NPC
+club's investor income.**
+
+**How the wrong claim got published:** the omission from `computeNpcWeeklyFinances` was verified
+directly; the stronger claim built on it — that *nothing* credits it — was not. **Verifying that a
+function omits X does not establish that X never happens.** The check that would have caught it is
+the one that did: grep every reader of `seasonalPaymentPence` before calling its absence a defect.
+
+**What survives, narrower and pointing the other way:** `sumNpcInvestorIncome` sums **every**
+investor with no `seasonsRemaining` or condition check, while the transition credits only those
+passing both. So the solvency verdict can count money a club will never receive, **over**-stating a
+struggling club's runway. Recorded in §A.5; not fixed.
+
+**Artefact state: nine recorded → two fixed, one withdrawn, six open.** Two of the six change match
+balance and need an owner ruling (whether an NPC's morale should affect its results — it is
+modelled then discarded at the sim boundary — and what an NPC manager's ability should be worth,
+since the AMP default of 70 beats every NPC's ceiling of 60).
+
+---
